@@ -458,7 +458,7 @@ function removerInsumo(i){
         BD.insumos.splice(i,1); 
         salvarBD();
         atualizarTabelaInsumos();
-    
+    }
 }
 
 function atualizarTabelaInsumos(){
@@ -473,7 +473,7 @@ function atualizarTabelaInsumos(){
 function atualizarSelInsumos(){
     let s=document.getElementById('selInsumo'); 
     if(!s) return;
-    s.innerHTML='<option value="">-- Selecione um insumo --</option>';
+    s.innerHTML='';
     BD.insumos.forEach((ins,i)=>{
         s.innerHTML+=`<option value="${i}">${ins.nome} (${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)})</option>`;
     });
