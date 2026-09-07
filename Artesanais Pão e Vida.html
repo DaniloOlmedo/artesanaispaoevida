@@ -221,16 +221,16 @@
 <section id="massa" class="pagina">
     <div class="painel">
         <h2>🧮 Calculadora de Massa — Base 100% Farinha</h2>
-        <div class="aviso">Informe o peso desejado → sistema calcula farinha e ingredientes em GRAMAS. Salve suas fórmulas!</div>
-        <label>📂 Fórmulas Salvas:</label>
+        <div class="aviso">Informe o peso desejado → sistema calcula farinha e ingredientes em GRAMAS. Salve suas receitas!</div>
+        <label>📂 Receitas Salvas:</label>
         <div class="flex-linha" style="margin-bottom:10px;">
             <select id="selFormulaMassa" onchange="carregarFormulaMassa()">
-                <option value="">-- Selecione uma fórmula --</option>
+                <option value="">-- Selecione uma receita --</option>
             </select>
             <button class="btn pequeno" onclick="salvarFormulaMassa()">💾 Salvar</button>
             <button class="btn vermelho pequeno" onclick="excluirFormulaMassa()">🗑️ Excluir</button>
         </div>
-        <label>Nome da Fórmula (para salvar):</label>
+        <label>Nome da Receita (para salvar):</label>
         <input type="text" id="nomeFormulaMassa" placeholder="Ex: Massa de Pizza, Pão Rústico...">
         <hr>
         <label>Peso total desejado:</label>
