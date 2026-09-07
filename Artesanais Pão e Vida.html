@@ -459,11 +459,13 @@ function atualizarTabelaInsumos(){
     let tb=document.getElementById('tabelaInsumos'); tb.innerHTML='';
     BD.insumos.forEach((ins,i)=>{
         tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.valor)}</td><td>${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)}</td><td><button class="btn vermelho pequeno">✕</button></td>`
+    }); // ← FALTAVA ESTA LINHA! FECHA O forEach!
     atualizarSelInsumos();
 }
 function atualizarSelInsumos(){
     let s=document.getElementById('selInsumo'); if(!s) return;
-   BD.insumos.forEach((ins,i)=>s.innerHTML+=`<option value="${i}">${ins.nome} (${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)})</option>`);
+    BD.insumos.forEach((ins,i)=>s.innerHTML+=`<option value="${i}">${ins.nome} (${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)})</option>`));
+}
 
 // === FICHAS TÉCNICAS ===
 function criarFicha(){
