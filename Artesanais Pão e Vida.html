@@ -556,19 +556,19 @@ function excluirFicha(i){
 // === CALCULADORA DE MASSA ===
 function carregarSelectFormulasMassa(){
     let sel=document.getElementById('selFormulaMassa');
-    sel.innerHTML='<option value="">-- Selecione uma fórmula --</option>';
+    sel.innerHTML='<option value="">-- Selecione uma receita--</option>';
     BD.formulasMassa.forEach((f,i)=>sel.innerHTML+=`<option value="${i}">${f.nome}</option>`);
 }
 function salvarFormulaMassa(){
     let nome=document.getElementById('nomeFormulaMassa').value.trim();
-    if(!nome) return alert('Digite um nome para a fórmula!');
+    if(!nome) return alert('Digite um nome para a receita!');
     let idx=BD.formulasMassa.findIndex(f=>f.nome===nome);
     let dados=BD.receitaMassa.filter(i=>i.nome!=='Farinha');
     if(idx===-1) BD.formulasMassa.push({nome:nome, itens:dados});
     else BD.formulasMassa[idx].itens=dados;
     salvarBD();
     carregarSelectFormulasMassa();
-    alert('✅ Fórmula salva como: '+nome);
+    alert('✅ Receita salva como: '+nome);
 }
 function carregarFormulaMassa(){
     let sel=document.getElementById('selFormulaMassa').value;
@@ -580,8 +580,8 @@ function carregarFormulaMassa(){
 }
 function excluirFormulaMassa(){
     let sel=document.getElementById('selFormulaMassa').value;
-    if(sel==='') return alert('Selecione uma fórmula primeiro!');
-    if(!confirm('Excluir esta fórmula?')) return;
+    if(sel==='') return alert('Selecione uma receita primeiro!');
+    if(!confirm('Excluir esta receita?')) return;
     BD.formulasMassa.splice(sel,1);
     salvarBD();
     carregarSelectFormulasMassa();
