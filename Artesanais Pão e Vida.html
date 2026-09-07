@@ -429,7 +429,6 @@ function adicionarInsumo(){
     let v=parseFloat(document.getElementById('insumoValor').value)||0;
     if(!n||q<=0||v<=0) return alert('Preencha todos os campos!');
 
-    // === CÁLCULO CORRIGIDO ===
     let valorExibido, etiquetaPreco;
     if(u==="g" || u==="kg") {
         let fator = u==="kg" ? 1000 : 1;
@@ -453,18 +452,31 @@ function adicionarInsumo(){
     salvarBD();
     atualizarTabelaInsumos();
 }
+
+function removerInsumo(i){ 
+    if(confirm('Excluir?')){
+        BD.insumos.splice(i,1); 
+        salvarBD();
+        atualizarTabelaInsumos();
+    
 }
-function removerInsumo(i){ if(confirm('Excluir?')){BD.insumos.splice(i,1); salvarBD();} }
+
 function atualizarTabelaInsumos(){
-    let tb=document.getElementById('tabelaInsumos'); tb.innerHTML='';
+    let tb=document.getElementById('tabelaInsumos'); 
+    tb.innerHTML='';
     BD.insumos.forEach((ins,i)=>{
-        tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.valor)}</td><td>${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)}</td><td><button class="btn vermelho pequeno">✕</button></td>`
-    }); // ← FALTAVA ESTA LINHA! FECHA O forEach!
+        tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.valor)}</td><td>${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)}</td><td><button class="btn vermelho pequeno" onclick="removerInsumo(${i})">✕</button></td></tr>`;
+    });
     atualizarSelInsumos();
 }
+
 function atualizarSelInsumos(){
-    let s=document.getElementById('selInsumo'); if(!s) return;
-    BD.insumos.forEach((ins,i)=>s.innerHTML+=`<option value="${i}">${ins.nome} (${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)})</option>`));
+    let s=document.getElementById('selInsumo'); 
+    if(!s) return;
+    s.innerHTML='<option value="">-- Selecione um insumo --</option>';
+    BD.insumos.forEach((ins,i)=>{
+        s.innerHTML+=`<option value="${i}">${ins.nome} (${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)})</option>`;
+    });
 }
 
 // === FICHAS TÉCNICAS ===
