@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artesanais Pão e Vida — Sistema Completo</title>
+    <style>
+        :root {
+            --cor1: #006644; --cor2: #008855; --cor3: #cc6633;
+            --cor4: #222222; --cor5: #f5f5f5; --cor6: #e8f5e9;
+            --texto: #333; --claro: #fff; --erro: #d32f2f;
+            --alerta: #f57c00; --sucesso: #388e3c;
+        }
+        * {margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Roboto, sans-serif;}
+        body {background:#f0f4f3; color:var(--texto); padding-bottom:80px;}
+        .cabecalho {background:linear-gradient(90deg,var(--cor1),var(--cor2)); color:white; padding:16px; text-align:center;}
+        .cabecalho h1 {font-size:1.4rem; margin-bottom:4px;}
+        .cabecalho p {font-size:0.9rem; opacity:0.9; font-style:italic;}
+        .navegacao {display:flex; flex-wrap:wrap; background:var(--cor4); position:sticky; top:0; z-index:99;}
+        .nav-btn {flex:1; min-width:90px; padding:10px 4px; border:none; background:transparent; color:white; font-size:0.78rem; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s;}
+        .nav-btn.ativo {background:var(--cor1); border-bottom:3px solid var(--cor3);}
+        .nav-btn:hover {background:rgba(0,102,68,0.5);}
+        .pagina {display:none; padding:16px; max-width:1200px; margin:0 auto;}
+        .pagina.visivel {display:block; animation:aparecer 0.3s;}
+        @keyframes aparecer {from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
+        .painel {background:white; border-radius:10px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+        .painel h2 {font-size:1.1rem; color:var(--cor1); margin-bottom:14px; border-bottom:2px solid var(--cor6); padding-bottom:6px;}
+        .painel h3 {font-size:1rem; color:var(--cor3); margin:12px 0 8px;}
+        .grade {display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:12px; margin-bottom:16px;}
+        .card {background:linear-gradient(135deg,var(--cor6),#fff); padding:14px; border-radius:8px; border-left:4px solid var(--cor2);}
+        .card h3 {font-size:0.85rem; color:#555; margin-bottom:6px;}
+        .card .valor {font-size:1.4rem; font-weight:bold; color:var(--cor1);}
+        .card.laranja {border-left-color:var(--cor3); background:linear-gradient(135deg,#fff3e0,#fff);}
+        .card.laranja .valor {color:var(--cor3);}
+        label {display:block; margin:10px 0 4px 0; font-weight:500; font-size:0.92rem;}
+        input, select, button, textarea {width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:0.95rem;}
+        input:focus, select:focus {outline:none; border-color:var(--cor2); box-shadow:0 0 0 2px rgba(0,136,85,0.2);}
+        .btn {background:var(--cor2); color:white; border:none; font-weight:500; margin-top:10px; cursor:pointer; transition:background 0.2s;}
+        .btn:hover {background:var(--cor1);}
+        .btn.vermelho {background:#c62828;}
+        .btn.vermelho:hover {background:#a21f1f;}
+        .btn.laranja {background:var(--cor3);}
+        .btn.laranja:hover {background:#b3441a;}
+        .btn.pequeno {padding:4px 6px; width:auto; font-size:0.85rem; margin:0;}
+        .tabela {width:100%; border-collapse:collapse; margin-top:12px; font-size:0.85rem;}
+        .tabela th, .tabela td {padding:6px 4px; text-align:left; border-bottom:1px solid #e0e0e0;}
+        .tabela th {background:var(--cor1); color:white;}
+        .tabela tr:hover {background:#f9f9f9;}
+        .linha-destaque {background:#e8f5e9; font-weight:bold;}
+        .oculto {display:none !important;}
+        .bloco-calc {display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:10px; margin-top:12px;}
+        .resultado {margin-top:14px; padding:12px; background:#f1f8f4; border-radius:8px; border-left:4px solid var(--cor2);}
+        .resultado h4 {margin-bottom:8px; color:var(--cor1);}
+        .flex-linha {display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+        .flex-linha > div {flex:1; min-width:140px;}
+        .aviso {padding:10px 14px; background:#e3f2fd; border-left:4px solid #1976d2; border-radius:4px; margin:10px 0; font-size:0.9rem;}
+        .linha-ingrediente {display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr; gap:6px; align-items:center; margin-bottom:8px;}
+        .grupo-botoes {display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;}
+        .grupo-botoes button {flex:1; min-width:100px;}
+        .tag {display:inline-block; padding:2px 6px; border-radius:10px; font-size:0.75rem; margin:2px;}
+        .tag.verde {background:#e8f5e9; color:var(--cor1);}
+        .tag.laranja {background:#fff3e0; color:var(--cor3);}
+        .pesquisa {margin-bottom:12px;}
+        hr {border:none; border-top:1px solid #eee; margin:15px 0;}
+        @media(max-width:768px){
+            .linha-ingrediente {grid-template-columns:1.5fr 1fr 1fr 1fr 1fr; font-size:0.85rem;}
+            .tabela {font-size:0.75rem;}
+            .tabela th, .tabela td {padding:4px 2px;}
+        }
+    </style>
+</head>
+<body>
+
+<header class="cabecalho">
+    <h1>🍞 Artesanais Pão e Vida</h1>
+    <p>Precificação • Custos • Vendas • Compras</p>
+</header>
+
+<nav class="navegacao">
+    <button class="nav-btn ativo" onclick="irPara('dashboard')">📊 Painel</button>
+    <button class="nav-btn" onclick="irPara('custos')">💰 Custos</button>
+    <button class="nav-btn" onclick="irPara('insumos')">🧪 Insumos</button>
+    <button class="nav-btn" onclick="irPara('fichas')">📋 Fichas</button>
+    <button class="nav-btn" onclick="irPara('massa')">🧮 Massa</button>
+    <button class="nav-btn" onclick="irPara('vendas')">📈 Vendas</button>
+    <button class="nav-btn" onclick="irPara('compras')">🧾 Compras</button>
+</nav>
+
+<section id="dashboard" class="pagina visivel">
+    <div class="painel">
+        <h2>📊 Resumo Geral</h2>
+        <div class="grade">
+            <div class="card"><h3>Produtos Cadastrados</h3><div class="valor" id="qtdProdutos">0</div></div>
+            <div class="card laranja"><h3>Despesas Fixas/Mês</h3><div class="valor" id="totalCustosFixos">R$ 0,00</div></div>
+            <div class="card"><h3>Faturamento Período</h3><div class="valor" id="fatPeriodo">R$ 0,00</div></div>
+            <div class="card laranja"><h3>Custo das Vendas</h3><div class="valor" id="custoVendas">R$ 0,00</div></div>
+            <div class="card"><h3>Lucro do Período</h3><div class="valor" id="lucroPeriodo">R$ 0,00</div></div>
+            <div class="card laranja"><h3>Margem Média</h3><div class="valor" id="margemMedia">0%</div></div>
+        </div>
+    </div>
+    <div class="painel">
+        <h2>🏆 Top 5 Mais Vendidos (Quantidade)</h2>
+        <div id="topVendidos" style="color:#888; padding:10px;">Sem vendas registradas</div>
+    </div>
+    <div class="painel">
+        <h2>💰 Top 5 Mais Lucrativos (R$)</h2>
+        <div id="topLucrativos" style="color:#888; padding:10px;">Sem dados</div>
+    </div>
+</section>
+
+<section id="custos" class="pagina">
+    <div class="painel">
+        <h2>💰 Custos Fixos Mensais</h2>
+        <div class="aviso">Aluguel, salários, energia, água, telefone, internet, etc.</div>
+        <div class="linha-ingrediente">
+            <input type="text" id="custoDesc" placeholder="Descrição">
+            <input type="number" step="0.01" id="custoValor" placeholder="R$">
+            <select id="custoCat">
+                <option>Moradia</option><option>Pessoal</option><option>Serviços</option><option>Impostos</option><option>Outros</option>
+            </select>
+            <button class="btn" onclick="adicionarCusto()">+</button>
+        </div>
+        <table class="tabela">
+            <thead><tr><th>Descrição</th><th>Valor R$</th><th>Categoria</th><th>Ação</th></tr></thead>
+            <tbody id="tabelaCustos"></tbody>
+            <tfoot><tr class="linha-destaque"><td colspan="1">TOTAL</td><td id="somaCustosFixos">R$ 0,00</td><td colspan="2"></td></tr></tfoot>
+        </table>
+    </div>
+    <div class="painel">
+        <h2>📋 Taxas sobre Vendas</h2>
+        <div class="bloco-calc">
+            <div><label>Impostos sobre venda (%)</label><input type="number" step="0.01" id="taxaImposto" oninput="salvarTaxas()"></div>
+            <div><label>Taxa de Cartão (%)</label><input type="number" step="0.01" id="taxaCartao" oninput="salvarTaxas()"></div>
+            <div><label>Outras Taxas (%)</label><input type="number" step="0.01" id="taxaOutras" oninput="salvarTaxas()"></div>
+        </div>
+        <div class="resultado"><h4>Resumo das Deduções</h4>
+            <p>Impostos: <strong id="resImp">0,00%</strong> | Cartão: <strong id="resCart">0,00%</strong> | Outras: <strong id="resOut">0,00%</strong></p>
+            <p>➡️ Total de deduções: <strong id="taxaTotal">0,00%</strong></p>
+        </div>
+    </div>
+</section>
+
+<section id="insumos" class="pagina">
+    <div class="painel">
+        <h2>🧪 Cadastro de Ingredientes</h2>
+        <div class="aviso">Cadastre uma vez e use em todas as fichas. Preço calculado por grama.</div>
+        <div class="linha-ingrediente">
+            <input type="text" id="insumoNome" placeholder="Nome do insumo">
+            <select id="insumoUnid">
+                <option value="kg">kg</option><option value="g">g</option><option value="l">Litro</option><option value="ml">ml</option><option value="un">Un</option>
+            </select>
+            <input type="number" step="0.001" id="insumoQtd" placeholder="Quantidade">
+            <input type="number" step="0.01" id="insumoValor" placeholder="R$ Total">
+            <button class="btn" onclick="adicionarInsumo()">+</button>
+        </div>
+        <table class="tabela">
+            <thead><tr><th>Insumo</th><th>Un</th><th>Qtd</th><th>Total R$</th><th>Preço por 100g</th><th>Ação</th></tr></thead>
+            <tbody id="tabelaInsumos"></tbody>
+        </table>
+    </div>
+</section>
+
+<section id="fichas" class="pagina">
+    <div class="painel">
+        <h2>📋 Fichas Técnicas e Precificação</h2>
+        <label>Nome do Produto:</label>
+        <input type="text" id="fichaNome" placeholder="Ex: Pizza Margherita">
+        <button class="btn" onclick="criarFicha()">Criar / Carregar Ficha</button>
+        <hr>
+        <div id="semFicha" style="text-align:center; color:#888; padding:20px;">Digite o nome e clique para criar ou carregar</div>
+        <div id="conteudoFicha" class="oculto">
+            <h3 id="tituloFicha"></h3>
+            <div class="linha-ingrediente">
+                <select id="selInsumo"></select>
+                <input type="number" step="0.1" id="qtdUsada" placeholder="Qtd">
+                <select id="unidUsada">
+                    <option value="g">gramas</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">Litro</option>
+                </select>
+                <span></span>
+                <button class="btn" onclick="adicionarItemFicha()">+</button>
+            </div>
+            <table class="tabela">
+                <thead><tr><th>Ingrediente</th><th>Qtd</th><th>Un</th><th>Custo R$</th><th>Ação</th></tr></thead>
+                <tbody id="tabelaIngredientesFicha"></tbody>
+                <tfoot><tr class="linha-destaque"><td colspan="3">Custo dos Ingredientes</td><td id="custoInsumosFicha">0,00</td><td></td></tr></tfoot>
+            </table>
+            <div class="bloco-calc">
+                <div><label>Quantidade produzida (porções)</label><input type="number" id="qtdPorcao" step="1" value="1" oninput="calcularPrecificacao()"></div>
+                <div><label>Custo Fixo por porção R$</label><input type="number" id="custoFichaFixo" step="0.01" value="0" oninput="calcularPrecificacao()"></div>
+                <div><label>Lucro Desejado (Markup %)</label><input type="number" id="markupDesejado" step="0.1" value="0" oninput="calcularPrecificacao()"></div>
+            </div>
+            <div class="resultado">
+                <h4>💰 PRECIFICAÇÃO — Cálculo Detalhado</h4>
+                <p>Custo dos Ingredientes: <strong id="resInsumos">R$ 0,00</strong></p>
+                <p>Custo Fixo rateado: <strong id="resFixo">R$ 0,00</strong></p>
+                <hr>
+                <p>📉 Deduções sobre a Venda:</p>
+                <p style="margin-left:12px;">Impostos: <strong id="resImpFicha">0,00%</strong> | Taxa de Cartão: <strong id="resCartFicha">0,00%</strong> | Outras: <strong id="resOutFicha">0,00%</strong></p>
+                <p style="margin-left:12px;">➡️ Total de deduções: <strong id="resTaxasFicha">0,00%</strong></p>
+                <hr>
+                <p>Custo Total por porção: <strong id="resCustoTotal">R$ 0,00</strong></p>
+                <p>Markup aplicado: <strong id="resMarkup">0,00%</strong></p>
+                <hr>
+                <p>✅ <strong>👉 PREÇO DE VENDA SUGERIDO:</strong> <span style="font-size:1.4rem; color:var(--cor1); font-weight:bold;" id="precoSugerido">R$ 0,00</span></p>
+                <p>Margem de Contribuição: <strong id="margemContrib">0,00%</strong></p>
+                <label>Preço Praticado R$</label>
+                <input type="number" id="precoPraticado" step="0.01" oninput="atualizarMarkupReal()">
+                <p>Markup Real obtido: <strong id="markupReal">0,00%</strong> | Lucro Real: <strong id="lucroReal">R$ 0,00</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="painel">
+        <h2>📋 Lista de Produtos com Ficha Técnica</h2>
+        <table class="tabela">
+            <thead><tr><th>Produto</th><th>Custo Insumos</th><th>Preço Sugerido</th><th>Praticado</th><th>Margem</th><th>Ação</th></tr></thead>
+            <tbody id="listaResumoFichas"></tbody>
+        </table>
+    </div>
+</section>
+
+<section id="massa" class="pagina">
+    <div class="painel">
+        <h2>🧮 Calculadora de Massa — Base 100% Farinha</h2>
+        <div class="aviso">Informe o peso desejado → sistema calcula farinha e ingredientes em GRAMAS. Salve suas fórmulas!</div>
+        <label>📂 Fórmulas Salvas:</label>
+        <div class="flex-linha" style="margin-bottom:10px;">
+            <select id="selFormulaMassa" onchange="carregarFormulaMassa()">
+                <option value="">-- Selecione uma fórmula --</option>
+            </select>
+            <button class="btn pequeno" onclick="salvarFormulaMassa()">💾 Salvar</button>
+            <button class="btn vermelho pequeno" onclick="excluirFormulaMassa()">🗑️ Excluir</button>
+        </div>
+        <label>Nome da Fórmula (para salvar):</label>
+        <input type="text" id="nomeFormulaMassa" placeholder="Ex: Massa de Pizza, Pão Rústico...">
+        <hr>
+        <label>Peso total desejado:</label>
+        <div class="flex-linha">
+            <input type="number" id="pesoTotalMassa" step="0.001" placeholder="Ex: 2,4" oninput="calcularMassa()">
+            <select id="unidPesoMassa" onchange="calcularMassa()">
+                <option value="kg">kg</option>
+                <option value="g">gramas</option>
+            </select>
+        </div>
+        <h3 style="margin:16px 0 8px;">Receita (% sobre a Farinha)</h3>
+        <div class="linha-ingrediente">
+            <input type="text" id="ingMassaNome" placeholder="Ingrediente">
+            <input type="number" id="ingMassaPerc" step="0.1" placeholder="%">
+            <button class="btn" onclick="adicionarIngMassa()">+</button>
+        </div>
+        <table class="tabela">
+            <thead><tr><th>Ingrediente</th><th>Porcentagem</th><th>Gramas</th><th>Ação</th></tr></thead>
+            <tbody id="tabelaMassaIng">
+                <tr style="background:#e8f5e9;"><td><strong>🍞 Farinha</strong></td><td>100%</td><td id="grFarinha">-- g</td><td>--</td></tr>
+            </tbody>
+        </table>
+        <div class="resultado">
+            <h4>✅ Resultado</h4>
+            <p>Peso desejado: <strong id="resPesoTotal">-- g</strong></p>
+            <p>Peso calculado: <strong id="resPesoCalculado">-- g</strong></p>
+            <p>Diferença: <strong id="resDiferenca">-- g</strong></p>
+        </div>
+        <button class="btn laranja" onclick="limparReceitaMassa()">🔄 Nova Receita</button>
+    </div>
+</section>
+
+<section id="vendas" class="pagina">
+    <div class="painel">
+        <h2>📈 Controle de Vendas</h2>
+        <div class="aviso">Lance suas vendas e acompanhe faturamento e lucro</div>
+        <div class="bloco-calc">
+            <div><label>Data da Venda</label><input type="date" id="dataVenda"></div>
+            <div><label>Produto</label><select id="selProdutoVenda"></select></div>
+            <div><label>Quantidade Vendida</label><input type="number" id="qtdVendida" step="1" min="1" value="1"></div>
+        </div>
+        <button class="btn" onclick="registrarVenda()">✅ Registrar Venda</button>
+        <hr>
+        <label>Filtrar por Período:</label>
+        <div class="flex-linha">
+            <input type="month" id="filtroMes" oninput="atualizarTabelaVendas()">
+            <button class="btn laranja" onclick="limparFiltroMes()">Todos os meses</button>
+        </div>
+        <div class="resultado">
+            <h4>💰 Resumo do Período</h4>
+            <p>Total de Vendas: <strong id="totalVendasPeriodo">0</strong> unidades</p>
+            <p>Faturamento: <strong id="fatVendasPeriodo">R$ 0,00</strong></p>
+            <p>Custo Estimado: <strong id="custoVendasPeriodo">R$ 0,00</strong></p>
+            <p>Lucro Estimado: <strong id="lucroVendasPeriodo">R$ 0,00</strong></p>
+        </div>
+        <table class="tabela">
+            <thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Valor Unit</th><th>Total R$</th><th>Ação</th></tr></thead>
+            <tbody id="tabelaVendas"></tbody>
+        </table>
+    </div>
+</section>
+
+<section id="compras" class="pagina">
+    <div class="painel">
+        <h2>🧾 Controle de Compras e Cupons Fiscais</h2>
+        <div class="aviso">Cadastre seus cupons. Pesquise por número ou CNPJ a qualquer momento.</div>
+        <div class="pesquisa">
+            <label>🔍 Pesquisar Cupom:</label>
+            <input type="text" id="pesquisaCupom" placeholder="Digite Nº do Cupom, CNPJ ou Mercado..." oninput="filtrarCompras()">
+        </div>
+        <div class="bloco-calc">
+            <div><label>Nº Cupom / NF</label><input type="text" id="cupomNum" placeholder="Número"></div>
+            <div><label>CNPJ do Fornecedor</label><input type="text" id="cupomCNPJ" placeholder="CNPJ (deixe vazio se não tiver)"></div>
+            <div><label>Nome do Mercado/Loja</label><input type="text" id="cupomMercado" placeholder="Nome do estabelecimento"></div>
+            <div><label>Data da Compra</label><input type="date" id="cupomData"></div>
+            <div><label>Valor Total R$</label><input type="number" step="0.01" id="cupomValor" placeholder="0,00"></div>
+        </div>
+        <label>Itens comprados (opcional):</label>
+        <textarea id="cupomItens" rows="3" placeholder="Ex: Farinha 10kg R$ 55,00, Azeite 2L R$ 42,00..."></textarea>
+        <button class="btn" onclick="cadastrarCupom()">✅ Salvar Cupom</button>
+    </div>
+    <div class="painel">
+        <h2>📋 Cupons Cadastrados</h2>
+        <table class="tabela">
+            <thead><tr><th>Data</th><th>Nº Cupom</th><th>Mercado</th><th>CNPJ</th><th>Valor R$</th><th>Ação</th></tr></thead>
+            <tbody id="tabelaCompras"></tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+const PRODUTOS_CADASTRO = [
+    {nome:'🥟 Empanada Tradicional', preco:10.00, custoEstimado:0},
+    {nome:'🥟 Empanada de Carne', preco:10.00, custoEstimado:0},
+    {nome:'🥟 Empanada Frango com Requeijão', preco:10.00, custoEstimado:0},
+    {nome:'🥟 Empanada 5 Queijos', preco:10.00, custoEstimado:0},
+    {nome:'🥟 Empanada Cogumelo com Brócolis', preco:15.00, custoEstimado:0},
+    {nome:'🍕 Pizza Margherita', preco:21.90, custoEstimado:0},
+    {nome:'🍕 Pizza Calabresa com Cebola Roxa', preco:26.90, custoEstimado:0},
+    {nome:'🍕 Pizza Frango com Requeijão', preco:29.90, custoEstimado:0},
+    {nome:'🍕 Pizza 4 Queijos', preco:31.90, custoEstimado:0},
+    {nome:'🍕 Pizza Pepperoni', preco:32.90, custoEstimado:0},
+    {nome:'🍕 Pizza Copa-Lombo com Geleia de Pimenta', preco:33.90, custoEstimado:0},
+    {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custoEstimado:0},
+    {nome:'🥤 Coca-Cola Zero Açúcar', preco:8.00, custoEstimado:0},
+    {nome:'🥤 Fanta Laranja', preco:8.00, custoEstimado:0},
+    {nome:'🥤 Sprite', preco:8.00, custoEstimado:0},
+    {nome:'💧 Água com Gás', preco:5.00, custoEstimado:0},
+    {nome:'💧 Água sem Gás', preco:4.00, custoEstimado:0}
+];
+
+let BD = {
+    custos: JSON.parse(localStorage.getItem('custosFixos') || '[]'),
+    taxas: JSON.parse(localStorage.getItem('taxas') || '{}'),
+    insumos: JSON.parse(localStorage.getItem('insumos') || '[]'),
+    fichas: JSON.parse(localStorage.getItem('fichas') || '[]'),
+    formulasMassa: JSON.parse(localStorage.getItem('formulasMassa') || '[]'),
+    receitaMassa: [{nome:'Farinha', perc:100}],
+    vendas: JSON.parse(localStorage.getItem('vendas') || '[]'),
+    compras: JSON.parse(localStorage.getItem('compras') || '[]'),
+    produtos: PRODUTOS_CADASTRO
+};
+let fichaAtual = null;
+let filtroMesAtual = '';
+
+function salvarBD(){
+    localStorage.setItem('custosFixos', JSON.stringify(BD.custos));
+    localStorage.setItem('taxas', JSON.stringify(BD.taxas));
+    localStorage.setItem('insumos', JSON.stringify(BD.insumos));
+    localStorage.setItem('fichas', JSON.stringify(BD.fichas));
+    localStorage.setItem('formulasMassa', JSON.stringify(BD.formulasMassa));
+    localStorage.setItem('vendas', JSON.stringify(BD.vendas));
+    localStorage.setItem('compras', JSON.stringify(BD.compras));
+    atualizarTudo();
+}
+
+function irPara(id){
+    document.querySelectorAll('.pagina').forEach(p=>p.classList.remove('visivel'));
+    document.getElementById(id).classList.add('visivel');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('ativo'));
+    event.target.classList.add('ativo');
+    if(id==='dashboard') atualizarDashboard();
+    if(id==='massa') carregarSelectFormulasMassa();
+    if(id==='vendas') carregarSelectProdutosVenda();
+}
+
+function formatarMoeda(v){ return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2}); }
+function formatarPerc(v){ return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'%'; }
+function dataHoje(){ return new Date().toISOString().split('T')[0]; }
+
+// === CUSTOS ===
+function adicionarCusto(){
+    let d=document.getElementById('custoDesc').value.trim();
+    let v=parseFloat(document.getElementById('custoValor').value)||0;
+    let c=document.getElementById('custoCat').value;
+    if(!d||v<=0) return alert('Preencha corretamente!');
+    BD.custos.push({desc:d, val:v, cat:c});
+    document.getElementById('custoDesc').value=''; document.getElementById('custoValor').value='';
+    salvarBD();
+}
+function removerCusto(i){ if(confirm('Excluir?')){BD.custos.splice(i,1); salvarBD();} }
+function salvarTaxas(){
+    BD.taxas.imposto=parseFloat(document.getElementById('taxaImposto').value)||0;
+    BD.taxas.cartao=parseFloat(document.getElementById('taxaCartao').value)||0;
+    BD.taxas.outras=parseFloat(document.getElementById('taxaOutras').value)||0;
+    BD.taxas.totalPerc=BD.taxas.imposto+BD.taxas.cartao+BD.taxas.outras;
+    document.getElementById('resImp').textContent=formatarPerc(BD.taxas.imposto);
+    document.getElementById('resCart').textContent=formatarPerc(BD.taxas.cartao);
+    document.getElementById('resOut').textContent=formatarPerc(BD.taxas.outras);
+    document.getElementById('taxaTotal').textContent=formatarPerc(BD.taxas.totalPerc);
+    salvarBD();
+}
+function carregarTaxas(){
+    document.getElementById('taxaImposto').value=BD.taxas.imposto||'';
+    document.getElementById('taxaCartao').value=BD.taxas.cartao||'';
+    document.getElementById('taxaOutras').value=BD.taxas.outras||'';
+    BD.taxas.totalPerc=(BD.taxas.imposto||0)+(BD.taxas.cartao||0)+(BD.taxas.outras||0);
+    document.getElementById('resImp').textContent=formatarPerc(BD.taxas.imposto);
+    document.getElementById('resCart').textContent=formatarPerc(BD.taxas.cartao);
+    document.getElementById('resOut').textContent=formatarPerc(BD.taxas.outras);
+    document.getElementById('taxaTotal').textContent=formatarPerc(BD.taxas.totalPerc);
+}
+function atualizarTabelaCustos(){
+    let tb=document.getElementById('tabelaCustos'); tb.innerHTML=''; let s=0;
+    BD.custos.forEach((c,i)=>{ s+=c.val;
+        tb.innerHTML+=`<tr><td>${c.desc}</td><td>R$ ${formatarMoeda(c.val)}</td><td>${c.cat}</td><td><button class="btn vermelho pequeno" onclick="removerCusto(${i})">✕</button></td></tr>`;
+    });
+    document.getElementById('somaCustosFixos').textContent='R$ '+formatarMoeda(s);
+}
+
+// === INSUMOS ===
+function adicionarInsumo(){
+    let n=document.getElementById('insumoNome').value.trim();
+    let u=document.getElementById('insumoUnid').value;
+    let q=parseFloat(document.getElementById('insumoQtd').value)||0;
+    let v=parseFloat(document.getElementById('insumoValor').value)||0;
+    if(!n||q<=0||v<=0) return alert('Preencha todos os campos!');
+    let f={'kg':1000,'g':1,'l':1000,'ml':1,'un':1}[u];
+    let qb=q*f;
+    let v100=(v/qb)*100;
+    BD.insumos.push({nome:n, unid:u, qtd:q, val:v, qtdBase:qb, valPor100g:v100});
+    document.getElementById('insumoNome').value=''; document.getElementById('insumoQtd').value=''; document.getElementById('insumoValor').value='';
+    salvarBD();
+}
+function removerInsumo(i){ if(confirm('Excluir?')){BD.insumos.splice(i,1); salvarBD();} }
+function atualizarTabelaInsumos(){
+    let tb=document.getElementById('tabelaInsumos'); tb.innerHTML='';
+    BD.insumos.forEach((ins,i)=>{
+        tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.val)}</td><td>R$ ${formatarMoeda(ins.valPor100g)}</td><td><button class="btn vermelho pequeno" onclick="removerInsumo(${i})">✕</button></td></tr>`;
+    });
+    atualizarSelInsumos();
+}
+function atualizarSelInsumos(){
+    let s=document.getElementById('selInsumo'); if(!s) return;
+    s.innerHTML='';
+    BD.insumos.forEach((ins,i)=>s.innerHTML+=`<option value="${i}">${ins.nome} (R$ ${formatarMoeda(ins.valPor100g)}/100g)</option>`);
+}
+
+// === FICHAS TÉCNICAS ===
+function criarFicha(){
+    let n=document.getElementById('fichaNome').value.trim();
+    if(!n) return alert('Digite o nome do produto!');
+    let idx=BD.fichas.findIndex(x=>x.nome===n);
+    if(idx===-1){ BD.fichas.push({nome:n, itens:[], qtdPorcao:1, custoFixo:0, markupDesejado:0, precoPraticado:0}); idx=BD.fichas.length-1; }
+    fichaAtual=idx;
+    document.getElementById('tituloFicha').textContent=n;
+    document.getElementById('semFicha').classList.add('oculto');
+    document.getElementById('conteudoFicha').classList.remove('oculto');
+    carregarFicha(idx);
+    salvarBD();
+}
+function carregarFicha(i){
+    fichaAtual=i; let f=BD.fichas[i];
+    document.getElementById('tituloFicha').textContent=f.nome;
+    document.getElementById('fichaNome').value=f.nome;
+    document.getElementById('qtdPorcao').value=f.qtdPorcao||1;
+    document.getElementById('custoFichaFixo').value=f.custoFixo||0;
+    document.getElementById('markupDesejado').value=f.markupDesejado||0;
+    document.getElementById('precoPraticado').value=f.precoPraticado||'';
+    atualizarTabelaItensFicha();
+    calcularPrecificacao();
+}
+function adicionarItemFicha(){
+    let s=parseInt(document.getElementById('selInsumo').value);
+    let q=parseFloat(document.getElementById('qtdUsada').value)||0;
+    let u=document.getElementById('unidUsada').value;
+    if(isNaN(s)||q<=0) return alert('Selecione o insumo e informe a quantidade!');
+    let ins=BD.insumos[s];
+    let fator={'g':1,'kg':1000,'ml':1,'l':1000}[u];
+    let g=q*fator;
+    let c=(ins.valPor100g/100)*g;
+    BD.fichas[fichaAtual].itens.push({indice:s, nome:ins.nome, qtdGramas:g, custoItem:c});
+    document.getElementById('qtdUsada').value='';
+    atualizarTabelaItensFicha();
+    salvarBD();
+}
+function removerItemFicha(i){ BD.fichas[fichaAtual].itens.splice(i,1); atualizarTabelaItensFicha(); salvarBD(); }
+function atualizarTabelaItensFicha(){
+    if(fichaAtual===null) return;
+    let f=BD.fichas[fichaAtual];
+    let tb=document.getElementById('tabelaIngredientesFicha'); tb.innerHTML=''; let total=0;
+    f.itens.forEach((item,i)=>{ total+=item.custoItem;
+        tb.innerHTML+=`<tr><td>${item.nome}</td><td>${item.qtdGramas}</td><td>g</td><td>R$ ${formatarMoeda(item.custoItem)}</td><td><button class="btn vermelho pequeno" onclick="removerItemFicha(${i})">✕</button></td></tr>`;
+    });
+    document.getElementById('custoInsumosFicha').textContent=formatarMoeda(total);
+    calcularPrecificacao();
+}
+function calcularPrecificacao(){
+    if(fichaAtual===null) return;
+    let f=BD.fichas[fichaAtual];
+    let txImp=BD.taxas.imposto||0;
+    let txCart=BD.taxas.cartao||0;
+    let txOut=BD.taxas.outras||0;
+    let txTotal=txImp+txCart+txOut;
+    document.getElementById('resImpFicha').textContent=formatarPerc(txImp);
+    document.getElementById('resCartFicha').textContent=formatarPerc(txCart);
+    document.getElementById('resOutFicha').textContent=formatarPerc(txOut);
+    document.getElementById('resTaxasFicha').textContent=formatarPerc(txTotal);
+    let ci=f.itens.reduce((s,x)=>s+x.custoItem,0);
+    let qp=parseFloat(document.getElementById('qtdPorcao').value)||1;
+    let cf=parseFloat(document.getElementById('custoFichaFixo').value)||0;
+    let mk=parseFloat(document.getElementById('markupDesejado').value)||0;
+    f.qtdPorcao=qp; f.custoFixo=cf; f.markupDesejado=mk;
+    let cu=(ci+cf)/qp;
+    let ft=1-txTotal/100;
+    let ps=ft>0 ? cu*(1+mk/100)/ft : 0;
+    document.getElementById('resInsumos').textContent='R$ '+formatarMoeda(ci);
+    document.getElementById('resFixo').textContent='R$ '+formatarMoeda(cf);
+    document.getElementById('resCustoTotal').textContent='R$ '+formatarMoeda(cu);
+    document.getElementById('resMarkup').textContent=formatarPerc(mk);
+    document.getElementById('precoSugerido').textContent='R$ '+formatarMoeda(ps);
+    document.getElementById('margemContrib').textContent=ps>0 ? formatarPerc(((ps-cu)/ps)*100) : '0%';
+    f.custoInsumos=ci; f.custoUnitario=cu; f.precoSugerido=ps;
+    salvarBD();
+}
+function atualizarMarkupReal(){
+    if(fichaAtual===null) return;
+    let f=BD.fichas[fichaAtual];
+    let pp=parseFloat(document.getElementById('precoPraticado').value)||0;
+    f.precoPraticado=pp;
+    let tx=BD.taxas.totalPerc||0;
+    let ft=1-tx/100;
+    let cu=f.custoUnitario||0;
+    let pl=pp*ft;
+    let mr=cu>0 ? ((pl-cu)/cu)*100 : 0;
+    let lr=pl-cu;
+    document.getElementById('markupReal').textContent=formatarPerc(mr);
+    document.getElementById('lucroReal').textContent='R$ '+formatarMoeda(lr);
+    f.markupReal=mr; f.lucroReal=lr;
+    salvarBD();
+}
+function atualizarListaFichas(){
+    let tb=document.getElementById('listaResumoFichas'); tb.innerHTML='';
+    BD.fichas.forEach((f,i)=>{
+        let m=f.precoPraticado>0 ? ((f.precoPraticado-(f.custoUnitario||0))/f.precoPraticado)*100 : 0;
+        tb.innerHTML+=`<tr><td><a href="#" style="color:var(--cor1); text-decoration:none;" onclick="carregarFicha(${i});return false;">${f.nome}</a></td><td>R$ ${formatarMoeda(f.custoInsumos||0)}</td><td>R$ ${formatarMoeda(f.precoSugerido||0)}</td><td>R$ ${formatarMoeda(f.precoPraticado||0)}</td><td>${m>0?formatarPerc(m):'--'}</td><td><button class="btn vermelho pequeno" onclick="excluirFicha(${i})">✕</button></td></tr>`;
+    });
+}
+function excluirFicha(i){
+    if(confirm('Excluir esta ficha?')){ BD.fichas.splice(i,1); if(fichaAtual===i){ fichaAtual=null; document.getElementById('semFicha').classList.remove('oculto'); document.getElementById('conteudoFicha').classList.add('oculto'); } salvarBD(); }
+}
+
+// === CALCULADORA DE MASSA ===
+function carregarSelectFormulasMassa(){
+    let sel=document.getElementById('selFormulaMassa');
+    sel.innerHTML='<option value="">-- Selecione uma fórmula --</option>';
+    BD.formulasMassa.forEach((f,i)=>sel.innerHTML+=`<option value="${i}">${f.nome}</option>`);
+}
+function salvarFormulaMassa(){
+    let nome=document.getElementById('nomeFormulaMassa').value.trim();
+    if(!nome) return alert('Digite um nome para a fórmula!');
+    let idx=BD.formulasMassa.findIndex(f=>f.nome===nome);
+    let dados=BD.receitaMassa.filter(i=>i.nome!=='Farinha');
+    if(idx===-1) BD.formulasMassa.push({nome:nome, itens:dados});
+    else BD.formulasMassa[idx].itens=dados;
+    salvarBD();
+    carregarSelectFormulasMassa();
+    alert('✅ Fórmula salva como: '+nome);
+}
+function carregarFormulaMassa(){
+    let sel=document.getElementById('selFormulaMassa').value;
+    if(sel==='') return;
+    let f=BD.formulasMassa[sel];
+    document.getElementById('nomeFormulaMassa').value=f.nome;
+    BD.receitaMassa=[{nome:'Farinha', perc:100}, ...f.itens];
+    calcularMassa();
+}
+function excluirFormulaMassa(){
+    let sel=document.getElementById('selFormulaMassa').value;
+    if(sel==='') return alert('Selecione uma fórmula primeiro!');
+    if(!confirm('Excluir esta fórmula?')) return;
+    BD.formulasMassa.splice(sel,1);
+    salvarBD();
+    carregarSelectFormulasMassa();
+    limparReceitaMassa();
+}
+function adicionarIngMassa(){
+    let n=document.getElementById('ingMassaNome').value.trim();
+    let p=parseFloat(document.getElementById('ingMassaPerc').value)||0;
+    if(!n||p<=0) return alert('Preencha nome e porcentagem!');
+    BD.receitaMassa.push({nome:n, perc:p});
+    document.getElementById('ingMassaNome').value=''; document.getElementById('ingMassaPerc').value='';
+    calcularMassa();
+}
+function removerIngMassa(i){ if(i===0) return alert('Não pode remover a Farinha!'); BD.receitaMassa.splice(i,1); calcularMassa(); }
+function calcularMassa(){
+    let pesoDesejado=parseFloat(document.getElementById('pesoTotalMassa').value)||0;
+    let unid=document.getElementById('unidPesoMassa').value;
+    if(unid==='kg') pesoDesejado*=1000;
+    let somaPerc=BD.receitaMassa.reduce((s,x)=>s+x.perc,0);
+    let farinhaGramas=somaPerc>0 ? pesoDesejado/(somaPerc/100) : 0;
+    document.getElementById('grFarinha').textContent=farinhaGramas.toFixed(1)+' g';
+    let tb=document.getElementById('tabelaMassaIng'); tb.innerHTML='';
+    let pesoCalculado=0;
+    BD.receitaMassa.forEach((item,i)=>{
+        let g=(item.perc/100)*farinhaGramas;
+        pesoCalculado+=g;
+        tb.innerHTML+=`<tr style="${i===0?'background:#e8f5ee9;':''}"><td>${item.nome}</td><td>${item.perc.toFixed(1)}%</td><td>${g.toFixed(1)} g</td><td>${i===0?'--':'<button class=\"btn vermelho pequeno\" onclick=\"removerIngMassa('+i+')\">✕</button>'}</td></tr>`;
+    });
+    document.getElementById('resPesoTotal').textContent = pesoDesejado.toFixed(1)+' g ('+(unid==='kg'?(pesoDesejado/1000).toFixed(3)+' kg':unid)+')';
+    document.getElementById('resPesoCalculado').textContent = pesoCalculado.toFixed(1)+' g';
+    document.getElementById('resDiferenca').textContent = (pesoCalculado-pesoDesejado).toFixed(1)+' g';
+}
+function limparReceitaMassa(){
+    BD.receitaMassa = [{nome:'Farinha', perc:100}];
+    document.getElementById('pesoTotalMassa').value='';
+    document.getElementById('nomeFormulaMassa').value='';
+    document.getElementById('selFormulaMassa').value='';
+    calcularMassa();
+}
+
+// === VENDAS ===
+function carregarSelectProdutosVenda(){
+    let sel=document.getElementById('selProdutoVenda');
+    sel.innerHTML='';
+    BD.produtos.forEach((p,i)=>sel.innerHTML+=`<option value="${i}">${p.nome} — R$ ${formatarMoeda(p.preco)}</option>`);
+}
+function registrarVenda(){
+    let dt=document.getElementById('dataVenda').value||dataHoje();
+    let p=parseInt(document.getElementById('selProdutoVenda').value);
+    let q=parseInt(document.getElementById('qtdVendida').value)||1;
+    let prod=BD.produtos[p];
+    BD.vendas.unshift({data:dt, nome:prod.nome, precoUnit:prod.preco, qtd:q, total:(prod.preco*q)});
+    document.getElementById('qtdVendida').value='1';
+    salvarBD();
+    atualizarTabelaVendas();
+    alert('✅ Venda registrada: '+q+'x '+prod.nome);
+}
+function atualizarTabelaVendas(){
+    let mes=filtroMesAtual;
+    let vendasFiltradas=mes ? BD.vendas.filter(v=>v.data.substring(0,7)===mes) : BD.vendas;
+    let tb=document.getElementById('tabelaVendas'); tb.innerHTML='';
+    let totalQtd=0, totalFat=0, totalCusto=0;
+    vendasFiltradas.forEach((v,i)=>{
+        totalQtd+=v.qtd; totalFat+=v.total;
+        let custoUnit=0;
+        let fichaCorr=BD.fichas.find(x=>v.nome.includes(x.nome.substring(0,20)));
+        if(fichaCorr && fichaCorr.custoUnitario) custoUnit=fichaCorr.custoUnitario;
+        let custoLinha=custoUnit*v.qtd; totalCusto+=custoLinha;
+        tb.innerHTML+=`<tr><td>${v.data}</td><td>${v.nome}</td><td>${v.qtd}</td><td>R$ ${formatarMoeda(v.precoUnit)}</td><td>R$ ${formatarMoeda(v.total)}</td><td><button class=\"btn vermelho pequeno\" onclick=\"excluirVenda(${BD.vendas.indexOf(v)})\">✕</button></td></tr>`;
+    });
+    document.getElementById('totalVendasPeriodo').textContent=totalQtd;
+    document.getElementById('fatVendasPeriodo').textContent='R$ '+formatarMoeda(totalFat);
+    document.getElementById('custoVendasPeriodo').textContent='R$ '+formatarMoeda(totalCusto);
+    document.getElementById('lucroVendasPeriodo').textContent='R$ '+formatarMoeda(totalFat-totalCusto);
+}
+function excluirVenda(i){ if(confirm('Excluir esta venda?')){BD.vendas.splice(i,1); salvarBD(); atualizarTabelaVendas();} }
+function limparFiltroMes(){ filtroMesAtual=''; document.getElementById('filtroMes').value=''; atualizarTabelaVendas(); }
+
+// === COMPRAS / CUPONS ===
+function cadastrarCupom(){
+    let n=document.getElementById('cupomNum').value.trim();
+    let cnpj=document.getElementById('cupomCNPJ').value.trim();
+    let merc=document.getElementById('cupomMercado').value.trim();
+    let dt=document.getElementById('cupomData').value;
+    let vl=parseFloat(document.getElementById('cupomValor').value)||0;
+    let it=document.getElementById('cupomItens').value.trim();
+    if(!n||!merc||!dt||vl<=0) return alert('Preencha Nº Cupom, Mercado, Data e Valor!');
+    BD.compras.unshift({numero:n, cnpj:cnpj, mercado:merc, data:dt, valor:vl, itens:it});
+    document.getElementById('cupomNum').value=''; document.getElementById('cupomCNPJ').value='';
+    document.getElementById('cupomMercado').value=''; document.getElementById('cupomValor').value='';
+    document.getElementById('cupomItens').value='';
+    salvarBD();
+    alert('✅ Cupom cadastrado!');
+}
+function filtrarCompras(){
+    let b=document.getElementById('pesquisaCupom').value.trim().toLowerCase();
+    let tb=document.getElementById('tabelaCompras'); tb.innerHTML='';
+    BD.compras.filter(c=>!b||c.numero.toLowerCase().includes(b)||c.cnpj.toLowerCase().includes(b)||c.mercado.toLowerCase().includes(b)).forEach((c,i)=>{
+        tb.innerHTML+=`<tr><td>${c.data}</td><td>${c.numero}</td><td>${c.mercado}</td><td>${c.cnpj||'—'}</td><td>R$ ${formatarMoeda(c.valor)}</td><td><button class=\"btn vermelho pequeno\" onclick=\"excluirCompra(${i})\">✕</button></td></tr>`;
+    });
+}
+function excluirCompra(i){ if(confirm('Excluir este cupom?')){BD.compras.splice(i,1); salvarBD(); filtrarCompras();} }
+
+// === PAINEL GERAL ===
+function atualizarDashboard(){
+    document.getElementById('qtdProdutos').textContent=BD.produtos.length;
+    let somaCustos=BD.custos.reduce((s,x)=>s+x.val,0);
+    document.getElementById('totalCustosFixos').textContent='R$ '+formatarMoeda(somaCustos);
+    let fat=BD.vendas.reduce((s,x)=>s+x.total,0);
+    document.getElementById('fatPeriodo').textContent='R$ '+formatarMoeda(fat);
+    let custoEst=BD.vendas.reduce((s,v)=>{
+        let f=BD.fichas.find(x=>v.nome.includes(x.nome.substring(0,20)));
+        return s + (f&&f.custoUnitario?f.custoUnitario*v.qtd:0);
+    },0);
+    document.getElementById('custoVendas').textContent='R$ '+formatarMoeda(custoEst);
+    let lucro=fat-custoEst;
+    document.getElementById('lucroPeriodo').textContent='R$ '+formatarMoeda(lucro);
+    document.getElementById('margemMedia').textContent=fat>0?formatarPerc((lucro/fat)*100):'0%';
+    let vendasProd={}; BD.vendas.forEach(v=>{vendasProd[v.nome]=(vendasProd[v.nome]||{qtd:0,fat:0}); vendasProd[v.nome].qtd+=v.qtd; vendasProd[v.nome].fat+=v.total;});
+    let topQtd=Object.entries(vendasProd).sort((a,b)=>b[1].qtd-a[1].qtd).slice(0,5);
+    document.getElementById('topVendidos').innerHTML=topQtd.length?topQtd.map((p,i)=>`${i+1}º ${p[0]} → ${p[1].qtd} unidades`).join('<br>'):'Sem dados';
+    let topLuc=Object.entries(vendasProd).sort((a,b)=>b[1].fat-a[1].fat).slice(0,5);
+    document.getElementById('topLucrativos').innerHTML=topLuc.length?topLuc.map((p,i)=>`${i+1}º ${p[0]} → R$ ${formatarMoeda(p[1].fat)}`).join('<br>'):'Sem dados';
+}
+
+// === INICIALIZAÇÃO ===
+function atualizarTudo(){
+    atualizarTabelaCustos();
+    atualizarTabelaInsumos();
+    atualizarListaFichas();
+    atualizarTabelaVendas();
+    filtrarCompras();
+    atualizarDashboard();
+    carregarSelectFormulasMassa();
+    carregarSelectProdutosVenda();
+}
+window.onload=function(){
+    carregarTaxas();
+    document.getElementById('dataVenda').value=dataHoje();
+    atualizarTudo();
+};
+</script>
+</body>
+</html>
