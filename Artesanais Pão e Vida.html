@@ -154,7 +154,7 @@
             <button class="btn" onclick="adicionarInsumo()">+</button>
         </div>
         <table class="tabela">
-            <thead><tr><th>Insumo</th><th>Un</th><th>Qtd</th><th>Total R$</th><th>Preço por 100g</th><th>Ação</th></tr></thead>
+            <thead><tr><th>Insumo</th><th>Un</th><th>Qtd</th><th>Total R$</th><th>Preço Unitário</th><th>Ação</th></tr></thead>
             <tbody id="tabelaInsumos"></tbody>
         </table>
     </div>
@@ -428,26 +428,42 @@ function adicionarInsumo(){
     let q=parseFloat(document.getElementById('insumoQtd').value)||0;
     let v=parseFloat(document.getElementById('insumoValor').value)||0;
     if(!n||q<=0||v<=0) return alert('Preencha todos os campos!');
-    let f={'kg':1000,'g':1,'l':1000,'ml':1,'un':1}[u];
-    let qb=q*f;
-    let v100=(v/qb)*100;
-    BD.insumos.push({nome:n, unid:u, qtd:q, val:v, qtdBase:qb, valPor100g:v100});
-    document.getElementById('insumoNome').value=''; document.getElementById('insumoQtd').value=''; document.getElementById('insumoValor').value='';
+
+    // === CÁLCULO CORRIGIDO ===
+    let valorExibido, etiquetaPreco;
+    if(u==="g" || u==="kg") {
+        let fator = u==="kg" ? 1000 : 1;
+        valorExibido = ((v/q)/fator)*100;
+        etiquetaPreco = "R$/100g";
+    }
+    else if(u==="ml" || u==="L") {
+        let fator = u==="L" ? 1 : 1000;
+        valorExibido = (v/q)*fator;
+        etiquetaPreco = "R$/Litro";
+    }
+    else {
+        valorExibido = v/q;
+        etiquetaPreco = "R$/Unid";
+    }
+
+    BD.insumos.push({nome:n, unid:u, qtd:q, valor:v, precoExibido:valorExibido, etiqueta:etiquetaPreco});
+    document.getElementById('insumoNome').value=''; 
+    document.getElementById('insumoQtd').value=''; 
+    document.getElementById('insumoValor').value='';
     salvarBD();
+    atualizarTabelaInsumos();
+}
 }
 function removerInsumo(i){ if(confirm('Excluir?')){BD.insumos.splice(i,1); salvarBD();} }
 function atualizarTabelaInsumos(){
     let tb=document.getElementById('tabelaInsumos'); tb.innerHTML='';
     BD.insumos.forEach((ins,i)=>{
-        tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.val)}</td><td>R$ ${formatarMoeda(ins.valPor100g)}</td><td><button class="btn vermelho pequeno" onclick="removerInsumo(${i})">✕</button></td></tr>`;
-    });
+        tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.valor)}</td><td>${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)}</td><td><button class="btn vermelho pequeno">✕</button></td>`
     atualizarSelInsumos();
 }
 function atualizarSelInsumos(){
     let s=document.getElementById('selInsumo'); if(!s) return;
-    s.innerHTML='';
-    BD.insumos.forEach((ins,i)=>s.innerHTML+=`<option value="${i}">${ins.nome} (R$ ${formatarMoeda(ins.valPor100g)}/100g)</option>`);
-}
+   BD.insumos.forEach((ins,i)=>s.innerHTML+=`<option value="${i}">${ins.nome} (${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)})</option>`);
 
 // === FICHAS TÉCNICAS ===
 function criarFicha(){
