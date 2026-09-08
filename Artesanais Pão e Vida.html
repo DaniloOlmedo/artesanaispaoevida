@@ -561,21 +561,38 @@ function adicionarItemFicha(){
 }
 function editarItemFicha(i){
     let item = BD.fichas[fichaAtual].itens[i];
-    let novaQtd = prompt("Editar Quantidade (gramas):", item.qtdGramas);
+    
+    // 1. Editar quantidade
+    let novaQtd = prompt("Editar Quantidade:", item.qtdGramas);
     if(novaQtd===null) return;
     let q = parseFloat(novaQtd) || 0;
     if(q<=0) return alert("Digite um valor válido!");
     
+    // 2. Editar unidade ← NOVO!
+    let novaUnid = prompt("Unidade (g/kg/ml/Litro/Un):", "g");
+    if(novaUnid===null) return;
+    let u = novaUnid.trim() || "g";
+    
+    // 3. Recalcular gramas conforme a unidade escolhida
+    let qtdGramas;
+    if(u==="g" || u==="ml" || u==="Un") {
+        qtdGramas = q;
+    }
+    else if(u==="kg" || u==="Litro") {
+        qtdGramas = q * 1000;
+    }
+    
+    // 4. Recalcular o custo com os novos valores
     let insumo = BD.insumos.find(x=>x.nome === item.nome);
     if(insumo) {
-        item.qtdGramas = q;
-        item.custoItem = (q / 100) * insumo.precoExibido;
+        item.qtdGramas = qtdGramas;
+        item.custoItem = (qtdGramas / 100) * insumo.precoExibido;
     }
     
     atualizarTabelaItensFicha();
     calcularPrecificacao();
     salvarBD();
-    alert("✅ Quantidade atualizada!");
+    alert("✅ Ingrediente atualizado! Unidade e quantidade alteradas!");
 }
 function atualizarTabelaItensFicha(){
     if(fichaAtual===null) return;
