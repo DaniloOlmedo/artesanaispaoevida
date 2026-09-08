@@ -176,7 +176,7 @@
                 <select id="selInsumo"></select>
                 <input type="number" step="0.1" id="qtdUsada" placeholder="Qtd">
                 <select id="unidUsada">
-                    <option value="g">gramas</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">Litro</option>
+                    <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="Litro">Litro</option><option value="Un">Un</option>
                 </select>
                 <span></span>
                 <button class="btn" onclick="adicionarItemFicha()">+</button>
@@ -553,13 +553,30 @@ function adicionarItemFicha(){
     atualizarTabelaItensFicha();
     salvarBD();
 }
-function removerItemFicha(i){ BD.fichas[fichaAtual].itens.splice(i,1); atualizarTabelaItensFicha(); salvarBD(); }
+function editarItemFicha(i){
+    let item = BD.fichas[fichaAtual].itens[i];
+    let novaQtd = prompt("Editar Quantidade (gramas):", item.qtdGramas);
+    if(novaQtd===null) return;
+    let q = parseFloat(novaQtd) || 0;
+    if(q<=0) return alert("Digite um valor válido!");
+    
+    let insumo = BD.insumos.find(x=>x.nome === item.nome);
+    if(insumo) {
+        item.qtdGramas = q;
+        item.custoItem = (q / 100) * insumo.precoExibido;
+    }
+    
+    atualizarTabelaItensFicha();
+    calcularPrecificacao();
+    salvarBD();
+    alert("✅ Quantidade atualizada!");
+}
 function atualizarTabelaItensFicha(){
     if(fichaAtual===null) return;
     let f=BD.fichas[fichaAtual];
     let tb=document.getElementById('tabelaIngredientesFicha'); tb.innerHTML=''; let total=0;
     f.itens.forEach((item,i)=>{ total+=item.custoItem;
-        tb.innerHTML+=`<tr><td>${item.nome}</td><td>${item.qtdGramas}</td><td>g</td><td>R$ ${formatarMoeda(item.custoItem)}</td><td><button class="btn vermelho pequeno" onclick="removerItemFicha(${i})">✕</button></td></tr>`;
+        tb.innerHTML+=`<tr><td>${item.nome}</td><td>${item.qtdGramas}</td><td>g</td><td>R$ ${formatarMoeda(item.custoItem)}</td><td><button class="btn pequeno" style="background:#008855;" onclick="editarItemFicha(${i})">✏️</button> <button class="btn vermelho pequeno" onclick="removerItemFicha(${i})">✕</button></td></tr>`;
     });
     document.getElementById('custoInsumosFicha').textContent=formatarMoeda(total);
     calcularPrecificacao();
