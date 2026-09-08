@@ -755,39 +755,7 @@ window.onload=function(){
     document.getElementById('dataVenda').value=dataHoje();
     atualizarTudo();
 };
-// === EXPORTACAO E IMPORTACAO DE DADOS ===
-function exportarDados(){
-    try {
-        let dados = JSON.stringify(BD);
-        let codigo = btoa(unescape(encodeURIComponent(dados)));
-        prompt("Copie o codigo abaixo:", codigo);
-    } catch(erro) {
-        alert("Erro ao exportar: " + erro.message);
-    }
-}
 
-function importarDados(){
-    let codigo = prompt("Cole o codigo aqui:");
-    if(!codigo) return;
-    try {
-        let dados = decodeURIComponent(escape(atob(codigo)));
-        BD = JSON.parse(dados);
-        localStorage.setItem('padariaBD', JSON.stringify(BD));
-        atualizarTabelaInsumos();
-        alert("SUCESSO! Dados importados! Recarregue a pagina.");
-    } catch(erro) {
-        alert("Erro: Codigo invalido! " + erro.message);
-    }
-}
-
-function apagarTodosDados(){
-    if(!confirm("Tem certeza? Vai apagar TUDO?")) return;
-    BD = {insumos:[], fichas:[], receitas:[], custos:[], vendas:[], compras:[], produtos:[]};
-    localStorage.setItem('padariaBD', JSON.stringify(BD));
-    atualizarTabelaInsumos();
-    alert("Tudo apagado!");
-}
-}
 </script>
 </body>
 </html>
