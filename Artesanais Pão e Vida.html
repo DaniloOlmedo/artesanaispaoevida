@@ -466,6 +466,8 @@ function removerInsumo(i){
 function atualizarTabelaInsumos(){
     let tb=document.getElementById('tabelaInsumos'); 
     tb.innerHTML='';
+    // === ORDENA EM ORDEM ALFABÉTICA ===
+    BD.insumos.sort((a,b)=>a.nome.localeCompare(b.nome, 'pt-BR'));
     BD.insumos.forEach((ins,i)=>{
         tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.valor)}</td><td>${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)}</td><td><button class="btn vermelho pequeno" onclick="removerInsumo(${i})">✕</button></td></tr>`;
     });
@@ -476,6 +478,8 @@ function atualizarSelInsumos(){
     let s=document.getElementById('selInsumo'); 
     if(!s) return;
     s.innerHTML='';
+    // === ORDENA EM ORDEM ALFABÉTICA ===
+    BD.insumos.sort((a,b)=>a.nome.localeCompare(b.nome, 'pt-BR'));
     BD.insumos.forEach((ins,i)=>{
         s.innerHTML+=`<option value="${i}">${ins.nome} (${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)})</option>`;
     });
