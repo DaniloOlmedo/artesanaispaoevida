@@ -455,12 +455,42 @@ function adicionarInsumo(){
     atualizarTabelaInsumos();
 }
 
-function removerInsumo(i){ 
-    if(confirm('Excluir?')){
-        BD.insumos.splice(i,1); 
-        salvarBD();
-        atualizarTabelaInsumos();
+function editarInsumo(i){
+    let ins = BD.insumos[i];
+    let novoNome = prompt("Editar Nome:", ins.nome);
+    if(novoNome===null) return;
+    let novaQtd = prompt("Editar Quantidade:", ins.qtd);
+    if(novaQtd===null) return;
+    let novoValor = prompt("Editar Valor Total R$:", ins.valor);
+    if(novoValor===null) return;
+    
+    ins.nome = novoNome.trim();
+    ins.qtd = parseFloat(novaQtd) || 0;
+    ins.valor = parseFloat(novoValor) || 0;
+    
+    // Recalcula o preço unitário
+    let u = ins.unid;
+    let valorExibido, etiquetaPreco;
+    if(u==="g" || u==="kg") {
+        let fator = u==="kg" ? 1000 : 1;
+        valorExibido = ((ins.valor/ins.qtd)/fator)*100;
+        etiquetaPreco = "R$/100g";
     }
+    else if(u==="ml" || u==="L") {
+        let fator = u==="L" ? 1 : 1000;
+        valorExibido = (ins.valor/ins.qtd)*fator;
+        etiquetaPreco = "R$/Litro";
+    }
+    else {
+        valorExibido = ins.valor/ins.qtd;
+        etiquetaPreco = "R$/Unid";
+    }
+    ins.precoExibido = valorExibido;
+    ins.etiqueta = etiquetaPreco;
+    
+    salvarBD();
+    atualizarTabelaInsumos();
+    alert("✅ Insumo atualizado!");
 }
 
 function atualizarTabelaInsumos(){
@@ -469,7 +499,7 @@ function atualizarTabelaInsumos(){
     // === ORDENA EM ORDEM ALFABÉTICA ===
     BD.insumos.sort((a,b)=>a.nome.localeCompare(b.nome, 'pt-BR'));
     BD.insumos.forEach((ins,i)=>{
-        tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.valor)}</td><td>${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)}</td><td><button class="btn vermelho pequeno" onclick="removerInsumo(${i})">✕</button></td></tr>`;
+        tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.valor)}</td><td>${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)}</td><td><button class="btn pequeno" style="background:#008855;" onclick="editarInsumo(${i})">✏️</button> <button class="btn vermelho pequeno" onclick="removerInsumo(${i})">✕</button></td></tr>`;
     });
     atualizarSelInsumos();
 }
