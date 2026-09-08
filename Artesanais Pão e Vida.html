@@ -143,6 +143,11 @@
 <section id="insumos" class="pagina">
     <div class="painel">
         <h2>🧪 Cadastro de Ingredientes</h2>
+<div style="margin:10px 0; display:flex; gap:10px; flex-wrap:wrap;">
+    <button class="btn" onclick="exportarDados()">📤 Exportar Dados</button>
+    <button class="btn" onclick="importarDados()">📥 Importar Dados</button>
+    <button class="btn" onclick="apagarTodosDados()" style="background:#d9534f;">🗑️ Limpar Tudo</button>
+</div>
         <div class="aviso">Cadastre uma vez e use em todas as fichas. Preço calculado por grama.</div>
         <div class="linha-ingrediente">
             <input type="text" id="insumoNome" placeholder="Nome do insumo">
@@ -753,6 +758,34 @@ window.onload=function(){
     document.getElementById('dataVenda').value=dataHoje();
     atualizarTudo();
 };
+// === EXPORTAÇÃO E IMPORTAÇÃO DE DADOS ===
+function exportarDados(){
+    let dados = btoa(JSON.stringify(BD));
+    prompt("📋 Copie o código abaixo e cole no outro aparelho:", dados);
+}
+
+function importarDados(){
+    let codigo = prompt("📥 Cole o código de exportação aqui:");
+    if(!codigo) return;
+    try {
+        let dados = JSON.parse(atob(codigo));
+        if(!confirm("⚠️  Vai substituir TODOS os dados atuais? Esta ação não tem desfazer!")) return;
+        BD = dados;
+        localStorage.setItem('padariaBD', JSON.stringify(BD));
+        atualizarTabelaInsumos();
+        alert("✅ Dados importados com sucesso! Recarregue a página se não aparecer tudo.");
+    } catch(e) {
+        alert("❌ Código inválido ou corrompido!");
+    }
+}
+
+function apagarTodosDados(){
+    if(!confirm("⚠️  TEM CERTEZA? Vai apagar TUDO (insumos, receitas, fichas)?")) return;
+    BD = {insumos:[], fichas:[], receitas:[], custos:[], vendas:[], compras:[], produtos:[]};
+    localStorage.setItem('padariaBD', JSON.stringify(BD));
+    atualizarTabelaInsumos();
+    alert("✅ Tudo apagado!");
+}
 </script>
 </body>
 </html>
