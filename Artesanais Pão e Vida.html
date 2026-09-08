@@ -459,12 +459,18 @@ function editarInsumo(i){
     let ins = BD.insumos[i];
     let novoNome = prompt("Editar Nome:", ins.nome);
     if(novoNome===null) return;
+    
+    // ✅ LINHA NOVA: ALTERAR UNIDADE
+    let novaUnid = prompt("Editar Unidade (g/kg/ml/Litro/Un):", ins.unid);
+    if(novaUnid===null) return;
+    
     let novaQtd = prompt("Editar Quantidade:", ins.qtd);
     if(novaQtd===null) return;
     let novoValor = prompt("Editar Valor Total R$:", ins.valor);
     if(novoValor===null) return;
     
     ins.nome = novoNome.trim();
+    ins.unid = novaUnid.trim(); // ✅ SALVA A NOVA UNIDADE
     ins.qtd = parseFloat(novaQtd) || 0;
     ins.valor = parseFloat(novoValor) || 0;
     
@@ -476,8 +482,8 @@ function editarInsumo(i){
         valorExibido = ((ins.valor/ins.qtd)/fator)*100;
         etiquetaPreco = "R$/100g";
     }
-    else if(u==="ml" || u==="L") {
-        let fator = u==="L" ? 1 : 1000;
+    else if(u==="ml" || u==="Litro") {
+        let fator = u==="Litro" ? 1 : 1000;
         valorExibido = (ins.valor/ins.qtd)*fator;
         etiquetaPreco = "R$/Litro";
     }
@@ -490,7 +496,7 @@ function editarInsumo(i){
     
     salvarBD();
     atualizarTabelaInsumos();
-    alert("✅ Insumo atualizado!");
+    alert("✅ Insumo atualizado! Unidade e preço recalculados!");
 }
 
 function atualizarTabelaInsumos(){
