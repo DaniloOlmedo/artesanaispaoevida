@@ -602,8 +602,7 @@ function atualizarTabelaItensFicha(){
     let f=BD.fichas[fichaAtual];
     let tb=document.getElementById('tabelaIngredientesFicha'); tb.innerHTML=''; let total=0;
     f.itens.forEach((item,i)=>{ total+=item.custoItem;
-        tb.innerHTML+=`<tr><td>${item.nome}</td><td>${item.qtdGramas}</td><td>g</td><td>R$ ${formatarMoeda(item.custoItem)}</td><td><button class="btn pequeno" style="background:#008855;" onclick="editarItemFicha(${i})">✏️</button> <button class="btn vermelho pequeno" onclick="removerItemFicha(${i})">✕</button></td></tr>`;
-    });
+        tb.innerHTML+=`<tr><td>${item.nome}</td><td>${item.quantidadeExibida || item.qtdGramas}</td><td>${item.unidade || 'g'}</td><td>R$ ${formatarMoeda(item.custoItem)}</td><td><button class="btn pequeno" style="background:#008855;" onclick="editarItemFicha(${i})">✏️</button> <button class="btn vermelho pequeno" onclick="removerItemFicha(${i})">✕</button></td></tr>`;
     document.getElementById('custoInsumosFicha').textContent=formatarMoeda(total);
     calcularPrecificacao();
 }
