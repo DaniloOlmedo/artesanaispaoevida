@@ -583,7 +583,7 @@ function editarItemFicha(i){
         qtdGramas = q * 1000;
     }
     
-    // 4. Recalcular custo e SALVAR a unidade!
+   // 4. Recalcular custo e SALVAR a unidade!
     let insumo = BD.insumos.find(x=>x.nome === item.nome);
     if(insumo) {
         item.qtdGramas = qtdGramas;
@@ -596,6 +596,16 @@ function editarItemFicha(i){
     calcularPrecificacao();
     salvarBD();
     alert("✅ Atualizado! Unidade: " + u);
+} // ✅ FECHA A FUNÇÃO editarItemFicha AQUI
+
+
+// ✅ A FUNÇÃO DE EXCLUIR FICA AQUI — FORA, SEPARADA!
+function removerItemFicha(i){
+    if(confirm('Excluir este ingrediente?')){
+        BD.fichas[fichaAtual].itens.splice(i,1);
+        atualizarTabelaItensFicha();
+        salvarBD();
+    }
 }
 function atualizarTabelaItensFicha(){
     if(fichaAtual===null) return;
