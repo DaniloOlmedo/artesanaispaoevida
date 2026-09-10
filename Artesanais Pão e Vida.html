@@ -551,12 +551,27 @@ function adicionarItemFicha(){
     let u=document.getElementById('unidUsada').value;
     if(isNaN(s)||q<=0) return alert('Selecione o insumo e informe a quantidade!');
     let ins=BD.insumos[s];
-    let fator={'g':1,'kg':1000,'ml':1,'l':1000}[u];
+    
+    // ✅ CONVERTE UNIDADE PARA GRAMAS
+    let fator={'g':1,'kg':1000,'ml':1,'Litro':1000,'Un':1}[u];
     let g=q*fator;
-    let c=(ins.valPor100g/100)*g;
-    BD.fichas[fichaAtual].itens.push({indice:s, nome:ins.nome, qtdGramas:g, custoItem:c});
+    
+    // ✅ CALCULA O CUSTO CERTINHO NA HORA!
+    let c=(ins.precoExibido/100)*g;
+    
+    // ✅ GUARDA TUDO: VALOR, UNIDADE E QUANTIDADE
+    BD.fichas[fichaAtual].itens.push({
+        indice:s, 
+        nome:ins.nome, 
+        qtdGramas:g, 
+        quantidadeExibida:q,
+        unidade:u,
+        custoItem:c
+    });
+    
     document.getElementById('qtdUsada').value='';
     atualizarTabelaItensFicha();
+    calcularPrecificacao();
     salvarBD();
 }
 function editarItemFicha(i){
