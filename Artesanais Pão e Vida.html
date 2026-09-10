@@ -681,7 +681,7 @@ function atualizarListaFichas(){
     let tb=document.getElementById('listaResumoFichas'); tb.innerHTML='';
     BD.fichas.forEach((f,i)=>{
         let m=f.precoPraticado>0 ? ((f.precoPraticado-(f.custoUnitario||0))/f.precoPraticado)*100 : 0;
-        tb.innerHTML+=`<tr><td><a href="#" style="color:var(--cor1); text-decoration:none;" onclick="carregarFicha(${i});return false;">${f.nome}</a></td><td>R$ ${formatarMoeda(f.custoInsumos||0)}</td><td>R$ ${formatarMoeda(f.precoSugerido||0)}</td><td>R$ ${formatarMoeda(f.precoPraticado||0)}</td><td>${m>0?formatarPerc(m):'--'}</td><td><button class="btn vermelho pequeno" onclick="excluirFicha(${i})">✕</button></td></tr>`;
+        tb.innerHTML+=`<tr><td><a href="#" style="color:var(--cor1); text-decoration:none;" onclick="carregarFicha(${i});return false;">${f.nome}</a></td><td>R$ ${formatarMoeda(f.custoUnitario||0)}</td><td>R$ ${formatarMoeda(f.precoSugerido||0)}</td><td>R$ ${formatarMoeda(f.precoPraticado||0)}</td><td>${m>0?formatarPerc(m):'--'}</td><td><button class="btn vermelho pequeno" onclick="excluirFicha(${i})">✕</button></td></tr>`;
     });
 }
 function excluirFicha(i){
