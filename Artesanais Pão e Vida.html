@@ -127,17 +127,18 @@
         </table>
     </div>
     <div class="painel">
-        <h2>📋 Taxas sobre Vendas</h2>
-        <div class="bloco-calc">
-            <div><label>Impostos sobre venda (%)</label><input type="number" step="0.01" id="taxaImposto" oninput="salvarTaxas()"></div>
-            <div><label>Taxa de Cartão (%)</label><input type="number" step="0.01" id="taxaCartao" oninput="salvarTaxas()"></div>
-            <div><label>Outras Taxas (%)</label><input type="number" step="0.01" id="taxaOutras" oninput="salvarTaxas()"></div>
-        </div>
-        <div class="resultado"><h4>Resumo das Deduções</h4>
-            <p>Impostos: <strong id="resImp">0,00%</strong> | Cartão: <strong id="resCart">0,00%</strong> | Outras: <strong id="resOut">0,00%</strong></p>
-            <p>➡️ Total de deduções: <strong id="taxaTotal">0,00%</strong></p>
-        </div>
+    <h2>📋 Taxas sobre Vendas</h2>
+    <div class="bloco-calc">
+        <div><label>Impostos sobre venda (%)</label><input type="number" step="0.01" id="taxaImposto" oninput="salvarTaxas()"></div>
+        <div><label>Taxa de Cartão (%)</label><input type="number" step="0.01" id="taxaCartao" oninput="salvarTaxas()"></div>
+        <div><label>Outras Taxas (%)</label><input type="number" step="0.01" id="taxaOutras" oninput="salvarTaxas()"></div>
+        <div><label>Margem Padrão Global (%)</label><input type="number" step="0.1" id="margemGlobal" value="40" oninput="salvarTaxas()"></div>
     </div>
+    <div class="resultado"><h4>Resumo das Deduções</h4>
+        <p>Impostos: <strong id="resImp">0,00%</strong> | Cartão: <strong id="resCart">0,00%</strong> | Outras: <strong id="resOut">0,00%</strong> | Margem Padrão: <strong id="resMargemGlobal">40,00%</strong></p>
+        <p>➡️ Total de deduções: <strong id="taxaTotal">0,00%</strong></p>
+    </div>
+</div>
 </section>
 
 <section id="insumos" class="pagina">
@@ -393,11 +394,24 @@ function adicionarCusto(){
     document.getElementById('custoDesc').value=''; document.getElementById('custoValor').value='';
     salvarBD();
 }
-function removerCusto(i){ if(confirm('Excluir?')){BD.custos.splice(i,1); salvarBD();} }
+function removerCusto(i){ 
+    if(confirm('Excluir?')){
+        BD.custos.splice(i,1); 
+        salvarBD();
+    }
+}
+
 function salvarTaxas(){
     BD.taxas.imposto=parseFloat(document.getElementById('taxaImposto').value)||0;
     BD.taxas.cartao=parseFloat(document.getElementById('taxaCartao').value)||0;
     BD.taxas.outras=parseFloat(document.getElementById('taxaOutras').value)||0;
+    // ✅ === NOVA LINHA: SALVA A MARGEM GLOBAL ===
+    BD.taxas.margemGlobal = parseFloat(document.getElementById('margemGlobal').value)||40;
+    // ✅ === ATUALIZA O EXIBIR NO RESUMO ===
+    if(document.getElementById('resMargemGlobal')){
+        document.getElementById('resMargemGlobal').textContent = formatarPerc(BD.taxas.margemGlobal);
+    }
+    
     BD.taxas.totalPerc=BD.taxas.imposto+BD.taxas.cartao+BD.taxas.outras;
     document.getElementById('resImp').textContent=formatarPerc(BD.taxas.imposto);
     document.getElementById('resCart').textContent=formatarPerc(BD.taxas.cartao);
@@ -647,7 +661,7 @@ function calcularPrecificacao(){
     let ci=f.itens.reduce((s,x)=>s+x.custoItem,0);
     let qp=parseFloat(document.getElementById('qtdPorcao').value)||1;
     let cf=parseFloat(document.getElementById('custoFichaFixo').value)||0;
-    let mk=parseFloat(document.getElementById('markupDesejado').value)||0;
+    let mk=parseFloat(document.getElementById('markupDesejado').value)||BD.taxas.margemGlobal||40;
     f.qtdPorcao=qp; f.custoFixo=cf; f.markupDesejado=mk;
     let cu=(ci+cf)/qp;
     let ft=1-txTotal/100;
