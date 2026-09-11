@@ -773,17 +773,33 @@ function atualizarTabelaPrecMassa(){
         let precoSug=custoTotal/(fatorTaxa-(mgGlobal/100));
         let precoPratic=f.precoPraticado||0;
         let markup=precoPratic>0 ? (((precoPratic*fatorTaxa)-custoTotal)/custoTotal)*100 : mgGlobal;
-        let margem=precoPratic>0 ? ((precoPratic-custoTotal)/precoPratic)*100 : 0;
+        let margem=precoPratic>0 ? (((precoPratic*fatorTaxa)-custoTotal)/precoPratic)*100 : 0;
         let lucro=precoPratic>0 ? (precoPratic*fatorTaxa)-custoTotal : 0;
         let status=lucro>0 ? '<span style="color:green;">✅ LUCRO</span>' : '<span style="color:red;">⚠️ PREJUÍZO</span>';
         tb.innerHTML+=`<tr><td><strong>${f.nome}</strong></td><td>R$ ${formatarMoeda(ci)}</td><td>R$ ${formatarMoeda(cf)}</td><td>${formatarPerc(txImp)}</td><td>${formatarPerc(txCred)}</td><td>${formatarPerc(txOut)}</td><td><strong>R$ ${formatarMoeda(custoTotal)}</strong></td><td>R$ ${formatarMoeda(precoSug)}</td><td><input type="number" step="0.01" value="${precoPratic}" style="width:100px; padding:4px;" onchange="BD.fichas[${i}].precoPraticado=this.value; salvarBD(); atualizarTabelaPrecMassa();"></td><td>${formatarPerc(markup)}</td><td>${formatarPerc(margem)}</td><td>R$ ${formatarMoeda(lucro)}</td><td>${status}</td></tr>`;
     });
 }
 function aplicarMargemGlobal(){
-    document.getElementById('margemGlobal').value=document.getElementById('margemGlobalTeste').value;
-    salvarTaxas();
+    let mgGlobal=parseFloat(document.getElementById('margemGlobal').value)||40;
+    BD.taxas.margemGlobal = mgGlobal;
+    document.getElementById('margemGlobal').value = mgGlobal;
+    
+    BD.fichas.forEach((f,i)=>{
+        let ci=f.itens.reduce((s,x)=>s+x.custoItem,0)/f.qtdPorcao;
+        let cf=f.custoFixo/f.qtdPorcao;
+        let custoTotal=ci+cf;
+        let txImp=BD.taxas.imposto||0;
+        let txCred=BD.taxas.credito||0;
+        let txOut=BD.taxas.outras||0;
+        let taxaTotal=txImp+txCred+txOut;
+        let fatorTaxa=1-(taxaTotal/100);
+        let precoSug=custoTotal/(fatorTaxa-(mgGlobal/100));
+        BD.fichas[i].precoPraticado = precoSug;
+    });
+    
+    salvarBD();
     atualizarTabelaPrecMassa();
-    alert('✅ Margem aplicada em TODOS os produtos!');
+    alert('✅ Margem '+mgGlobal+'% aplicada em TODOS! Valores recalculados!');
 }
 
 // === CALCULADORA DE MASSA ===
