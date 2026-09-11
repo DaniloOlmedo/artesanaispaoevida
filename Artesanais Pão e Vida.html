@@ -780,16 +780,20 @@ function atualizarTabelaPrecMassa(){
     });
 }
 function aplicarMargemGlobal(){
-    let mgGlobal=parseFloat(document.getElementById('margemGlobal').value)||40;
+    // ✅ PEGA O VALOR DIGITADO NA HORA — SEMPRE!
+    let campo = document.getElementById('margemGlobal');
+    let mgGlobal = parseFloat(campo.value) || 40;
+    
+    // ✅ FORÇA O VALOR NOVO — ignora o que estava salvo antes
     BD.taxas.margemGlobal = mgGlobal;
-    document.getElementById('margemGlobal').value = mgGlobal;
+    campo.value = mgGlobal;
     
     BD.fichas.forEach((f,i)=>{
         let ci=f.itens.reduce((s,x)=>s+x.custoItem,0)/f.qtdPorcao;
         let cf=f.custoFixo/f.qtdPorcao;
         let custoTotal=ci+cf;
         let txImp=BD.taxas.imposto||0;
-        let txCred=BD.taxas.credito||0;
+        let txCred=BD.taxas.cartao||0;
         let txOut=BD.taxas.outras||0;
         let taxaTotal=txImp+txCred+txOut;
         let fatorTaxa=1-(taxaTotal/100);
@@ -799,7 +803,7 @@ function aplicarMargemGlobal(){
     
     salvarBD();
     atualizarTabelaPrecMassa();
-    alert('✅ Margem '+mgGlobal+'% aplicada em TODOS! Valores recalculados!');
+    alert('✅ Margem '+mgGlobal+'% aplicada em TODOS!');
 }
 
 // === CALCULADORA DE MASSA ===
