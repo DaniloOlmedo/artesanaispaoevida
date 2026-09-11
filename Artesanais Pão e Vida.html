@@ -960,13 +960,13 @@ function atualizarTabelaPrecMassa(){
         tb.innerHTML += `<tr style="background:${cor};">
             <td><strong>${f.nome}</strong></td>
             <td>R$ ${formatarMoeda(custoInsumos)}</td>
-            <td><input type="number" step="0.01" value="${custoFixo.toFixed(2)}" onchange="salvarCustoFixoMassa(${i},this.value)" style="width:70px;"></td>
+            <td><input type="number" step="0.01" value="${custoFixo.toFixed(2)}" onchange="salvarCustoFixoMassa(${i},this.value)" style="width:90px;"></td>
             <td>R$ ${formatarMoeda(impostoValor)}</td>
             <td>R$ ${formatarMoeda(cartaoValor)}</td>
             <td>R$ ${formatarMoeda(outrasValor)}</td>
             <td><strong>R$ ${formatarMoeda(custoTotalComTaxas)}</strong></td>
             <td style="color:${precoSugerido>0?'#006644':'#999'}"><strong>R$ ${formatarMoeda(precoSugerido)}</strong></td>
-            <td><input type="number" step="0.01" value="${precoPraticado>0?precoPraticado.toFixed(2):''}" onchange="salvarPrecoPraticadoMassa(${i},this.value)" style="width:70px; font-weight:bold;"></td>
+            <td><input type="number" step="0.01" value="${precoPraticado>0?precoPraticado.toFixed(2):''}" onchange="salvarPrecoPraticadoMassa(${i},this.value)" style="width:95px; font-weight:bold;"></td>
             <td>${markup>0?markup.toFixed(2):'-'}x</td>
             <td><strong>${margemPerc.toFixed(2)}%</strong></td>
             <td style="color:${lucroR$>=0?'#006644':'#cc3333'}">R$ ${formatarMoeda(lucroR$)}</td>
