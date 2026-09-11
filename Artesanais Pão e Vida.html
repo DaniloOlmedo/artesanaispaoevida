@@ -174,28 +174,27 @@
             <button class="btn" onclick="atualizarTabelaPrecMassa()">🔄 Recarregar</button>
         </div>
         <div style="overflow-x:auto; margin-top:15px;">
-            <table id="tabelaPrecMassa">
-                <thead>
-                    <tr>
-                        <th>Produto</th>
-                        <th>Custo Insumos</th>
-                        <th>Custo Fixo</th>
-                        <th>Imposto</th>
-                        <th>Tx. Cartão</th>
-                        <th>Outras</th>
-                        <th>Custo Total</th>
-                        <th>Preço Sugerido</th>
-                        <th>Preço Praticado</th>
-                        <th>Markup</th>
-                        <th>Margem %</th>
-                        <th>Lucro R$</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="corpoTabelaPrecMassa"></tbody>
-            </table>
-        </div>
-    </div>
+    <table id="tabelaPrecMassa" style="width:100%; min-width:1200px; border-collapse:collapse;">
+        <thead>
+            <tr>
+                <th style="min-width:180px; padding:10px 12px; text-align:left;">Produto</th>
+                <th style="min-width:115px; padding:10px 12px; text-align:right;">Custo Insumos</th>
+                <th style="min-width:95px; padding:10px 12px; text-align:right;">Custo Fixo</th>
+                <th style="min-width:90px; padding:10px 12px; text-align:right;">Imposto</th>
+                <th style="min-width:95px; padding:10px 12px; text-align:right;">Tx. Cartão</th>
+                <th style="min-width:85px; padding:10px 12px; text-align:right;">Outras</th>
+                <th style="min-width:115px; padding:10px 12px; text-align:right;">Custo Total</th>
+                <th style="min-width:120px; padding:10px 12px; text-align:right;">Preço Sugerido</th>
+                <th style="min-width:125px; padding:10px 12px; text-align:right;">Preço Praticado</th>
+                <th style="min-width:85px; padding:10px 12px; text-align:center;">Markup</th>
+                <th style="min-width:95px; padding:10px 12px; text-align:center;">Margem %</th>
+                <th style="min-width:110px; padding:10px 12px; text-align:right;">Lucro R$</th>
+                <th style="min-width:100px; padding:10px 12px; text-align:center;">Status</th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabelaPrecMassa"></tbody>
+    </table>
+</div>
 </section>
 <section id="fichas" class="pagina">
     <div class="painel">
