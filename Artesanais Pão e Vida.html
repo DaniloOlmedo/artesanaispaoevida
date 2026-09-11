@@ -780,13 +780,21 @@ function atualizarTabelaPrecMassa(){
     });
 }
 function aplicarMargemGlobal(){
-    // ✅ PEGA O VALOR DIGITADO NA HORA — SEMPRE!
+    // ✅ PEGA EXATAMENTE O QUE VOCÊ DIGITOU — SEM PRIORIDADE PARA O SALVO
     let campo = document.getElementById('margemGlobal');
-    let mgGlobal = parseFloat(campo.value) || 40;
+    let valorDigitado = campo.value.trim();
+    let mgGlobal = parseFloat(valorDigitado);
     
-    // ✅ FORÇA O VALOR NOVO — ignora o que estava salvo antes
+    // ✅ SE NÃO FOR NÚMERO VÁLIDO, AVISA
+    if(isNaN(mgGlobal) || mgGlobal <= 0) {
+        alert('⚠️ Digite um número válido! Exemplo: 30, 40, 50...');
+        campo.value = '';
+        campo.focus();
+        return;
+    }
+    
+    // ✅ AGORA SIM — SALVA O NOVO VALOR
     BD.taxas.margemGlobal = mgGlobal;
-    campo.value = mgGlobal;
     
     BD.fichas.forEach((f,i)=>{
         let ci=f.itens.reduce((s,x)=>s+x.custoItem,0)/f.qtdPorcao;
@@ -803,7 +811,9 @@ function aplicarMargemGlobal(){
     
     salvarBD();
     atualizarTabelaPrecMassa();
-    alert('✅ Margem '+mgGlobal+'% aplicada em TODOS!');
+    
+    // ✅ MOSTRA O VALOR QUE FOI APLICADO — PARA CONFIRMAR
+    alert('✅ Aplicada margem de ' + mgGlobal + '% em TODOS os produtos!');
 }
 
 // === CALCULADORA DE MASSA ===
