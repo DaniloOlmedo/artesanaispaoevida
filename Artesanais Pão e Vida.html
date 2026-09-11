@@ -570,10 +570,15 @@ function adicionarItemFicha(){
     let fator={'g':1,'kg':1000,'ml':1,'l':1000,'Litro':1000,'un':1,'Un':1,'UN':1}[u] || 1;
     let g=q*fator;
     
-    // ✅ CALCULA O CUSTO CERTINHO NA HORA!
-    let c=(ins.precoExibido/100)*g;
+    // ✅ CÁLCULO INTELIGENTE — UNIDADE vs GRAMAS
+    let c;
+    if(u==='un' || u==='Un' || u==='UN'){
+        c = ins.precoExibido * q;  // Preço unitário × quantidade
+    } else {
+        c = (ins.precoExibido/100) * g;  // Preço por 100g × gramas
+    }
     
-    // ✅ GUARDA TUDO: VALOR, UNIDADE E QUANTIDADE
+    // ✅ GUARDA TUDO
     BD.fichas[fichaAtual].itens.push({
         indice:s, 
         nome:ins.nome, 
