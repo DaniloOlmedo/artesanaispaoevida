@@ -796,7 +796,7 @@ function aplicarMargemGlobal(){
         let cf=f.custoFixo/f.qtdPorcao;
         let custoTotal=ci+cf;
         let txImp=BD.taxas.imposto||0;
-        let txCred=BD.taxas.cartao||0;
+        let txCred=BD.taxas.credito||0;  
         let txOut=BD.taxas.outras||0;
         let taxaTotal=txImp+txCred+txOut;
         let fatorTaxa=1-(taxaTotal/100);
