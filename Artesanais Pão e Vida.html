@@ -570,12 +570,15 @@ function adicionarItemFicha(){
     let fator={'g':1,'kg':1000,'ml':1,'l':1000,'Litro':1000,'un':1,'Un':1,'UN':1}[u] || 1;
     let g=q*fator;
     
-    // ✅ CÁLCULO INTELIGENTE — UNIDADE vs GRAMAS
+    // ✅ CÁLCULO CORRIGIDO — USA VALOR REAL POR UNIDADE
     let c;
     if(u==='un' || u==='Un' || u==='UN'){
-        c = ins.precoExibido * q;  // Preço unitário × quantidade
+        // Preço por unidade = (valor total da compra ÷ quantidade comprada) × quantidade usada
+        let precoPorUnidade = ins.valor / ins.qtd;
+        c = precoPorUnidade * q;
     } else {
-        c = (ins.precoExibido/100) * g;  // Preço por 100g × gramas
+        // Para gramas/kg: usa preço por 100g
+        c = (ins.precoExibido / 100) * g;
     }
     
     // ✅ GUARDA TUDO
@@ -596,39 +599,47 @@ function editarItemFicha(i){
     let item = BD.fichas[fichaAtual].itens[i];
     
     // 1. Editar quantidade
-    let novaQtd = prompt("Editar Quantidade:", item.qtdGramas);
+    let novaQtd = prompt("Editar Quantidade:", item.quantidadeExibida || item.qtdGramas);
     if(novaQtd===null) return;
     let q = parseFloat(novaQtd) || 0;
     if(q<=0) return alert("Digite um valor válido!");
     
     // 2. Editar unidade
     let unidadeAtual = item.unidade || "g";
-    let novaUnid = prompt("Unidade (g/kg/ml/Litro/Un):", unidadeAtual);
+    let novaUnid = prompt("Unidade (g/kg/ml/Litro/un):", unidadeAtual);
     if(novaUnid===null) return;
     let u = novaUnid.trim() || "g";
     
     // 3. Recalcular gramas conforme a unidade
-    let qtdGramas;
-    if(u==="g" || u==="ml" || u==="Un") {
-        qtdGramas = q;
-    }
-    else if(u==="kg" || u==="Litro") {
-        qtdGramas = q * 1000;
+    let fator={'g':1,'kg':1000,'ml':1,'l':1000,'Litro':1000,'un':1,'Un':1,'UN':1}[u] || 1;
+    let qtdGramas = q * fator;
+    
+    // ✅ CÁLCULO CORRIGIDO — IGUAL A FUNÇÃO ADICIONAR!
+    let insumo = BD.insumos.find(x=>x.nome === item.nome);
+    let custoCalculado;
+    if(insumo){
+        if(u==='un' || u==='Un' || u==='UN'){
+            // Unidade = (valor total ÷ qtd comprada) × qtd usada
+            let precoPorUnidade = insumo.valor / insumo.qtd;
+            custoCalculado = precoPorUnidade * q;
+        } else {
+            // Gramas/kg = preço por 100g × gramas
+            custoCalculado = (insumo.precoExibido / 100) * qtdGramas;
+        }
+    } else {
+        custoCalculado = item.custoItem;
     }
     
-   // 4. Recalcular custo e SALVAR a unidade!
-    let insumo = BD.insumos.find(x=>x.nome === item.nome);
-    if(insumo) {
-        item.qtdGramas = qtdGramas;
-        item.unidade = u;  // ✅ SALVA A UNIDADE ESCOLHIDA!
-        item.quantidadeExibida = q; // ✅ GUARDA O VALOR DIGITADO
-        item.custoItem = (qtdGramas / 100) * insumo.precoExibido;
-    }
+    // ✅ SALVA TUDO
+    item.qtdGramas = qtdGramas;
+    item.unidade = u;
+    item.quantidadeExibida = q;
+    item.custoItem = custoCalculado;
     
     atualizarTabelaItensFicha();
     calcularPrecificacao();
     salvarBD();
-    alert("✅ Atualizado! Unidade: " + u);
+    alert("✅ Atualizado! Unidade: " + u + " | Custo: R$ " + formatarMoeda(custoCalculado));
 } // ✅ FECHA A FUNÇÃO editarItemFicha AQUI
 
 
