@@ -82,6 +82,7 @@
     <button class="nav-btn" onclick="irPara('insumos')">🧪 Insumos</button>
     <button class="nav-btn" onclick="irPara('fichas')">📋 Fichas</button>
     <button class="nav-btn" onclick="irPara('massa')">🧮 Massa</button>
+    <button class="nav-btn" onclick="irPara('precificacaoMassa')">📊 Precificação</button>
     <button class="nav-btn" onclick="irPara('vendas')">📈 Vendas</button>
     <button class="nav-btn" onclick="irPara('compras')">🧾 Compras</button>
 </nav>
@@ -163,6 +164,39 @@
     </div>
 </section>
 
+<section id="precificacaoMassa" class="pagina">
+    <div class="painel">
+        <h2>📊 Precificação em Massa — Simulação de Preços</h2>
+        <div class="aviso">Altere o preço de venda e veja NA HORA o custo total, markup e margem real!</div>
+        <div class="bloco-calc">
+            <div><label>Margem Global para Testar (%):</label><input type="number" step="0.1" id="margemGlobalTeste" value="40"></div>
+            <button class="btn" onclick="aplicarMargemGlobal()">🔄 Aplicar em TODOS</button>
+            <button class="btn" onclick="atualizarTabelaPrecMassa()">🔄 Recarregar</button>
+        </div>
+        <div style="overflow-x:auto; margin-top:15px;">
+            <table id="tabelaPrecMassa">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Custo Insumos</th>
+                        <th>Custo Fixo</th>
+                        <th>Imposto</th>
+                        <th>Tx. Cartão</th>
+                        <th>Outras</th>
+                        <th>Custo Total</th>
+                        <th>Preço Sugerido</th>
+                        <th>Preço Praticado</th>
+                        <th>Markup</th>
+                        <th>Margem %</th>
+                        <th>Lucro R$</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaPrecMassa"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 <section id="fichas" class="pagina">
     <div class="painel">
         <h2>📋 Fichas Técnicas e Precificação</h2>
@@ -888,7 +922,84 @@ window.onload=function(){
     document.getElementById('dataVenda').value=dataHoje();
     atualizarTudo();
 };
+// ✅ === PRECIFICAÇÃO EM MASSA ===
+function atualizarTabelaPrecMassa(){
+    let tb=document.getElementById('corpoTabelaPrecMassa');
+    if(!tb) return;
+    tb.innerHTML='';
+    if(!BD.fichas || BD.fichas.length===0){
+        tb.innerHTML='<tr><td colspan="13" style="text-align:center; padding:20px;">⚠️ Crie primeiro suas Fichas Técnicas na aba "Fichas"!</td></tr>';
+        return;
+    }
+    
+    BD.fichas.forEach((f,i)=>{
+        let custoInsumos = f.itens.reduce((s,x)=>s+(x.custoItem||0),0);
+        let custoFixo = f.custoFixo||0;
+        let txImp = (BD.taxas.imposto||0)/100;
+        let txCart = (BD.taxas.cartao||0)/100;
+        let txOut = (BD.taxas.outras||0)/100;
+        
+        let custoTotal = custoInsumos + custoFixo;
+        let margemGlobal = (BD.taxas.margemGlobal||40)/100;
+        let precoSugerido = custoTotal / (1 - margemGlobal - txImp - txCart - txOut);
+        let precoPraticado = f.precoPraticado||0;
+        
+        let impostoValor = precoPraticado * txImp;
+        let cartaoValor = precoPraticado * txCart;
+        let outrasValor = precoPraticado * txOut;
+        let custoTotalComTaxas = custoInsumos + custoFixo + impostoValor + cartaoValor + outrasValor;
+        let markup = custoTotal>0 ? precoPraticado / custoTotal : 0;
+        let margemPerc = precoPraticado>0 ? ((precoPraticado - custoTotalComTaxas) / precoPraticado)*100 : 0;
+        let lucroR$ = precoPraticado - custoTotalComTaxas;
+        
+        let status, cor;
+        if(precoPraticado===0){ status="⚠️ Sem preço"; cor="#fff3cd"; }
+        else if(margemPerc<=0){ status="❌ PREJUÍZO"; cor="#ffd6d6"; }
+        else if(margemPerc < margemGlobal*100){ status="⚠️ Abaixo"; cor="#fff3cd"; }
+        else { status="✅ BOM"; cor="#d4edda"; }
+        
+        tb.innerHTML += `<tr style="background:${cor};">
+            <td><strong>${f.nome}</strong></td>
+            <td>R$ ${formatarMoeda(custoInsumos)}</td>
+            <td><input type="number" step="0.01" value="${custoFixo.toFixed(2)}" onchange="salvarCustoFixoMassa(${i},this.value)" style="width:70px;"></td>
+            <td>R$ ${formatarMoeda(impostoValor)}</td>
+            <td>R$ ${formatarMoeda(cartaoValor)}</td>
+            <td>R$ ${formatarMoeda(outrasValor)}</td>
+            <td><strong>R$ ${formatarMoeda(custoTotalComTaxas)}</strong></td>
+            <td style="color:${precoSugerido>0?'#006644':'#999'}"><strong>R$ ${formatarMoeda(precoSugerido)}</strong></td>
+            <td><input type="number" step="0.01" value="${precoPraticado>0?precoPraticado.toFixed(2):''}" onchange="salvarPrecoPraticadoMassa(${i},this.value)" style="width:70px; font-weight:bold;"></td>
+            <td>${markup>0?markup.toFixed(2):'-'}x</td>
+            <td><strong>${margemPerc.toFixed(2)}%</strong></td>
+            <td style="color:${lucroR$>=0?'#006644':'#cc3333'}">R$ ${formatarMoeda(lucroR$)}</td>
+            <td>${status}</td>
+        </tr>`;
+    });
+}
 
+function salvarCustoFixoMassa(i,valor){
+    BD.fichas[i].custoFixo = parseFloat(valor)||0;
+    salvarBD();
+    atualizarTabelaPrecMassa();
+}
+
+function salvarPrecoPraticadoMassa(i,valor){
+    BD.fichas[i].precoPraticado = parseFloat(valor)||0;
+    salvarBD();
+    atualizarTabelaPrecMassa();
+}
+
+function aplicarMargemGlobal(){
+    let margem = parseFloat(document.getElementById('margemGlobalTeste').value)||40;
+    BD.taxas.margemGlobal = margem;
+    salvarBD();
+    atualizarTabelaPrecMassa();
+    alert(`✅ Margem de ${margem}% aplicada! Preço Sugerido atualizado!`);
+}
+
+const abaPrecMassa = document.querySelector('[data-aba="precificacaoMassa"]');
+if(abaPrecMassa) abaPrecMassa.onclick = atualizarTabelaPrecMassa;
+
+if(!BD.taxas.margemGlobal) BD.taxas.margemGlobal=40;
 </script>
 </body>
 </html>
