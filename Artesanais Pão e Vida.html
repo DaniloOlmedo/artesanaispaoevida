@@ -760,7 +760,7 @@ function excluirFicha(i){
 // === PRECIFICAÇÃO EM MASSA ===
 function atualizarTabelaPrecMassa(){
     let tb=document.getElementById('corpoTabelaPrecMassa'); tb.innerHTML='';
-    let mgGlobal=parseFloat(document.getElementById('margemGlobalTeste').value)||40;
+    let mgGlobal=parseFloat(document.getElementById('margemGlobal').value)||40;
     BD.fichas.forEach((f,i)=>{
         let ci=f.itens.reduce((s,x)=>s+x.custoItem,0)/f.qtdPorcao;
         let cf=f.custoFixo/f.qtdPorcao;
