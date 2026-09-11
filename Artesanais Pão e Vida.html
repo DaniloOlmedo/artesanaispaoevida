@@ -62,6 +62,20 @@
         .tag.laranja {background:#fff3e0; color:var(--cor3);}
         .pesquisa {margin-bottom:12px;}
         hr {border:none; border-top:1px solid #eee; margin:15px 0;}
+        .observacao-venda {border:2px solid var(--cor3); background:#fff3e0; padding:10px; border-radius:6px; margin-top:8px;}
+        .observacao-venda label {color:#b3441a; font-weight:bold; margin-top:0;}
+        @media print {
+            body {background:white; font-size:16px;}
+            .navegacao, .cabecalho, .btn, nav {display:none !important;}
+            .pagina.visivel {display:block !important; padding:0; max-width:100%;}
+            .comanda-impressao {display:block !important; width:80mm; margin:0 auto; font-family:monospace;}
+            .comanda-impressao h1 {text-align:center; font-size:22px; font-weight:bold; margin-bottom:10px;}
+            .comanda-impressao .data-hora {text-align:center; font-size:14px; margin-bottom:15px;}
+            .comanda-impressao .item {margin:10px 0; font-size:18px; font-weight:bold; line-height:1.4;}
+            .comanda-impressao .obs {font-size:16px; font-weight:bold; color:#000; margin:5px 0 10px 20px; border-top:1px dashed #999; padding-top:5px;}
+            .comanda-impressao .total {text-align:center; font-size:20px; font-weight:bold; margin-top:15px; border-top:2px solid #000; padding-top:10px;}
+            .comanda-impressao .linha {border-bottom:2px dashed #666; margin:8px 0;}
+        }
         @media(max-width:768px){
             .linha-ingrediente {grid-template-columns:1.5fr 1fr 1fr 1fr 1fr; font-size:0.85rem;}
             .tabela {font-size:0.75rem;}
@@ -70,21 +84,20 @@
     </style>
 </head>
 <body>
-
 <header class="cabecalho">
     <h1>🍞 Artesanais Pão e Vida</h1>
     <p>Precificação • Custos • Vendas • Compras</p>
 </header>
-
 <nav class="navegacao">
-    <button class="nav-btn ativo" onclick="irPara('dashboard')">📊 Painel</button>
-    <button class="nav-btn" onclick="irPara('custos')">💰 Custos</button>
-    <button class="nav-btn" onclick="irPara('insumos')">🧪 Insumos</button>
-    <button class="nav-btn" onclick="irPara('fichas')">📋 Fichas</button>
-    <button class="nav-btn" onclick="irPara('massa')">🧮 Massa</button>
-    <button class="nav-btn" onclick="irPara('precificacaoMassa')">📊 Precificação</button>
-    <button class="nav-btn" onclick="irPara('vendas')">📈 Vendas</button>
-    <button class="nav-btn" onclick="irPara('compras')">🧾 Compras</button>
+   <button class="nav-btn ativo" onclick="irPara('dashboard')">📊 Painel</button>
+   <button class="nav-btn" onclick="irPara('custos')">💰 Custos</button>
+   <button class="nav-btn" onclick="irPara('insumos')">🧪 Insumos</button>
+   <button class="nav-btn" onclick="irPara('fichas')">📋 Fichas</button>
+   <button class="nav-btn" onclick="irPara('massa')">🧮 Massa</button>
+   <button class="nav-btn" onclick="irPara('estoque')">📦 Estoque</button>
+   <button class="nav-btn" onclick="irPara('vendas')">🛒 Vendas</button>
+   <button class="nav-btn" onclick="irPara('precificacaoMassa')">📊 Precificação</button>
+   <button class="nav-btn" onclick="irPara('compras')">🧾 Compras</button>
 </nav>
 
 <section id="dashboard" class="pagina visivel">
@@ -128,16 +141,19 @@
         </table>
     </div>
     <div class="painel">
-    <h2>📋 Taxas sobre Vendas</h2>
+    <h2>💳 Taxas de Pagamento — Cadastre os % reais</h2>
+    <div class="aviso">Débito = Get Net | Crédito e PIX = Infinit Pay</div>
     <div class="bloco-calc">
         <div><label>Impostos sobre venda (%)</label><input type="number" step="0.01" id="taxaImposto" oninput="salvarTaxas()"></div>
-        <div><label>Taxa de Cartão (%)</label><input type="number" step="0.01" id="taxaCartao" oninput="salvarTaxas()"></div>
+        <div><label>💳 Débito — Get Net (%)</label><input type="number" step="0.01" id="taxaDebito" oninput="salvarTaxas()"></div>
+        <div><label>💳 Crédito — Infinit Pay (%)</label><input type="number" step="0.01" id="taxaCredito" oninput="salvarTaxas()"></div>
+        <div><label>⚡ PIX — Infinit Pay (%)</label><input type="number" step="0.01" id="taxaPix" oninput="salvarTaxas()"></div>
         <div><label>Outras Taxas (%)</label><input type="number" step="0.01" id="taxaOutras" oninput="salvarTaxas()"></div>
         <div><label>Margem Padrão Global (%)</label><input type="number" step="0.1" id="margemGlobal" value="40" oninput="salvarTaxas()"></div>
     </div>
     <div class="resultado"><h4>Resumo das Deduções</h4>
-        <p>Impostos: <strong id="resImp">0,00%</strong> | Cartão: <strong id="resCart">0,00%</strong> | Outras: <strong id="resOut">0,00%</strong> | Margem Padrão: <strong id="resMargemGlobal">40,00%</strong></p>
-        <p>➡️ Total de deduções: <strong id="taxaTotal">0,00%</strong></p>
+        <p>Impostos: <strong id="resImp">0,00%</strong> | Débito: <strong id="resDeb">0,00%</strong> | Crédito: <strong id="resCred">0,00%</strong> | PIX: <strong id="resPix">0,00%</strong> | Outras: <strong id="resOut">0,00%</strong></p>
+        <p>➡️ Total de deduções (crédito): <strong id="taxaTotal">0,00%</strong></p>
     </div>
 </div>
 </section>
@@ -145,13 +161,11 @@
 <section id="insumos" class="pagina">
     <div class="painel">
         <h2>🧪 Cadastro de Ingredientes</h2>
-<div style="margin:10px 0; display:flex; gap:10px; flex-wrap:wrap;">
-   
-        <div class="aviso">Cadastre uma vez e use em todas as fichas. Preço calculado por grama.</div>
+        <div class="aviso">Cadastre uma vez e use em todas as fichas. Preço calculado por grama, litro ou unidade.</div>
         <div class="linha-ingrediente">
             <input type="text" id="insumoNome" placeholder="Nome do insumo">
             <select id="insumoUnid">
-                <option value="kg">kg</option><option value="g">g</option><option value="l">Litro</option><option value="ml">ml</option><option value="un">Un</option>
+                <option value="kg">kg</option><option value="g">g</option><option value="Litro">Litro</option><option value="ml">ml</option><option value="Un">Un</option>
             </select>
             <input type="number" step="0.001" id="insumoQtd" placeholder="Quantidade">
             <input type="number" step="0.01" id="insumoValor" placeholder="R$ Total">
@@ -165,37 +179,39 @@
 </section>
 
 <section id="precificacaoMassa" class="pagina">
-    <div class="painel">
-        <h2>📊 Precificação em Massa — Simulação de Preços</h2>
-        <div class="aviso">Altere o preço de venda e veja NA HORA o custo total, markup e margem real!</div>
-        <div class="bloco-calc">
-            <div><label>Margem Global para Testar (%):</label><input type="number" step="0.1" id="margemGlobalTeste" value="40"></div>
+    <div class="painel" style="padding:10px; max-width:100%;">
+        <h2 style="font-size:1rem; margin-bottom:8px; padding-bottom:4px;">📊 Precificação em Massa — Simulação de Preços</h2>
+        <div class="aviso" style="padding:6px 10px; margin:6px 0; font-size:0.85rem;">Altere o preço de venda e veja NA HORA o custo total, markup e margem real!</div>
+        <div class="bloco-calc" style="margin-top:6px;">
+            <div><label>Margem Global (%):</label><input type="number" step="0.1" id="margemGlobalTeste" value="40"></div>
             <button class="btn" onclick="aplicarMargemGlobal()">🔄 Aplicar em TODOS</button>
             <button class="btn" onclick="atualizarTabelaPrecMassa()">🔄 Recarregar</button>
         </div>
-        <div style="overflow-x:auto; overflow-y:auto; max-height:420px; margin-top:15px;">
-    <table id="tabelaPrecMassa" style="width:100%; min-width:1200px; border-collapse:collapse;">
-        <thead>
-            <tr>
-                <th style="min-width:180px; padding:10px 12px; text-align:left;">Produto</th>
-                <th style="min-width:115px; padding:10px 12px; text-align:right;">Custo Insumos</th>
-                <th style="min-width:95px; padding:10px 12px; text-align:right;">Custo Fixo</th>
-                <th style="min-width:90px; padding:10px 12px; text-align:right;">Imposto</th>
-                <th style="min-width:95px; padding:10px 12px; text-align:right;">Tx. Cartão</th>
-                <th style="min-width:85px; padding:10px 12px; text-align:right;">Outras</th>
-                <th style="min-width:115px; padding:10px 12px; text-align:right;">Custo Total</th>
-                <th style="min-width:120px; padding:10px 12px; text-align:right;">Preço Sugerido</th>
-                <th style="min-width:125px; padding:10px 12px; text-align:right;">Preço Praticado</th>
-                <th style="min-width:85px; padding:10px 12px; text-align:center;">Markup</th>
-                <th style="min-width:95px; padding:10px 12px; text-align:center;">Margem %</th>
-                <th style="min-width:110px; padding:10px 12px; text-align:right;">Lucro R$</th>
-                <th style="min-width:100px; padding:10px 12px; text-align:center;">Status</th>
-            </tr>
-        </thead>
-        <tbody id="corpoTabelaPrecMassa"></tbody>
-    </table>
-</div>
+        <div style="overflow:auto; max-height:400px; margin-top:8px;">
+            <table id="tabelaPrecMassa" style="width:100%; min-width:1200px; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th style="min-width:180px; padding:8px 10px; text-align:left;">Produto</th>
+                        <th style="min-width:115px; padding:8px 10px; text-align:right;">Custo Insumos</th>
+                        <th style="min-width:95px; padding:8px 10px; text-align:right;">Custo Fixo</th>
+                        <th style="min-width:90px; padding:8px 10px; text-align:right;">Imposto</th>
+                        <th style="min-width:95px; padding:8px 10px; text-align:right;">Tx. Cartão</th>
+                        <th style="min-width:85px; padding:8px 10px; text-align:right;">Outras</th>
+                        <th style="min-width:115px; padding:8px 10px; text-align:right;">Custo Total</th>
+                        <th style="min-width:120px; padding:8px 10px; text-align:right;">Preço Sugerido</th>
+                        <th style="min-width:125px; padding:8px 10px; text-align:right;">Preço Praticado</th>
+                        <th style="min-width:85px; padding:8px 10px; text-align:center;">Markup</th>
+                        <th style="min-width:95px; padding:8px 10px; text-align:center;">Margem %</th>
+                        <th style="min-width:110px; padding:8px 10px; text-align:right;">Lucro R$</th>
+                        <th style="min-width:100px; padding:8px 10px; text-align:center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaPrecMassa"></tbody>
+            </table>
+        </div>
+    </div>
 </section>
+
 <section id="fichas" class="pagina">
     <div class="painel">
         <h2>📋 Fichas Técnicas e Precificação</h2>
@@ -231,8 +247,7 @@
                 <p>Custo Fixo rateado: <strong id="resFixo">R$ 0,00</strong></p>
                 <hr>
                 <p>📉 Deduções sobre a Venda:</p>
-                <p style="margin-left:12px;">Impostos: <strong id="resImpFicha">0,00%</strong> | Taxa de Cartão: <strong id="resCartFicha">0,00%</strong> | Outras: <strong id="resOutFicha">0,00%</strong></p>
-                <p style="margin-left:12px;">➡️ Total de deduções: <strong id="resTaxasFicha">0,00%</strong></p>
+                <p style="margin-left:12px;">Impostos: <strong id="resImpFicha">0,00%</strong> | Débito: <strong id="resDebFicha">0,00%</strong> | Crédito: <strong id="resCredFicha">0,00%</strong> | PIX: <strong id="resPixFicha">0,00%</strong></p>
                 <hr>
                 <p>Custo Total por porção: <strong id="resCustoTotal">R$ 0,00</strong></p>
                 <p>Markup aplicado: <strong id="resMarkup">0,00%</strong></p>
@@ -248,7 +263,7 @@
     <div class="painel">
         <h2>📋 Lista de Produtos com Ficha Técnica</h2>
         <table class="tabela">
-            <thead><tr><th>Produto</th><th>Custo Total</th><th>Preço Sugerido</th><th>Praticado</th><th>Margem</th><th>Ação</th></tr></thead>
+            <thead><tr><th>Produto</th><th>Custo Total</th><th>Preço Sugerido</th><th>Preço Praticado</th><th>Margem</th><th>Ação</th></tr></thead>
             <tbody id="listaResumoFichas"></tbody>
         </table>
     </div>
@@ -267,7 +282,7 @@
             <button class="btn vermelho pequeno" onclick="excluirFormulaMassa()">🗑️ Excluir</button>
         </div>
         <label>Nome da Receita (para salvar):</label>
-        <input type="text" id="nomeFormulaMassa" placeholder="Ex: Massa de Pizza, Pão Rústico...">
+        <input type="text" id="nomeFormulaMassa" placeholder="Ex: Massa de Pizza, Massa de Empanada...">
         <hr>
         <label>Peso total desejado:</label>
         <div class="flex-linha">
@@ -299,33 +314,74 @@
     </div>
 </section>
 
+<section id="estoque" class="pagina">
+    <div class="painel" style="padding:10px;">
+        <h2 style="font-size:1rem; margin-bottom:8px;">📦 Controle de Estoque</h2>
+        <h3 style="margin:10px 0 5px; color:#cc6633;">🥟 Empanadas (Por Sabor)</h3>
+        <div class="bloco-calc" style="margin-bottom:10px;">
+            <div><label>Sabor</label><input type="text" id="estoqueSabor" placeholder="Ex: Tradicional"></div>
+            <div><label>Quantidade</label><input type="number" id="estoqueQtd" placeholder="0"></div>
+            <div><label>Produzir hoje</label><input type="number" id="estoqueProduzir" placeholder="0"></div>
+            <button class="btn" onclick="salvarEstoque()">💾 Salvar</button>
+        </div>
+        <div style="overflow-x:auto; max-height:200px;">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead><tr style="background:#006644; color:white;">
+                    <th style="padding:6px; text-align:left;">Sabor</th>
+                    <th style="padding:6px; text-align:center;">Estoque</th>
+                    <th style="padding:6px; text-align:center;">Produzir</th>
+                    <th style="padding:6px; text-align:center;">Total</th>
+                    <th style="padding:6px; text-align:center;">Ação</th>
+                </tr></thead>
+                <tbody id="tabelaEstoque"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
 <section id="vendas" class="pagina">
     <div class="painel">
-        <h2>📈 Controle de Vendas</h2>
-        <div class="aviso">Lance suas vendas e acompanhe faturamento e lucro</div>
+        <h2>🛒 Registrar Venda</h2>
         <div class="bloco-calc">
-            <div><label>Data da Venda</label><input type="date" id="dataVenda"></div>
-            <div><label>Produto</label><select id="selProdutoVenda"></select></div>
-            <div><label>Quantidade Vendida</label><input type="number" id="qtdVendida" step="1" min="1" value="1"></div>
+            <div><label>Data</label><input type="date" id="dataVenda"></div>
+            <div><label>Produto</label><select id="selProdutoVenda"><option value="">-- Selecione --</option></select></div>
+            <div><label>Quantidade</label><input type="number" id="qtdVendida" value="1" min="1"></div>
+            <div><label>Forma de Pagamento</label><select id="formaPagamento">
+                <option value="debito">💳 Débito (Get Net)</option>
+                <option value="credito">💳 Crédito (Infinit Pay)</option>
+                <option value="pix">⚡ PIX (Infinit Pay)</option>
+                <option value="dinheiro">💵 Dinheiro (sem taxa)</option>
+            </select></div>
         </div>
-        <button class="btn" onclick="registrarVenda()">✅ Registrar Venda</button>
-        <hr>
-        <label>Filtrar por Período:</label>
-        <div class="flex-linha">
-            <input type="month" id="filtroMes" oninput="atualizarTabelaVendas()">
-            <button class="btn laranja" onclick="limparFiltroMes()">Todos os meses</button>
+        <div class="observacao-venda">
+            <label>📝 Observações (ex: sem cebola, extra queijo...)</label>
+            <textarea id="observacaoVenda" rows="2" placeholder="Digite aqui o pedido especial do cliente..."></textarea>
+        </div>
+        <div class="grupo-botoes">
+            <button class="btn" onclick="registrarVenda()">✅ Registrar Venda</button>
+            <button class="btn laranja" onclick="imprimirComanda()">🖨️ Imprimir Comanda</button>
+        </div>
+    </div>
+    <div class="painel">
+        <h2>📋 Vendas Registradas</h2>
+        <div class="bloco-calc">
+            <div><label>Filtrar por Mês</label><input type="month" id="filtroMes" onchange="atualizarTabelaVendas()"></div>
+            <div><button class="btn pequeno" onclick="limparFiltroMes()">Limpar Filtro</button></div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="tabela">
+                <thead><tr>
+                    <th>Data</th><th>Produto</th><th>Qtd</th><th>Valor Unit</th><th>Total</th><th>Pagamento</th><th>Observação</th><th>Ação</th>
+                </tr></thead>
+                <tbody id="tabelaVendas"></tbody>
+            </table>
         </div>
         <div class="resultado">
-            <h4>💰 Resumo do Período</h4>
-            <p>Total de Vendas: <strong id="totalVendasPeriodo">0</strong> unidades</p>
-            <p>Faturamento: <strong id="fatVendasPeriodo">R$ 0,00</strong></p>
-            <p>Custo Estimado: <strong id="custoVendasPeriodo">R$ 0,00</strong></p>
-            <p>Lucro Estimado: <strong id="lucroVendasPeriodo">R$ 0,00</strong></p>
+            <p><strong>Total de Itens:</strong> <span id="totalVendasPeriodo">0</span></p>
+            <p><strong>Faturamento:</strong> <span id="fatVendasPeriodo">R$ 0,00</span></p>
+            <p><strong>Custo dos Produtos:</strong> <span id="custoVendasPeriodo">R$ 0,00</span></p>
+            <p><strong>Lucro Estimado:</strong> <span id="lucroVendasPeriodo">R$ 0,00</span></p>
         </div>
-        <table class="tabela">
-            <thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Valor Unit</th><th>Total R$</th><th>Ação</th></tr></thead>
-            <tbody id="tabelaVendas"></tbody>
-        </table>
     </div>
 </section>
 
@@ -357,6 +413,15 @@
     </div>
 </section>
 
+<div id="areaImpressao" class="comanda-impressao" style="display:none;">
+    <h1>🍞 ARTESANAIS PÃO E VIDA</h1>
+    <div class="data-hora" id="dataHoraComanda"></div>
+    <div class="linha"></div>
+    <div id="itensComanda"></div>
+    <div class="linha"></div>
+    <div class="total" id="totalComanda"></div>
+</div>
+
 <script>
 const PRODUTOS_CADASTRO = [
     {nome:'🥟 Empanada Tradicional', preco:10.00, custoEstimado:0},
@@ -387,10 +452,13 @@ let BD = {
     receitaMassa: [{nome:'Farinha', perc:100}],
     vendas: JSON.parse(localStorage.getItem('vendas') || '[]'),
     compras: JSON.parse(localStorage.getItem('compras') || '[]'),
+    estoque: JSON.parse(localStorage.getItem('estoque') || '[]'),
     produtos: PRODUTOS_CADASTRO
 };
+
 let fichaAtual = null;
 let filtroMesAtual = '';
+let vendaParaImprimir = null;
 
 function salvarBD(){
     localStorage.setItem('custosFixos', JSON.stringify(BD.custos));
@@ -400,6 +468,7 @@ function salvarBD(){
     localStorage.setItem('formulasMassa', JSON.stringify(BD.formulasMassa));
     localStorage.setItem('vendas', JSON.stringify(BD.vendas));
     localStorage.setItem('compras', JSON.stringify(BD.compras));
+    localStorage.setItem('estoque', JSON.stringify(BD.estoque));
     atualizarTudo();
 }
 
@@ -411,13 +480,14 @@ function irPara(id){
     if(id==='dashboard') atualizarDashboard();
     if(id==='massa') carregarSelectFormulasMassa();
     if(id==='vendas') carregarSelectProdutosVenda();
+    if(id==='precificacaoMassa') atualizarTabelaPrecMassa();
 }
 
 function formatarMoeda(v){ return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2}); }
 function formatarPerc(v){ return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'%'; }
 function dataHoje(){ return new Date().toISOString().split('T')[0]; }
 
-// === CUSTOS ===
+// === CUSTOS E TAXAS ===
 function adicionarCusto(){
     let d=document.getElementById('custoDesc').value.trim();
     let v=parseFloat(document.getElementById('custoValor').value)||0;
@@ -427,40 +497,38 @@ function adicionarCusto(){
     document.getElementById('custoDesc').value=''; document.getElementById('custoValor').value='';
     salvarBD();
 }
-function removerCusto(i){ 
-    if(confirm('Excluir?')){
-        BD.custos.splice(i,1); 
-        salvarBD();
-    }
-}
-
+function removerCusto(i){ if(confirm('Excluir?')){BD.custos.splice(i,1); salvarBD();} }
 function salvarTaxas(){
     BD.taxas.imposto=parseFloat(document.getElementById('taxaImposto').value)||0;
-    BD.taxas.cartao=parseFloat(document.getElementById('taxaCartao').value)||0;
+    BD.taxas.debito=parseFloat(document.getElementById('taxaDebito').value)||0;
+    BD.taxas.credito=parseFloat(document.getElementById('taxaCredito').value)||0;
+    BD.taxas.pix=parseFloat(document.getElementById('taxaPix').value)||0;
     BD.taxas.outras=parseFloat(document.getElementById('taxaOutras').value)||0;
-    // ✅ === NOVA LINHA: SALVA A MARGEM GLOBAL ===
     BD.taxas.margemGlobal = parseFloat(document.getElementById('margemGlobal').value)||40;
-    // ✅ === ATUALIZA O EXIBIR NO RESUMO ===
-    if(document.getElementById('resMargemGlobal')){
-        document.getElementById('resMargemGlobal').textContent = formatarPerc(BD.taxas.margemGlobal);
-    }
-    
-    BD.taxas.totalPerc=BD.taxas.imposto+BD.taxas.cartao+BD.taxas.outras;
+    BD.taxas.totalPercCred=BD.taxas.imposto+BD.taxas.credito+BD.taxas.outras;
+    BD.taxas.totalPercDeb=BD.taxas.imposto+BD.taxas.debito+BD.taxas.outras;
+    BD.taxas.totalPercPix=BD.taxas.imposto+BD.taxas.pix+BD.taxas.outras;
     document.getElementById('resImp').textContent=formatarPerc(BD.taxas.imposto);
-    document.getElementById('resCart').textContent=formatarPerc(BD.taxas.cartao);
+    document.getElementById('resDeb').textContent=formatarPerc(BD.taxas.debito);
+    document.getElementById('resCred').textContent=formatarPerc(BD.taxas.credito);
+    document.getElementById('resPix').textContent=formatarPerc(BD.taxas.pix);
     document.getElementById('resOut').textContent=formatarPerc(BD.taxas.outras);
-    document.getElementById('taxaTotal').textContent=formatarPerc(BD.taxas.totalPerc);
+    document.getElementById('taxaTotal').textContent=formatarPerc(BD.taxas.totalPercCred);
     salvarBD();
 }
 function carregarTaxas(){
     document.getElementById('taxaImposto').value=BD.taxas.imposto||'';
-    document.getElementById('taxaCartao').value=BD.taxas.cartao||'';
+    document.getElementById('taxaDebito').value=BD.taxas.debito||'';
+    document.getElementById('taxaCredito').value=BD.taxas.credito||'';
+    document.getElementById('taxaPix').value=BD.taxas.pix||'';
     document.getElementById('taxaOutras').value=BD.taxas.outras||'';
-    BD.taxas.totalPerc=(BD.taxas.imposto||0)+(BD.taxas.cartao||0)+(BD.taxas.outras||0);
+    document.getElementById('margemGlobal').value=BD.taxas.margemGlobal||40;
     document.getElementById('resImp').textContent=formatarPerc(BD.taxas.imposto);
-    document.getElementById('resCart').textContent=formatarPerc(BD.taxas.cartao);
+    document.getElementById('resDeb').textContent=formatarPerc(BD.taxas.debito);
+    document.getElementById('resCred').textContent=formatarPerc(BD.taxas.credito);
+    document.getElementById('resPix').textContent=formatarPerc(BD.taxas.pix);
     document.getElementById('resOut').textContent=formatarPerc(BD.taxas.outras);
-    document.getElementById('taxaTotal').textContent=formatarPerc(BD.taxas.totalPerc);
+    document.getElementById('taxaTotal').textContent=formatarPerc(BD.taxas.totalPercCred||0);
 }
 function atualizarTabelaCustos(){
     let tb=document.getElementById('tabelaCustos'); tb.innerHTML=''; let s=0;
@@ -477,23 +545,21 @@ function adicionarInsumo(){
     let q=parseFloat(document.getElementById('insumoQtd').value)||0;
     let v=parseFloat(document.getElementById('insumoValor').value)||0;
     if(!n||q<=0||v<=0) return alert('Preencha todos os campos!');
-
     let valorExibido, etiquetaPreco;
     if(u==="g" || u==="kg") {
         let fator = u==="kg" ? 1000 : 1;
         valorExibido = ((v/q)/fator)*100;
         etiquetaPreco = "R$/100g";
     }
-    else if(u==="ml" || u==="L") {
-        let fator = u==="L" ? 1 : 1000;
+    else if(u==="ml" || u==="Litro") {
+        let fator = u==="Litro" ? 1 : 1000;
         valorExibido = (v/q)*fator;
         etiquetaPreco = "R$/Litro";
     }
     else {
         valorExibido = v/q;
-        etiquetaPreco = "R$/Unid";
+        etiquetaPreco = "R$/Un";
     }
-
     BD.insumos.push({nome:n, unid:u, qtd:q, valor:v, precoExibido:valorExibido, etiqueta:etiquetaPreco});
     document.getElementById('insumoNome').value=''; 
     document.getElementById('insumoQtd').value=''; 
@@ -501,71 +567,50 @@ function adicionarInsumo(){
     salvarBD();
     atualizarTabelaInsumos();
 }
-
 function editarInsumo(i){
     let ins = BD.insumos[i];
     let novoNome = prompt("Editar Nome:", ins.nome);
     if(novoNome===null) return;
-    
-    // ✅ LINHA NOVA: ALTERAR UNIDADE
-    let novaUnid = prompt("Editar Unidade (g/kg/ml/Litro/Un):", ins.unid);
+    let novaUnid = prompt("Editar Unidade (g/kg/Litro/Un):", ins.unid);
     if(novaUnid===null) return;
-    
     let novaQtd = prompt("Editar Quantidade:", ins.qtd);
     if(novaQtd===null) return;
     let novoValor = prompt("Editar Valor Total R$:", ins.valor);
     if(novoValor===null) return;
-    
-    ins.nome = novoNome.trim();
-    ins.unid = novaUnid.trim(); // ✅ SALVA A NOVA UNIDADE
+       ins.nome = novoNome.trim();
+    ins.unid = novaUnid.trim();
     ins.qtd = parseFloat(novaQtd) || 0;
     ins.valor = parseFloat(novoValor) || 0;
     
-    // Recalcula o preço unitário
     let u = ins.unid;
-    let valorExibido, etiquetaPreco;
     if(u==="g" || u==="kg") {
         let fator = u==="kg" ? 1000 : 1;
-        valorExibido = ((ins.valor/ins.qtd)/fator)*100;
-        etiquetaPreco = "R$/100g";
-    }
-    else if(u==="ml" || u==="Litro") {
+        ins.precoExibido = ((ins.valor/ins.qtd)/fator)*100;
+        ins.etiqueta = "R$/100g";
+    } else if(u==="ml" || u==="Litro") {
         let fator = u==="Litro" ? 1 : 1000;
-        valorExibido = (ins.valor/ins.qtd)*fator;
-        etiquetaPreco = "R$/Litro";
+        ins.precoExibido = (ins.valor/ins.qtd)*fator;
+        ins.etiqueta = "R$/Litro";
+    } else {
+        ins.precoExibido = ins.valor/ins.qtd;
+        ins.etiqueta = "R$/Un";
     }
-    else {
-        valorExibido = ins.valor/ins.qtd;
-        etiquetaPreco = "R$/Unid";
-    }
-    ins.precoExibido = valorExibido;
-    ins.etiqueta = etiquetaPreco;
-    
     salvarBD();
     atualizarTabelaInsumos();
-    alert("✅ Insumo atualizado! Unidade e preço recalculados!");
 }
-
+function removerInsumo(i){ if(confirm('Excluir?')){BD.insumos.splice(i,1); salvarBD();} }
 function atualizarTabelaInsumos(){
-    let tb=document.getElementById('tabelaInsumos'); 
-    tb.innerHTML='';
-    // === ORDENA EM ORDEM ALFABÉTICA ===
-    BD.insumos.sort((a,b)=>a.nome.localeCompare(b.nome, 'pt-BR'));
+    BD.insumos.sort((a,b)=>a.nome.localeCompare(b.nome));
+    let tb=document.getElementById('tabelaInsumos'); tb.innerHTML='';
     BD.insumos.forEach((ins,i)=>{
         tb.innerHTML+=`<tr><td>${ins.nome}</td><td>${ins.unid}</td><td>${ins.qtd}</td><td>R$ ${formatarMoeda(ins.valor)}</td><td>${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)}</td><td><button class="btn pequeno" style="background:#008855;" onclick="editarInsumo(${i})">✏️</button> <button class="btn vermelho pequeno" onclick="removerInsumo(${i})">✕</button></td></tr>`;
     });
     atualizarSelInsumos();
 }
-
 function atualizarSelInsumos(){
-    let s=document.getElementById('selInsumo'); 
-    if(!s) return;
-    s.innerHTML='';
-    // === ORDENA EM ORDEM ALFABÉTICA ===
-    BD.insumos.sort((a,b)=>a.nome.localeCompare(b.nome, 'pt-BR'));
-    BD.insumos.forEach((ins,i)=>{
-        s.innerHTML+=`<option value="${i}">${ins.nome} (${ins.etiqueta}: R$ ${formatarMoeda(ins.precoExibido)})</option>`;
-    });
+    let s=document.getElementById('selInsumo'); if(!s) return;
+    s.innerHTML='<option value="">-- Selecione --</option>';
+    BD.insumos.forEach((ins,i)=>s.innerHTML+=`<option value="${i}">${ins.nome}</option>`);
 }
 
 // === FICHAS TÉCNICAS ===
@@ -579,16 +624,19 @@ function criarFicha(){
     document.getElementById('semFicha').classList.add('oculto');
     document.getElementById('conteudoFicha').classList.remove('oculto');
     carregarFicha(idx);
-    salvarBD();
+    atualizarListaFichas();
 }
 function carregarFicha(i){
-    fichaAtual=i; let f=BD.fichas[i];
-    document.getElementById('tituloFicha').textContent=f.nome;
+    fichaAtual=i;
+    let f=BD.fichas[i];
     document.getElementById('fichaNome').value=f.nome;
-    document.getElementById('qtdPorcao').value=f.qtdPorcao||1;
-    document.getElementById('custoFichaFixo').value=f.custoFixo||0;
-    document.getElementById('markupDesejado').value=f.markupDesejado||0;
-    document.getElementById('precoPraticado').value=f.precoPraticado||'';
+    document.getElementById('tituloFicha').textContent=f.nome;
+    document.getElementById('qtdPorcao').value=f.qtdPorcao;
+    document.getElementById('custoFichaFixo').value=f.custoFixo;
+    document.getElementById('markupDesejado').value=f.markupDesejado;
+    document.getElementById('precoPraticado').value=f.precoPraticado;
+    document.getElementById('semFicha').classList.add('oculto');
+    document.getElementById('conteudoFicha').classList.remove('oculto');
     atualizarTabelaItensFicha();
     calcularPrecificacao();
 }
@@ -598,90 +646,45 @@ function adicionarItemFicha(){
     let u=document.getElementById('unidUsada').value;
     if(isNaN(s)||q<=0) return alert('Selecione o insumo e informe a quantidade!');
     let ins=BD.insumos[s];
-    
-    // ✅ CONVERTE UNIDADE PARA GRAMAS
-    let fator={'g':1,'kg':1000,'ml':1,'l':1000,'Litro':1000,'un':1,'Un':1,'UN':1}[u] || 1;
+    let fator={'g':1,'kg':1000,'ml':1,'Litro':1000,'Un':1}[u];
     let g=q*fator;
-    
-    // ✅ CÁLCULO CORRIGIDO — USA VALOR REAL POR UNIDADE
-    let c;
-    if(u==='un' || u==='Un' || u==='UN'){
-        // Preço por unidade = (valor total da compra ÷ quantidade comprada) × quantidade usada
-        let precoPorUnidade = ins.valor / ins.qtd;
-        c = precoPorUnidade * q;
-    } else {
-        // Para gramas/kg: usa preço por 100g
-        c = (ins.precoExibido / 100) * g;
-    }
-    
-    // ✅ GUARDA TUDO
-    BD.fichas[fichaAtual].itens.push({
-        indice:s, 
-        nome:ins.nome, 
-        qtdGramas:g, 
-        quantidadeExibida:q,
-        unidade:u,
-        custoItem:c
-    });
-    
+    let c=(ins.precoExibido/100)*g;
+    BD.fichas[fichaAtual].itens.push({indice:s, nome:ins.nome, quantidadeExibida:q, unidade:u, qtdGramas:g, custoItem:c});
     document.getElementById('qtdUsada').value='';
-    atualizarTabelaItensFicha();
     salvarBD();
+    atualizarTabelaItensFicha();
+    calcularPrecificacao();
 }
 function editarItemFicha(i){
     let item = BD.fichas[fichaAtual].itens[i];
-    
-    // 1. Editar quantidade
     let novaQtd = prompt("Editar Quantidade:", item.quantidadeExibida || item.qtdGramas);
     if(novaQtd===null) return;
     let q = parseFloat(novaQtd) || 0;
     if(q<=0) return alert("Digite um valor válido!");
-    
-    // 2. Editar unidade
-    let unidadeAtual = item.unidade || "g";
-    let novaUnid = prompt("Unidade (g/kg/ml/Litro/un):", unidadeAtual);
+    let novaUnid = prompt("Unidade (g/kg/ml/Litro/Un):", item.unidade || "g");
     if(novaUnid===null) return;
     let u = novaUnid.trim() || "g";
-    
-    // 3. Recalcular gramas conforme a unidade
-    let fator={'g':1,'kg':1000,'ml':1,'l':1000,'Litro':1000,'un':1,'Un':1,'UN':1}[u] || 1;
-    let qtdGramas = q * fator;
-    
-    // ✅ CÁLCULO CORRIGIDO — IGUAL A FUNÇÃO ADICIONAR!
+    let qtdGramas;
+    if(u==="g" || u==="ml") qtdGramas=q;
+    else if(u==="kg" || u==="Litro") qtdGramas=q*1000;
+    else qtdGramas=q;
     let insumo = BD.insumos.find(x=>x.nome === item.nome);
-    let custoCalculado;
-    if(insumo){
-        if(u==='un' || u==='Un' || u==='UN'){
-            // Unidade = (valor total ÷ qtd comprada) × qtd usada
-            let precoPorUnidade = insumo.valor / insumo.qtd;
-            custoCalculado = precoPorUnidade * q;
-        } else {
-            // Gramas/kg = preço por 100g × gramas
-            custoCalculado = (insumo.precoExibido / 100) * qtdGramas;
-        }
-    } else {
-        custoCalculado = item.custoItem;
+    if(insumo) {
+        item.qtdGramas = qtdGramas;
+        item.unidade = u;
+        item.quantidadeExibida = q;
+        item.custoItem = (qtdGramas / 100) * insumo.precoExibido;
     }
-    
-    // ✅ SALVA TUDO
-    item.qtdGramas = qtdGramas;
-    item.unidade = u;
-    item.quantidadeExibida = q;
-    item.custoItem = custoCalculado;
-    
+    salvarBD();
     atualizarTabelaItensFicha();
     calcularPrecificacao();
-    salvarBD();
-    alert("✅ Atualizado! Unidade: " + u + " | Custo: R$ " + formatarMoeda(custoCalculado));
-} // ✅ FECHA A FUNÇÃO editarItemFicha AQUI
-
-
-// ✅ A FUNÇÃO DE EXCLUIR FICA AQUI — FORA, SEPARADA!
+}
 function removerItemFicha(i){
     if(confirm('Excluir este ingrediente?')){
         BD.fichas[fichaAtual].itens.splice(i,1);
         atualizarTabelaItensFicha();
         salvarBD();
+        calcularPrecificacao();
     }
 }
 function atualizarTabelaItensFicha(){
@@ -691,70 +694,134 @@ function atualizarTabelaItensFicha(){
     f.itens.forEach((item,i)=>{ 
         total+=item.custoItem;
         tb.innerHTML+=`<tr><td>${item.nome}</td><td>${item.quantidadeExibida || item.qtdGramas}</td><td>${item.unidade || 'g'}</td><td>R$ ${formatarMoeda(item.custoItem)}</td><td><button class="btn pequeno" style="background:#008855;" onclick="editarItemFicha(${i})">✏️</button> <button class="btn vermelho pequeno" onclick="removerItemFicha(${i})">✕</button></td></tr>`;
-    }); // ✅ FALTAVA ESTA CHAVE AQUI!
-    
-    document.getElementById('custoInsumosFicha').textContent=formatarMoeda(total);
-    calcularPrecificacao();
+    });
+    document.getElementById('custoInsumosFicha').textContent='R$ '+formatarMoeda(total);
 }
 function calcularPrecificacao(){
     if(fichaAtual===null) return;
     let f=BD.fichas[fichaAtual];
     let txImp=BD.taxas.imposto||0;
-    let txCart=BD.taxas.cartao||0;
+    let txDeb=BD.taxas.debito||0;
+    let txCred=BD.taxas.credito||0;
+    let txPix=BD.taxas.pix||0;
     let txOut=BD.taxas.outras||0;
-    let txTotal=txImp+txCart+txOut;
     document.getElementById('resImpFicha').textContent=formatarPerc(txImp);
-    document.getElementById('resCartFicha').textContent=formatarPerc(txCart);
-    document.getElementById('resOutFicha').textContent=formatarPerc(txOut);
-    document.getElementById('resTaxasFicha').textContent=formatarPerc(txTotal);
+    document.getElementById('resDebFicha').textContent=formatarPerc(txDeb);
+    document.getElementById('resCredFicha').textContent=formatarPerc(txCred);
+    document.getElementById('resPixFicha').textContent=formatarPerc(txPix);
     let ci=f.itens.reduce((s,x)=>s+x.custoItem,0);
-    let qp=parseFloat(document.getElementById('qtdPorcao').value)||1;
-    let cf=parseFloat(document.getElementById('custoFichaFixo').value)||0;
-    let mk=parseFloat(document.getElementById('markupDesejado').value)||BD.taxas.margemGlobal||40;
-    f.qtdPorcao=qp; f.custoFixo=cf; f.markupDesejado=mk;
-    let cu=(ci+cf)/qp;
-    let ft=1-txTotal/100;
-    let ps=ft>0 ? cu*(1+mk/100)/ft : 0;
-    document.getElementById('resInsumos').textContent='R$ '+formatarMoeda(ci);
-    document.getElementById('resFixo').textContent='R$ '+formatarMoeda(cf);
-    document.getElementById('resCustoTotal').textContent='R$ '+formatarMoeda(cu);
-    document.getElementById('resMarkup').textContent=formatarPerc(mk);
-    document.getElementById('precoSugerido').textContent='R$ '+formatarMoeda(ps);
-    document.getElementById('margemContrib').textContent=ps>0 ? formatarPerc(((ps-cu)/ps)*100) : '0%';
-    f.custoInsumos=ci; f.custoUnitario=cu; f.precoSugerido=ps;
+    f.qtdPorcao=parseFloat(document.getElementById('qtdPorcao').value)||1;
+    f.custoFixo=parseFloat(document.getElementById('custoFichaFixo').value)||0;
+    f.markupDesejado=parseFloat(document.getElementById('markupDesejado').value)||BD.taxas.margemGlobal||40;
+    let custoPorcao=ci/f.qtdPorcao + (f.custoFixo/f.qtdPorcao);
+    let taxaTotal=txImp+txCred+txOut;
+    let fatorTaxa=1-(taxaTotal/100);
+    let precoSugerido=custoPorcao / (fatorTaxa - (f.markupDesejado/100));
+    f.precoSugerido=precoSugerido;
+    document.getElementById('resInsumos').textContent='R$ '+formatarMoeda(ci/f.qtdPorcao);
+    document.getElementById('resFixo').textContent='R$ '+formatarMoeda(f.custoFixo/f.qtdPorcao);
+    document.getElementById('resCustoTotal').textContent='R$ '+formatarMoeda(custoPorcao);
+    document.getElementById('precoSugerido').textContent='R$ '+formatarMoeda(precoSugerido);
+    document.getElementById('resMarkup').textContent=formatarPerc(f.markupDesejado);
+    atualizarMarkupReal();
     salvarBD();
+    atualizarListaFichas();
 }
 function atualizarMarkupReal(){
     if(fichaAtual===null) return;
     let f=BD.fichas[fichaAtual];
-    let pp=parseFloat(document.getElementById('precoPraticado').value)||0;
-    f.precoPraticado=pp;
-    let tx=BD.taxas.totalPerc||0;
-    let ft=1-tx/100;
-    let cu=f.custoUnitario||0;
-    let pl=pp*ft;
-    let mr=cu>0 ? ((pl-cu)/cu)*100 : 0;
-    let lr=pl-cu;
-    document.getElementById('markupReal').textContent=formatarPerc(mr);
-    document.getElementById('lucroReal').textContent='R$ '+formatarMoeda(lr);
-    f.markupReal=mr; f.lucroReal=lr;
+    f.precoPraticado=parseFloat(document.getElementById('precoPraticado').value)||0;
+    let ci=f.itens.reduce((s,x)=>s+x.custoItem,0)/f.qtdPorcao + (f.custoFixo/f.qtdPorcao);
+    let txImp=BD.taxas.imposto||0, txCred=BD.taxas.credito||0, txOut=BD.taxas.outras||0;
+    let taxaTotal=txImp+txCred+txOut;
+    let fatorTaxa=1-(taxaTotal/100);
+    let markupReal= f.precoPraticado>0 ? (((f.precoPraticado * fatorTaxa)-ci)/ci)*100 : 0;
+    let margemReal= f.precoPraticado>0 ? ((f.precoPraticado-ci)/f.precoPraticado)*100 : 0;
+    let lucroReal= f.precoPraticado>0 ? (f.precoPraticado * fatorTaxa)-ci : 0;
+    document.getElementById('markupReal').textContent=formatarPerc(markupReal);
+    document.getElementById('margemContrib').textContent=formatarPerc(margemReal);
+    document.getElementById('lucroReal').textContent='R$ '+formatarMoeda(lucroReal);
+    f.custoUnitario=ci;
+    f.margemReal=margemReal;
     salvarBD();
+    atualizarListaFichas();
 }
 function atualizarListaFichas(){
     let tb=document.getElementById('listaResumoFichas'); tb.innerHTML='';
     BD.fichas.forEach((f,i)=>{
         let m=f.precoPraticado>0 ? ((f.precoPraticado-(f.custoUnitario||0))/f.precoPraticado)*100 : 0;
-        tb.innerHTML+=`<tr><td><a href="#" style="color:var(--cor1); text-decoration:none;" onclick="carregarFicha(${i});return false;">${f.nome}</a></td><td>R$ ${formatarMoeda(f.custoUnitario||0)}</td><td>R$ ${formatarMoeda(f.precoSugerido||0)}</td><td>R$ ${formatarMoeda(f.precoPraticado||0)}</td><td>${m>0?formatarPerc(m):'--'}</td><td><button class="btn vermelho pequeno" onclick="excluirFicha(${i})">✕</button></td></tr>`;
+        tb.innerHTML+=`<tr><td><a href="#" style="color:var(--cor1); text-decoration:none;" onclick="carregarFicha(${i});return false;">${f.nome}</a></td><td>R$ ${formatarMoeda(f.custoUnitario||0)}</td><td>R$ ${formatarMoeda(f.precoSugerido||0)}</td><td>R$ ${formatarMoeda(f.precoPraticado||0)}</td><td>${m>0?formatarPerc(m):'-'}</td><td><button class="btn vermelho pequeno" onclick="excluirFicha(${i})">✕</button></td></tr>`;
     });
 }
 function excluirFicha(i){
     if(confirm('Excluir esta ficha?')){ BD.fichas.splice(i,1); if(fichaAtual===i){ fichaAtual=null; document.getElementById('semFicha').classList.remove('oculto'); document.getElementById('conteudoFicha').classList.add('oculto'); } salvarBD(); }
 }
 
+// === PRECIFICAÇÃO EM MASSA ===
+function atualizarTabelaPrecMassa(){
+    let tb=document.getElementById('corpoTabelaPrecMassa'); tb.innerHTML='';
+    let mgGlobal=parseFloat(document.getElementById('margemGlobalTeste').value)||40;
+    BD.fichas.forEach((f,i)=>{
+        let ci=f.itens.reduce((s,x)=>s+x.custoItem,0)/f.qtdPorcao;
+        let cf=f.custoFixo/f.qtdPorcao;
+        let txImp=BD.taxas.imposto||0;
+        let txCred=BD.taxas.credito||0;
+        let txOut=BD.taxas.outras||0;
+        let custoTotal=ci+cf;
+        let taxaTotal=txImp+txCred+txOut;
+        let fatorTaxa=1-(taxaTotal/100);
+        let precoSug=custoTotal/(fatorTaxa-(mgGlobal/100));
+        let precoPratic=f.precoPraticado||0;
+        let markup=precoPratic>0 ? (((precoPratic*fatorTaxa)-custoTotal)/custoTotal)*100 : mgGlobal;
+        let margem=precoPratic>0 ? ((precoPratic-custoTotal)/precoPratic)*100 : 0;
+        let lucro=precoPratic>0 ? (precoPratic*fatorTaxa)-custoTotal : 0;
+        let status=lucro>0 ? '<span style="color:green;">✅ LUCRO</span>' : '<span style="color:red;">⚠️ PREJUÍZO</span>';
+        tb.innerHTML+=`<tr><td><strong>${f.nome}</strong></td><td>R$ ${formatarMoeda(ci)}</td><td>R$ ${formatarMoeda(cf)}</td><td>${formatarPerc(txImp)}</td><td>${formatarPerc(txCred)}</td><td>${formatarPerc(txOut)}</td><td><strong>R$ ${formatarMoeda(custoTotal)}</strong></td><td>R$ ${formatarMoeda(precoSug)}</td><td><input type="number" step="0.01" value="${precoPratic}" style="width:100px; padding:4px;" onchange="BD.fichas[${i}].precoPraticado=this.value; salvarBD(); atualizarTabelaPrecMassa();"></td><td>${formatarPerc(markup)}</td><td>${formatarPerc(margem)}</td><td>R$ ${formatarMoeda(lucro)}</td><td>${status}</td></tr>`;
+    });
+}
+function aplicarMargemGlobal(){
+    document.getElementById('margemGlobal').value=document.getElementById('margemGlobalTeste').value;
+    salvarTaxas();
+    atualizarTabelaPrecMassa();
+    alert('✅ Margem aplicada em TODOS os produtos!');
+}
+
 // === CALCULADORA DE MASSA ===
+function calcularMassa(){
+    let peso=parseFloat(document.getElementById('pesoTotalMassa').value)||0;
+    let un=document.getElementById('unidPesoMassa').value;
+    if(un==='kg') peso=peso*1000;
+    let somaPerc=BD.receitaMassa.reduce((s,x)=>s+x.perc,0);
+    let farinhaGramas=peso/(somaPerc/100);
+    document.getElementById('grFarinha').textContent=farinhaGramas.toFixed(1)+' g';
+    let tb=document.getElementById('tabelaMassaIng');
+    tb.innerHTML=`<tr style="background:#e8f5e9;"><td><strong>🍞 Farinha</strong></td><td>100%</td><td>${farinhaGramas.toFixed(1)} g</td><td>--</td></tr>`;
+    let pesoCalculado=farinhaGramas;
+    BD.receitaMassa.forEach((item,i)=>{
+        if(item.nome!=='Farinha'){
+            let g=(item.perc/100)*farinhaGramas;
+            pesoCalculado+=g;
+            tb.innerHTML+=`<tr><td>${item.nome}</td><td>${item.perc}%</td><td>${g.toFixed(1)} g</td><td><button class="btn vermelho pequeno" onclick="removerIngMassa(${i})">✕</button></td></tr>`;
+        }
+    });
+    document.getElementById('resPesoTotal').textContent=peso.toFixed(1)+' g';
+    document.getElementById('resPesoCalculado').textContent=pesoCalculado.toFixed(1)+' g';
+    let dif=pesoCalculado-peso;
+    document.getElementById('resDiferenca').textContent=(dif>=0?'+':'')+dif.toFixed(1)+' g';
+}
+function adicionarIngMassa(){
+    let n=document.getElementById('ingMassaNome').value.trim();
+    let p=parseFloat(document.getElementById('ingMassaPerc').value)||0;
+    if(!n||p<=0) return alert('Preencha nome e porcentagem!');
+    BD.receitaMassa.push({nome:n, perc:p});
+    document.getElementById('ingMassaNome').value='';
+    document.getElementById('ingMassaPerc').value='';
+    calcularMassa();
+}
+function removerIngMassa(i){ BD.receitaMassa.splice(i,1); calcularMassa(); }
 function carregarSelectFormulasMassa(){
     let sel=document.getElementById('selFormulaMassa');
-    sel.innerHTML='<option value="">-- Selecione uma receita--</option>';
+    sel.innerHTML='<option value="">-- Selecione uma receita --</option>';
     BD.formulasMassa.forEach((f,i)=>sel.innerHTML+=`<option value="${i}">${f.nome}</option>`);
 }
 function salvarFormulaMassa(){
@@ -766,143 +833,174 @@ function salvarFormulaMassa(){
     else BD.formulasMassa[idx].itens=dados;
     salvarBD();
     carregarSelectFormulasMassa();
-    alert('✅ Receita salva como: '+nome);
+    alert('✅ Receita salva!');
 }
 function carregarFormulaMassa(){
-    let sel=document.getElementById('selFormulaMassa').value;
-    if(sel==='') return;
-    let f=BD.formulasMassa[sel];
-    document.getElementById('nomeFormulaMassa').value=f.nome;
+    let s=document.getElementById('selFormulaMassa').value;
+    if(s==='') return;
+    let f=BD.formulasMassa[parseInt(s)];
     BD.receitaMassa=[{nome:'Farinha', perc:100}, ...f.itens];
+    document.getElementById('nomeFormulaMassa').value=f.nome;
     calcularMassa();
 }
 function excluirFormulaMassa(){
-    let sel=document.getElementById('selFormulaMassa').value;
-    if(sel==='') return alert('Selecione uma receita primeiro!');
-    if(!confirm('Excluir esta receita?')) return;
-    BD.formulasMassa.splice(sel,1);
-    salvarBD();
-    carregarSelectFormulasMassa();
-    limparReceitaMassa();
-}
-function adicionarIngMassa(){
-    let n=document.getElementById('ingMassaNome').value.trim();
-    let p=parseFloat(document.getElementById('ingMassaPerc').value)||0;
-    if(!n||p<=0) return alert('Preencha nome e porcentagem!');
-    BD.receitaMassa.push({nome:n, perc:p});
-    document.getElementById('ingMassaNome').value=''; document.getElementById('ingMassaPerc').value='';
-    calcularMassa();
-}
-function removerIngMassa(i){ if(i===0) return alert('Não pode remover a Farinha!'); BD.receitaMassa.splice(i,1); calcularMassa(); }
-function calcularMassa(){
-    let pesoDesejado=parseFloat(document.getElementById('pesoTotalMassa').value)||0;
-    let unid=document.getElementById('unidPesoMassa').value;
-    if(unid==='kg') pesoDesejado*=1000;
-    let somaPerc=BD.receitaMassa.reduce((s,x)=>s+x.perc,0);
-    let farinhaGramas=somaPerc>0 ? pesoDesejado/(somaPerc/100) : 0;
-    document.getElementById('grFarinha').textContent=farinhaGramas.toFixed(1)+' g';
-    let tb=document.getElementById('tabelaMassaIng'); tb.innerHTML='';
-    let pesoCalculado=0;
-    BD.receitaMassa.forEach((item,i)=>{
-        let g=(item.perc/100)*farinhaGramas;
-        pesoCalculado+=g;
-        tb.innerHTML+=`<tr style="${i===0?'background:#e8f5ee9;':''}"><td>${item.nome}</td><td>${item.perc.toFixed(1)}%</td><td>${g.toFixed(1)} g</td><td>${i===0?'--':'<button class=\"btn vermelho pequeno\" onclick=\"removerIngMassa('+i+')\">✕</button>'}</td></tr>`;
-    });
-    document.getElementById('resPesoTotal').textContent = pesoDesejado.toFixed(1)+' g ('+(unid==='kg'?(pesoDesejado/1000).toFixed(3)+' kg':unid)+')';
-    document.getElementById('resPesoCalculado').textContent = pesoCalculado.toFixed(1)+' g';
-    document.getElementById('resDiferenca').textContent = (pesoCalculado-pesoDesejado).toFixed(1)+' g';
+    let s=document.getElementById('selFormulaMassa').value;
+    if(s==='') return alert('Selecione uma receita primeiro!');
+    if(confirm('Excluir esta receita?')){
+        BD.formulasMassa.splice(parseInt(s),1);
+        salvarBD();
+        carregarSelectFormulasMassa();
+        document.getElementById('selFormulaMassa').value='';
+        alert('✅ Excluída!');
+    }
 }
 function limparReceitaMassa(){
-    BD.receitaMassa = [{nome:'Farinha', perc:100}];
+    BD.receitaMassa=[{nome:'Farinha', perc:100}];
     document.getElementById('pesoTotalMassa').value='';
     document.getElementById('nomeFormulaMassa').value='';
     document.getElementById('selFormulaMassa').value='';
     calcularMassa();
 }
 
-// === VENDAS ===
+// === ESTOQUE ===
+function salvarEstoque(){
+    let sabor=document.getElementById('estoqueSabor').value.trim();
+    let qtd=parseInt(document.getElementById('estoqueQtd').value)||0;
+    let prod=parseInt(document.getElementById('estoqueProduzir').value)||0;
+    if(!sabor) return alert('Digite o sabor!');
+    let idx=BD.estoque.findIndex(x=>x.sabor===sabor);
+    if(idx===-1) BD.estoque.push({sabor:sabor, estoque:qtd, produzir:prod});
+    else { BD.estoque[idx].estoque=qtd; BD.estoque[idx].produzir=prod; }
+    salvarBD();
+    atualizarTabelaEstoque();
+    document.getElementById('estoqueSabor').value='';
+    document.getElementById('estoqueQtd').value='';
+    document.getElementById('estoqueProduzir').value='';
+}
+function atualizarTabelaEstoque(){
+    let tb=document.getElementById('tabelaEstoque'); tb.innerHTML='';
+    BD.estoque.forEach((e,i)=>{
+        tb.innerHTML+=`<tr><td>${e.sabor}</td><td style="text-align:center; font-weight:bold;">${e.estoque}</td><td style="text-align:center;">${e.produzir}</td><td style="text-align:center; font-weight:bold; color:var(--cor1);">${e.estoque+e.produzir}</td><td style="text-align:center;"><button class="btn vermelho pequeno" onclick="BD.estoque.splice(${i},1); salvarBD(); atualizarTabelaEstoque();">✕</button></td></tr>`;
+    });
+}
+
+// === VENDAS E COMANDA ===
 function carregarSelectProdutosVenda(){
     let sel=document.getElementById('selProdutoVenda');
-    sel.innerHTML='';
-    BD.produtos.forEach((p,i)=>sel.innerHTML+=`<option value="${i}">${p.nome} — R$ ${formatarMoeda(p.preco)}</option>`);
+    sel.innerHTML='<option value="">-- Selecione o Produto --</option>';
+    BD.fichas.forEach(f=>sel.innerHTML+=`<option value="${f.nome}">${f.nome}</option>`);
+    BD.produtos.forEach(p=>{
+        if(!BD.fichas.find(f=>f.nome===p.nome)) sel.innerHTML+=`<option value="${p.nome}">${p.nome}</option>`;
+    });
 }
 function registrarVenda(){
-    let dt=document.getElementById('dataVenda').value||dataHoje();
-    let p=parseInt(document.getElementById('selProdutoVenda').value);
-    let q=parseInt(document.getElementById('qtdVendida').value)||1;
-    let prod=BD.produtos[p];
-    BD.vendas.unshift({data:dt, nome:prod.nome, precoUnit:prod.preco, qtd:q, total:(prod.preco*q)});
-    document.getElementById('qtdVendida').value='1';
+    let prod=document.getElementById('selProdutoVenda').value;
+    let qtd=parseInt(document.getElementById('qtdVendida').value)||1;
+    let data=document.getElementById('dataVenda').value || dataHoje();
+    let forma=document.getElementById('formaPagamento').value;
+    let obs=document.getElementById('observacaoVenda').value.trim();
+    if(!prod) return alert('Selecione o produto!');
+    let ficha=BD.fichas.find(x=>x.nome===prod);
+    let precoUnit=ficha ? (ficha.precoPraticado||ficha.precoSugerido||BD.produtos.find(p=>p.nome===prod)?.preco||0) : (BD.produtos.find(p=>p.nome===prod)?.preco||0);
+    if(precoUnit<=0) return alert('Preço não encontrado! Verifique a ficha técnica.');
+    BD.vendas.unshift({
+        data:data, produto:prod, quantidade:qtd, valorUnit:precoUnit, formaPagamento:forma, observacao:obs,
+        valorTotal:precoUnit*qtd,
+        custoUnit: ficha ? (ficha.custoUnitario||0) : 0,
+        custoTotal: ficha ? (ficha.custoUnitario||0)*qtd : 0
+    });
+    document.getElementById('observacaoVenda').value='';
     salvarBD();
     atualizarTabelaVendas();
-    alert('✅ Venda registrada: '+q+'x '+prod.nome);
+    alert(`✅ Venda registrada!\n${qtd}x ${prod}\nTotal: R$ ${formatarMoeda(precoUnit*qtd)}`);
+}
+function imprimirComanda(){
+    let prod=document.getElementById('selProdutoVenda').value;
+    let qtd=parseInt(document.getElementById('qtdVendida').value)||1;
+    let obs=document.getElementById('observacaoVenda').value.trim();
+    if(!prod) return alert('Selecione o produto primeiro!');
+    let agora=new Date();
+    let dataHora=agora.toLocaleDateString('pt-BR') + '  ' + agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('dataHoraComanda').textContent=dataHora;
+    let htmlItens=`<div class="item">✅ ${qtd}x ${prod}</div>`;
+    if(obs) htmlItens+=`<div class="obs">📝 OBS: ${obs.toUpperCase()}</div>`;
+    document.getElementById('itensComanda').innerHTML=htmlItens;
+    document.getElementById('totalComanda').textContent=`TOTAL: ${qtd} ITENS`;
+    let area=document.getElementById('areaImpressao');
+    area.style.display='block';
+    window.print();
+    area.style.display='none';
 }
 function atualizarTabelaVendas(){
-    let mes=filtroMesAtual;
-    let vendasFiltradas=mes ? BD.vendas.filter(v=>v.data.substring(0,7)===mes) : BD.vendas;
     let tb=document.getElementById('tabelaVendas'); tb.innerHTML='';
-    let totalQtd=0, totalFat=0, totalCusto=0;
-    vendasFiltradas.forEach((v,i)=>{
-        totalQtd+=v.qtd; totalFat+=v.total;
-        let custoUnit=0;
-        let fichaCorr=BD.fichas.find(x=>v.nome.includes(x.nome.substring(0,20)));
-        if(fichaCorr && fichaCorr.custoUnitario) custoUnit=fichaCorr.custoUnitario;
-        let custoLinha=custoUnit*v.qtd; totalCusto+=custoLinha;
-        tb.innerHTML+=`<tr><td>${v.data}</td><td>${v.nome}</td><td>${v.qtd}</td><td>R$ ${formatarMoeda(v.precoUnit)}</td><td>R$ ${formatarMoeda(v.total)}</td><td><button class=\"btn vermelho pequeno\" onclick=\"excluirVenda(${BD.vendas.indexOf(v)})\">✕</button></td></tr>`;
+    let filtro=filtroMesAtual;
+    let vendasExibir=filtro ? BD.vendas.filter(v=>v.data.startsWith(filtro)) : BD.vendas;
+    let totalItens=0, fatTotal=0, custoTotal=0;
+    vendasExibir.forEach((v,i)=>{
+        totalItens+=v.quantidade;
+        fatTotal+=v.valorTotal;
+        custoTotal+=v.custoTotal;
+        let formaTexts={debito:'💳 Débito', credito:'💳 Crédito', pix:'⚡ PIX', dinheiro:'💵 Dinheiro'};
+        tb.innerHTML+=`<tr><td>${v.data}</td><td>${v.produto}</td><td>${v.quantidade}</td><td>R$ ${formatarMoeda(v.valorUnit)}</td><td>R$ ${formatarMoeda(v.valorTotal)}</td><td>${formaTexts[v.formaPagamento]||v.formaPagamento}</td><td>${v.observacao||'-'}</td><td><button class="btn vermelho pequeno" onclick="if(confirm('Excluir?')){BD.vendas.splice(${BD.vendas.indexOf(v)},1); salvarBD(); atualizarTabelaVendas();}">✕</button></td></tr>`;
     });
-    document.getElementById('totalVendasPeriodo').textContent=totalQtd;
-    document.getElementById('fatVendasPeriodo').textContent='R$ '+formatarMoeda(totalFat);
-    document.getElementById('custoVendasPeriodo').textContent='R$ '+formatarMoeda(totalCusto);
-    document.getElementById('lucroVendasPeriodo').textContent='R$ '+formatarMoeda(totalFat-totalCusto);
+    document.getElementById('totalVendasPeriodo').textContent=totalItens;
+    document.getElementById('fatVendasPeriodo').textContent='R$ '+formatarMoeda(fatTotal);
+    document.getElementById('custoVendasPeriodo').textContent='R$ '+formatarMoeda(custoTotal);
+    document.getElementById('lucroVendasPeriodo').textContent='R$ '+formatarMoeda(fatTotal-custoTotal);
 }
-function excluirVenda(i){ if(confirm('Excluir esta venda?')){BD.vendas.splice(i,1); salvarBD(); atualizarTabelaVendas();} }
+function filtrarVendas(){ atualizarTabelaVendas(); }
 function limparFiltroMes(){ filtroMesAtual=''; document.getElementById('filtroMes').value=''; atualizarTabelaVendas(); }
 
 // === COMPRAS / CUPONS ===
 function cadastrarCupom(){
-    let n=document.getElementById('cupomNum').value.trim();
+    let num=document.getElementById('cupomNum').value.trim();
     let cnpj=document.getElementById('cupomCNPJ').value.trim();
-    let merc=document.getElementById('cupomMercado').value.trim();
-    let dt=document.getElementById('cupomData').value;
-    let vl=parseFloat(document.getElementById('cupomValor').value)||0;
-    let it=document.getElementById('cupomItens').value.trim();
-    if(!n||!merc||!dt||vl<=0) return alert('Preencha Nº Cupom, Mercado, Data e Valor!');
-    BD.compras.unshift({numero:n, cnpj:cnpj, mercado:merc, data:dt, valor:vl, itens:it});
-    document.getElementById('cupomNum').value=''; document.getElementById('cupomCNPJ').value='';
-    document.getElementById('cupomMercado').value=''; document.getElementById('cupomValor').value='';
+    let nome=document.getElementById('cupomMercado').value.trim();
+    let data=document.getElementById('cupomData').value;
+    let val=parseFloat(document.getElementById('cupomValor').value)||0;
+    let itens=document.getElementById('cupomItens').value.trim();
+    if(!num||!nome||val<=0) return alert('Preencha Nº Cupom, Mercado e Valor!');
+    BD.compras.unshift({numero:num, cnpj:cnpj, mercado:nome, data:data, valor:val, itens:itens});
+    document.getElementById('cupomNum').value='';
+    document.getElementById('cupomCNPJ').value='';
+    document.getElementById('cupomMercado').value='';
+    document.getElementById('cupomValor').value='';
     document.getElementById('cupomItens').value='';
     salvarBD();
+    filtrarCompras();
     alert('✅ Cupom cadastrado!');
 }
 function filtrarCompras(){
-    let b=document.getElementById('pesquisaCupom').value.trim().toLowerCase();
+    let termo=document.getElementById('pesquisaCupom').value.trim().toLowerCase();
     let tb=document.getElementById('tabelaCompras'); tb.innerHTML='';
-    BD.compras.filter(c=>!b||c.numero.toLowerCase().includes(b)||c.cnpj.toLowerCase().includes(b)||c.mercado.toLowerCase().includes(b)).forEach((c,i)=>{
-        tb.innerHTML+=`<tr><td>${c.data}</td><td>${c.numero}</td><td>${c.mercado}</td><td>${c.cnpj||'—'}</td><td>R$ ${formatarMoeda(c.valor)}</td><td><button class=\"btn vermelho pequeno\" onclick=\"excluirCompra(${i})\">✕</button></td></tr>`;
+    BD.compras.filter(c=>!termo || c.numero.toLowerCase().includes(termo) || c.cnpj.includes(termo) || c.mercado.toLowerCase().includes(termo)).forEach((c,i)=>{
+        tb.innerHTML+=`<tr><td>${c.data}</td><td>${c.numero}</td><td>${c.mercado}</td><td>${c.cnpj||'-'}</td><td>R$ ${formatarMoeda(c.valor)}</td><td><button class="btn vermelho pequeno" onclick="if(confirm('Excluir?')){BD.compras.splice(${i},1); salvarBD(); filtrarCompras();}">✕</button></td></tr>`;
     });
 }
-function excluirCompra(i){ if(confirm('Excluir este cupom?')){BD.compras.splice(i,1); salvarBD(); filtrarCompras();} }
 
-// === PAINEL GERAL ===
+// === DASHBOARD ===
 function atualizarDashboard(){
-    document.getElementById('qtdProdutos').textContent=BD.produtos.length;
-    let somaCustos=BD.custos.reduce((s,x)=>s+x.val,0);
-    document.getElementById('totalCustosFixos').textContent='R$ '+formatarMoeda(somaCustos);
-    let fat=BD.vendas.reduce((s,x)=>s+x.total,0);
-    document.getElementById('fatPeriodo').textContent='R$ '+formatarMoeda(fat);
-    let custoEst=BD.vendas.reduce((s,v)=>{
-        let f=BD.fichas.find(x=>v.nome.includes(x.nome.substring(0,20)));
-        return s + (f&&f.custoUnitario?f.custoUnitario*v.qtd:0);
-    },0);
-    document.getElementById('custoVendas').textContent='R$ '+formatarMoeda(custoEst);
-    let lucro=fat-custoEst;
-    document.getElementById('lucroPeriodo').textContent='R$ '+formatarMoeda(lucro);
-    document.getElementById('margemMedia').textContent=fat>0?formatarPerc((lucro/fat)*100):'0%';
-    let vendasProd={}; BD.vendas.forEach(v=>{vendasProd[v.nome]=(vendasProd[v.nome]||{qtd:0,fat:0}); vendasProd[v.nome].qtd+=v.qtd; vendasProd[v.nome].fat+=v.total;});
-    let topQtd=Object.entries(vendasProd).sort((a,b)=>b[1].qtd-a[1].qtd).slice(0,5);
-    document.getElementById('topVendidos').innerHTML=topQtd.length?topQtd.map((p,i)=>`${i+1}º ${p[0]} → ${p[1].qtd} unidades`).join('<br>'):'Sem dados';
-    let topLuc=Object.entries(vendasProd).sort((a,b)=>b[1].fat-a[1].fat).slice(0,5);
-    document.getElementById('topLucrativos').innerHTML=topLuc.length?topLuc.map((p,i)=>`${i+1}º ${p[0]} → R$ ${formatarMoeda(p[1].fat)}`).join('<br>'):'Sem dados';
+    document.getElementById('qtdProdutos').textContent=BD.fichas.length;
+    let custoFixoMensal=BD.custos.reduce((s,c)=>s+c.val,0);
+    document.getElementById('totalCustosFixos').textContent='R$ '+formatarMoeda(custoFixoMensal);
+    let mesAtual=new Date().toISOString().slice(0,7);
+    let vendasMes=BD.vendas.filter(v=>v.data.startsWith(mesAtual));
+    let fatMes=vendasMes.reduce((s,v)=>s+v.valorTotal,0);
+    let custoVendasMes=vendasMes.reduce((s,v)=>s+v.custoTotal,0);
+    document.getElementById('fatPeriodo').textContent='R$ '+formatarMoeda(fatMes);
+    document.getElementById('custoVendas').textContent='R$ '+formatarMoeda(custoVendasMes);
+    document.getElementById('lucroPeriodo').textContent='R$ '+formatarMoeda(fatMes-custoVendasMes);
+    let margemMedia=fatMes>0 ? ((fatMes-custoVendasMes)/fatMes)*100 : 0;
+    document.getElementById('margemMedia').textContent=formatarPerc(margemMedia);
+    let contagem={}, lucroPorProd={};
+    vendasMes.forEach(v=>{
+        contagem[v.produto]=(contagem[v.produto]||0)+v.quantidade;
+        lucroPorProd[v.produto]=(lucroPorProd[v.produto]||0)+((v.valorTotal)-(v.custoTotal||0));
+    });
+    let topQtd=Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    let topLucro=Object.entries(lucroPorProd).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    document.getElementById('topVendidos').innerHTML=topQtd.length?topQtd.map((p,i)=>`${i+1}. <strong>${p[0]}</strong>: ${p[1]} unidades`).join('<br>'):'Sem vendas no mês';
+    document.getElementById('topLucrativos').innerHTML=topLucro.length?topLucro.map((p,i)=>`${i+1}. <strong>${p[0]}</strong>: R$ ${formatarMoeda(p[1])}`).join('<br>'):'Sem dados';
 }
 
 // === INICIALIZAÇÃO ===
@@ -910,95 +1008,18 @@ function atualizarTudo(){
     atualizarTabelaCustos();
     atualizarTabelaInsumos();
     atualizarListaFichas();
+    atualizarTabelaEstoque();
     atualizarTabelaVendas();
     filtrarCompras();
     atualizarDashboard();
-    carregarSelectFormulasMassa();
     carregarSelectProdutosVenda();
 }
 window.onload=function(){
-    carregarTaxas();
     document.getElementById('dataVenda').value=dataHoje();
+    document.getElementById('cupomData').value=dataHoje();
+    carregarTaxas();
     atualizarTudo();
 };
-// ✅ === PRECIFICAÇÃO EM MASSA ===
-function atualizarTabelaPrecMassa(){
-    let tb=document.getElementById('corpoTabelaPrecMassa');
-    if(!tb) return;
-    tb.innerHTML='';
-    if(!BD.fichas || BD.fichas.length===0){
-        tb.innerHTML='<tr><td colspan="13" style="text-align:center; padding:20px;">⚠️ Crie primeiro suas Fichas Técnicas na aba "Fichas"!</td></tr>';
-        return;
-    }
-    
-    BD.fichas.forEach((f,i)=>{
-        let custoInsumos = f.itens.reduce((s,x)=>s+(x.custoItem||0),0);
-        let custoFixo = f.custoFixo||0;
-        let txImp = (BD.taxas.imposto||0)/100;
-        let txCart = (BD.taxas.cartao||0)/100;
-        let txOut = (BD.taxas.outras||0)/100;
-        
-        let custoTotal = custoInsumos + custoFixo;
-        let margemGlobal = (BD.taxas.margemGlobal||40)/100;
-        let precoSugerido = custoTotal / (1 - margemGlobal - txImp - txCart - txOut);
-        let precoPraticado = f.precoPraticado||0;
-        
-        let impostoValor = precoPraticado * txImp;
-        let cartaoValor = precoPraticado * txCart;
-        let outrasValor = precoPraticado * txOut;
-        let custoTotalComTaxas = custoInsumos + custoFixo + impostoValor + cartaoValor + outrasValor;
-        let markup = custoTotal>0 ? precoPraticado / custoTotal : 0;
-        let margemPerc = precoPraticado>0 ? ((precoPraticado - custoTotalComTaxas) / precoPraticado)*100 : 0;
-        let lucroR$ = precoPraticado - custoTotalComTaxas;
-        
-        let status, cor;
-        if(precoPraticado===0){ status="⚠️ Sem preço"; cor="#fff3cd"; }
-        else if(margemPerc<=0){ status="❌ PREJUÍZO"; cor="#ffd6d6"; }
-        else if(margemPerc < margemGlobal*100){ status="⚠️ Abaixo"; cor="#fff3cd"; }
-        else { status="✅ BOM"; cor="#d4edda"; }
-        
-        tb.innerHTML += `<tr style="background:${cor};">
-            <td><strong>${f.nome}</strong></td>
-            <td>R$ ${formatarMoeda(custoInsumos)}</td>
-            <td><input type="number" step="0.01" value="${custoFixo.toFixed(2)}" onchange="salvarCustoFixoMassa(${i},this.value)" style="width:90px;"></td>
-            <td>R$ ${formatarMoeda(impostoValor)}</td>
-            <td>R$ ${formatarMoeda(cartaoValor)}</td>
-            <td>R$ ${formatarMoeda(outrasValor)}</td>
-            <td><strong>R$ ${formatarMoeda(custoTotalComTaxas)}</strong></td>
-            <td style="color:${precoSugerido>0?'#006644':'#999'}"><strong>R$ ${formatarMoeda(precoSugerido)}</strong></td>
-            <td><input type="number" step="0.01" value="${precoPraticado>0?precoPraticado.toFixed(2):''}" onchange="salvarPrecoPraticadoMassa(${i},this.value)" style="width:95px; font-weight:bold;"></td>
-            <td>${markup>0?markup.toFixed(2):'-'}x</td>
-            <td><strong>${margemPerc.toFixed(2)}%</strong></td>
-            <td style="color:${lucroR$>=0?'#006644':'#cc3333'}">R$ ${formatarMoeda(lucroR$)}</td>
-            <td>${status}</td>
-        </tr>`;
-    });
-}
-
-function salvarCustoFixoMassa(i,valor){
-    BD.fichas[i].custoFixo = parseFloat(valor)||0;
-    salvarBD();
-    atualizarTabelaPrecMassa();
-}
-
-function salvarPrecoPraticadoMassa(i,valor){
-    BD.fichas[i].precoPraticado = parseFloat(valor)||0;
-    salvarBD();
-    atualizarTabelaPrecMassa();
-}
-
-function aplicarMargemGlobal(){
-    let margem = parseFloat(document.getElementById('margemGlobalTeste').value)||40;
-    BD.taxas.margemGlobal = margem;
-    salvarBD();
-    atualizarTabelaPrecMassa();
-    alert(`✅ Margem de ${margem}% aplicada! Preço Sugerido atualizado!`);
-}
-
-const abaPrecMassa = document.querySelector('[data-aba="precificacaoMassa"]');
-if(abaPrecMassa) abaPrecMassa.onclick = atualizarTabelaPrecMassa;
-
-if(!BD.taxas.margemGlobal) BD.taxas.margemGlobal=40;
 </script>
 </body>
 </html>
