@@ -567,7 +567,7 @@ function adicionarItemFicha(){
     let ins=BD.insumos[s];
     
     // ✅ CONVERTE UNIDADE PARA GRAMAS
-    let fator={'g':1,'kg':1000,'ml':1,'Litro':1000,'Un':1}[u];
+    let fator={'g':1,'kg':1000,'ml':1,'l':1000,'Litro':1000,'un':1,'Un':1,'UN':1}[u] || 1;
     let g=q*fator;
     
     // ✅ CALCULA O CUSTO CERTINHO NA HORA!
