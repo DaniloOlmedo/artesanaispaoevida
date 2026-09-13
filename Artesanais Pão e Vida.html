@@ -811,79 +811,75 @@ function aplicarMargemGlobal(){
     alert('✅ Aplicada margem de ' + mgGlobal + '% em TODOS!');
 }
 
-// === CALCULADORA DE MASSA ===
+// === CALCULADORA DE MASSA — VERSÃO CORRIGIDA ===
 function calcularMassa(){
-    let peso=parseFloat(document.getElementById('pesoTotalMassa').value)||0;
-    let un=document.getElementById('unidPesoMassa').value;
-    if(un==='kg') peso=peso*1000;
-    let somaPerc=BD.receitaMassa.reduce((s,x)=>s+x.perc,0);
-    let farinhaGramas=peso/(somaPerc/100);
-    document.getElementById('grFarinha').textContent=farinhaGramas.toFixed(1)+' g';
-    let tb=document.getElementById('tabelaMassaIng');
-    tb.innerHTML=`<tr style="background:#e8f5e9;"><td><strong>🍞 Farinha</strong></td><td>100%</td><td>${farinhaGramas.toFixed(1)} g</td><td>--</td></tr>`;
-    let pesoCalculado=farinhaGramas;
-    BD.receitaMassa.forEach((item,i)=>{
-        if(item.nome!=='Farinha'){
-            let g=(item.perc/100)*farinhaGramas;
-            pesoCalculado+=g;
-            tb.innerHTML+=`<tr><td>${item.nome}</td><td>${item.perc}%</td><td>${g.toFixed(1)} g</td><td><button class="btn vermelho pequeno" onclick="removerIngMassa(${i})">✕</button></td></tr>`;
+    let peso = parseFloat(document.getElementById('pesoTotalMassa').value) || 0;
+    let un = document.getElementById('unidPesoMassa').value;
+    
+    // Converte para gramas
+    let pesoTotal = un === "kg" ? peso * 1000 : peso;
+    if (pesoTotal <= 0 || BD.receitaMassa.length === 0) {
+        document.getElementById('resPesoTotal').textContent = "-- g";
+        document.getElementById('resPesoCalculado').textContent = "-- g";
+        document.getElementById('resDiferenca').textContent = "-- g";
+        document.getElementById('grFarinha').textContent = "-- g";
+        return;
+    }
+
+    // ✅ SOMA TODAS AS PORCENTAGENS
+    let somaPerc = BD.receitaMassa.reduce((s, x) => s + x.perc, 0);
+    if (somaPerc <= 0) return alert("Adicione os ingredientes primeiro!");
+
+    // ✅ FÓRMULA CORRETA: Farinha = Peso Total ÷ (soma% / 100)
+    let farinhaGramas = pesoTotal / (somaPerc / 100);
+
+    // ✅ EXIBE A FARINHA CALCULADA
+    document.getElementById('grFarinha').textContent = farinhaGramas.toFixed(1) + ' g';
+
+    // ✅ MONTA A TABELA COM TODOS OS INGREDIENTES
+    let tb = document.getElementById('tabelaMassaIng');
+    tb.innerHTML = `<tr style="background:#e8f5e9;">
+        <td><strong>🍞 Farinha</strong></td>
+        <td>100%</td>
+        <td>${farinhaGramas.toFixed(1)} g</td>
+        <td>--</td>
+    </tr>`;
+
+    let pesoCalculado = farinhaGramas;
+
+    // ✅ CALCULA CADA INGREDIENTE
+    BD.receitaMassa.forEach((item, i) => {
+        if (item.nome !== 'Farinha') {
+            let g = (item.perc / 100) * farinhaGramas;
+            pesoCalculado += g;
+            tb.innerHTML += `<tr>
+                <td>${item.nome}</td>
+                <td>${item.perc}%</td>
+                <td>${g.toFixed(1)} g</td>
+                <td><button class="btn vermelho pequeno" onclick="removerItemMassa(${i})">✕</button></td>
+            </tr>`;
         }
     });
-    document.getElementById('resPesoTotal').textContent=peso.toFixed(1)+' g';
-    document.getElementById('resPesoCalculado').textContent=pesoCalculado.toFixed(1)+' g';
-    let dif=pesoCalculado-peso;
-    document.getElementById('resDiferenca').textContent=(dif>=0?'+':'')+dif.toFixed(1)+' g';
+
+    // ✅ EXIBE RESULTADOS
+    let dif = pesoCalculado - pesoTotal;
+    document.getElementById('resPesoTotal').textContent = pesoTotal.toFixed(1) + ' g';
+    document.getElementById('resPesoCalculado').textContent = pesoCalculado.toFixed(1) + ' g';
+    document.getElementById('resDiferenca').textContent = (dif >= 0 ? "+" : "") + dif.toFixed(1) + ' g';
+    document.getElementById('resDiferenca').style.color = Math.abs(dif) < 0.5 ? "green" : "orange";
 }
+
+// === ADICIONAR INGREDIENTE ===
 function adicionarIngMassa(){
-    let n=document.getElementById('ingMassaNome').value.trim();
-    let p=parseFloat(document.getElementById('ingMassaPerc').value)||0;
-    if(!n||p<=0) return alert('Preencha nome e porcentagem!');
-    BD.receitaMassa.push({nome:n, perc:p});
-    document.getElementById('ingMassaNome').value='';
-    document.getElementById('ingMassaPerc').value='';
-    calcularMassa();
-}
-function removerIngMassa(i){ BD.receitaMassa.splice(i,1); calcularMassa(); }
-function carregarSelectFormulasMassa(){
-    let sel=document.getElementById('selFormulaMassa');
-    sel.innerHTML='<option value="">-- Selecione uma receita --</option>';
-    BD.formulasMassa.forEach((f,i)=>sel.innerHTML+=`<option value="${i}">${f.nome}</option>`);
-}
-function salvarFormulaMassa(){
-    let nome=document.getElementById('nomeFormulaMassa').value.trim();
-    if(!nome) return alert('Digite um nome para a receita!');
-    let idx=BD.formulasMassa.findIndex(f=>f.nome===nome);
-    let dados=BD.receitaMassa.filter(i=>i.nome!=='Farinha');
-    if(idx===-1) BD.formulasMassa.push({nome:nome, itens:dados});
-    else BD.formulasMassa[idx].itens=dados;
-    salvarBD();
-    carregarSelectFormulasMassa();
-    alert('✅ Receita salva!');
-}
-function carregarFormulaMassa(){
-    let s=document.getElementById('selFormulaMassa').value;
-    if(s==='') return;
-    let f=BD.formulasMassa[parseInt(s)];
-    BD.receitaMassa=[{nome:'Farinha', perc:100}, ...f.itens];
-    document.getElementById('nomeFormulaMassa').value=f.nome;
-    calcularMassa();
-}
-function excluirFormulaMassa(){
-    let s=document.getElementById('selFormulaMassa').value;
-    if(s==='') return alert('Selecione uma receita primeiro!');
-    if(confirm('Excluir esta receita?')){
-        BD.formulasMassa.splice(parseInt(s),1);
-        salvarBD();
-        carregarSelectFormulasMassa();
-        document.getElementById('selFormulaMassa').value='';
-        alert('✅ Excluída!');
-    }
-}
-function limparReceitaMassa(){
-    BD.receitaMassa=[{nome:'Farinha', perc:100}];
-    document.getElementById('pesoTotalMassa').value='';
-    document.getElementById('nomeFormulaMassa').value='';
-    document.getElementById('selFormulaMassa').value='';
+    let n = document.getElementById('ingMassaNome').value.trim();
+    let p = parseFloat(document.getElementById('ingMassaPerc').value) || 0;
+    if(!n || p <= 0) return alert('Preencha nome e porcentagem!');
+    
+    BD.receitaMassa.push({nome: n, perc: p});
+    
+    // Limpa campos e recalcula
+    document.getElementById('ingMassaNome').value = '';
+    document.getElementById('ingMassaPerc').value = '';
     calcularMassa();
 }
 
