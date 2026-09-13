@@ -1031,12 +1031,13 @@ window.onload=function(){
     carregarTaxas();
     atualizarTudo();
 };
-// === SALVAR RECEITA DE MASSA ===
+// === SALVAR RECEITA — SALVA TUDO, INCLUSIVE A FARINHA ===
 function salvarFormulaMassa(){
     let nome = document.getElementById('nomeFormulaMassa').value.trim();
     if(!nome) return alert('Digite um nome para salvar!');
     let idx = BD.formulasMassa.findIndex(f=>f.nome === nome);
-    let dados = BD.receitaMassa.filter(i=>i.nome !== 'Farinha');
+    // ✅ SALVA TUDO — sem filtrar nada!
+    let dados = [...BD.receitaMassa];
     if(idx === -1){
         BD.formulasMassa.push({nome:nome, itens:dados});
     } else {
@@ -1047,15 +1048,15 @@ function salvarFormulaMassa(){
     alert('✅ Receita salva!');
 }
 
-// === CARREGAR RECEITA SALVA ===
+// === CARREGAR RECEITA SALVA — SEM ADICIONAR FARINHA AUTOMÁTICA ===
 function carregarFormulaMassa(){
     let sel = document.getElementById('selFormulaMassa');
     let i = parseInt(sel.value);
     if(isNaN(i) || i < 0) return;
     let rec = BD.formulasMassa[i];
     if(!rec) return;
-    BD.receitaMassa = [{nome:'Farinha', perc:100}];
-    rec.itens.forEach(item=>BD.receitaMassa.push({nome:item.nome, perc:item.perc}));
+    // ✅ Carrega EXATAMENTE como você salvou — sem inserir farinha!
+    BD.receitaMassa = [...rec.itens];
     document.getElementById('nomeFormulaMassa').value = rec.nome;
     calcularMassa();
 }
@@ -1082,7 +1083,7 @@ function removerItemMassa(i){
 
 // === LIMPAR E COMEÇAR NOVA RECEITA ===
 function limparReceitaMassa(){
-    BD.receitaMassa = [{nome:'Farinha', perc:100}];
+    BD.receitaMassa = []; // ✅ FICA VAZIO — VOCÊ ADICIONA TUDO!
     document.getElementById('nomeFormulaMassa').value = '';
     document.getElementById('pesoTotalMassa').value = '';
     calcularMassa();
