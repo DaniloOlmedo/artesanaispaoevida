@@ -874,9 +874,9 @@ function adicionarIngMassa(){
     let n = document.getElementById('ingMassaNome').value.trim();
     let p = parseFloat(document.getElementById('ingMassaPerc').value) || 0;
     if(!n || p <= 0) return alert('Preencha nome e porcentagem!');
-    
+
     BD.receitaMassa.push({nome: n, perc: p});
-    
+
     // Limpa campos e recalcula
     document.getElementById('ingMassaNome').value = '';
     document.getElementById('ingMassaPerc').value = '';
