@@ -1041,6 +1041,69 @@ window.onload=function(){
     carregarTaxas();
     atualizarTudo();
 };
+// === SALVAR RECEITA DE MASSA ===
+function salvarFormulaMassa(){
+    let nome = document.getElementById('nomeFormulaMassa').value.trim();
+    if(!nome) return alert('Digite um nome para salvar!');
+    let idx = BD.formulasMassa.findIndex(f=>f.nome === nome);
+    let dados = BD.receitaMassa.filter(i=>i.nome !== 'Farinha');
+    if(idx === -1){
+        BD.formulasMassa.push({nome:nome, itens:dados});
+    } else {
+        BD.formulasMassa[idx].itens = dados;
+    }
+    salvarBD();
+    carregarSelectFormulasMassa();
+    alert('✅ Receita salva!');
+}
+
+// === CARREGAR RECEITA SALVA ===
+function carregarFormulaMassa(){
+    let sel = document.getElementById('selFormulaMassa');
+    let i = parseInt(sel.value);
+    if(isNaN(i) || i < 0) return;
+    let rec = BD.formulasMassa[i];
+    if(!rec) return;
+    BD.receitaMassa = [{nome:'Farinha', perc:100}];
+    rec.itens.forEach(item=>BD.receitaMassa.push({nome:item.nome, perc:item.perc}));
+    document.getElementById('nomeFormulaMassa').value = rec.nome;
+    calcularMassa();
+}
+
+// === EXCLUIR RECEITA SALVA ===
+function excluirFormulaMassa(){
+    let sel = document.getElementById('selFormulaMassa');
+    let i = parseInt(sel.value);
+    if(isNaN(i) || i < 0) return alert('Selecione uma receita primeiro!');
+    if(!confirm('Excluir esta receita?')) return;
+    BD.formulasMassa.splice(i,1);
+    salvarBD();
+    carregarSelectFormulasMassa();
+    alert('✅ Excluída!');
+}
+
+// === REMOVER INGREDIENTE DA TABELA ===
+function removerItemMassa(i){
+    if(confirm('Excluir este ingrediente?')){
+        BD.receitaMassa.splice(i+1, 1);
+        calcularMassa();
+    }
+}
+
+// === LIMPAR E COMEÇAR NOVA RECEITA ===
+function limparReceitaMassa(){
+    BD.receitaMassa = [{nome:'Farinha', perc:100}];
+    document.getElementById('nomeFormulaMassa').value = '';
+    document.getElementById('pesoTotalMassa').value = '';
+    calcularMassa();
+}
+
+// === ATUALIZAR LISTA DE RECEITAS SALVAS ===
+function carregarSelectFormulasMassa(){
+    let sel = document.getElementById('selFormulaMassa');
+    sel.innerHTML = '<option value="">-- Selecione uma receita --</option>';
+    BD.formulasMassa.forEach((f,i)=>sel.innerHTML += `<option value="${i}">${f.nome}</option>`);
+}
 </script>
 </body>
 </html>
