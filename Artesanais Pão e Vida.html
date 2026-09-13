@@ -301,7 +301,6 @@
         <table class="tabela">
             <thead><tr><th>Ingrediente</th><th>Porcentagem</th><th>Gramas</th><th>Ação</th></tr></thead>
             <tbody id="tabelaMassaIng">
-                <tr style="background:#e8f5e9;"><td><strong>🍞 Farinha</strong></td><td>100%</td><td id="grFarinha">-- g</td><td>--</td></tr>
             </tbody>
         </table>
         <div class="resultado">
@@ -1076,7 +1075,7 @@ function excluirFormulaMassa(){
 // === REMOVER INGREDIENTE DA TABELA ===
 function removerItemMassa(i){
     if(confirm('Excluir este ingrediente?')){
-        BD.receitaMassa.splice(i+1, 1);
+        BD.receitaMassa.splice(i, 1);  // ✅ SEM o +1!
         calcularMassa();
     }
 }
