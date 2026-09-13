@@ -811,14 +811,13 @@ function aplicarMargemGlobal(){
     alert('✅ Aplicada margem de ' + mgGlobal + '% em TODOS!');
 }
 
-// === CALCULADORA DE MASSA — VERSÃO CORRIGIDA ===
+// === CALCULADORA DE MASSA ===
 function calcularMassa(){
     let peso = parseFloat(document.getElementById('pesoTotalMassa').value) || 0;
     let un = document.getElementById('unidPesoMassa').value;
-    
-    // Converte para gramas
     let pesoTotal = un === "kg" ? peso * 1000 : peso;
-    if (pesoTotal <= 0 || BD.receitaMassa.length === 0) {
+
+    if (pesoTotal <= 0) {
         document.getElementById('resPesoTotal').textContent = "-- g";
         document.getElementById('resPesoCalculado').textContent = "-- g";
         document.getElementById('resDiferenca').textContent = "-- g";
@@ -826,17 +825,12 @@ function calcularMassa(){
         return;
     }
 
-    // ✅ SOMA TODAS AS PORCENTAGENS
     let somaPerc = BD.receitaMassa.reduce((s, x) => s + x.perc, 0);
-    if (somaPerc <= 0) return alert("Adicione os ingredientes primeiro!");
+    if (somaPerc <= 0) return;
 
-    // ✅ FÓRMULA CORRETA: Farinha = Peso Total ÷ (soma% / 100)
     let farinhaGramas = pesoTotal / (somaPerc / 100);
-
-    // ✅ EXIBE A FARINHA CALCULADA
     document.getElementById('grFarinha').textContent = farinhaGramas.toFixed(1) + ' g';
 
-    // ✅ MONTA A TABELA COM TODOS OS INGREDIENTES
     let tb = document.getElementById('tabelaMassaIng');
     tb.innerHTML = `<tr style="background:#e8f5e9;">
         <td><strong>🍞 Farinha</strong></td>
@@ -846,8 +840,6 @@ function calcularMassa(){
     </tr>`;
 
     let pesoCalculado = farinhaGramas;
-
-    // ✅ CALCULA CADA INGREDIENTE
     BD.receitaMassa.forEach((item, i) => {
         if (item.nome !== 'Farinha') {
             let g = (item.perc / 100) * farinhaGramas;
@@ -861,7 +853,6 @@ function calcularMassa(){
         }
     });
 
-    // ✅ EXIBE RESULTADOS
     let dif = pesoCalculado - pesoTotal;
     document.getElementById('resPesoTotal').textContent = pesoTotal.toFixed(1) + ' g';
     document.getElementById('resPesoCalculado').textContent = pesoCalculado.toFixed(1) + ' g';
@@ -869,17 +860,21 @@ function calcularMassa(){
     document.getElementById('resDiferenca').style.color = Math.abs(dif) < 0.5 ? "green" : "orange";
 }
 
-// === ADICIONAR INGREDIENTE ===
+/// === ADICIONAR INGREDIENTE ===
 function adicionarIngMassa(){
-    let n = document.getElementById('ingMassaNome').value.trim();
-    let p = parseFloat(document.getElementById('ingMassaPerc').value) || 0;
-    if(!n || p <= 0) return alert('Preencha nome e porcentagem!');
+    let nome = document.getElementById('ingMassaNome').value.trim();
+    let perc = parseFloat(document.getElementById('ingMassaPerc').value);
+    
+    if(!nome || isNaN(perc) || perc <= 0) {
+        alert('Digite o nome e a porcentagem corretamente!');
+        return;
+    }
 
-    BD.receitaMassa.push({nome: n, perc: p});
+    BD.receitaMassa.push({ nome: nome, perc: perc });
 
-    // Limpa campos e recalcula
     document.getElementById('ingMassaNome').value = '';
     document.getElementById('ingMassaPerc').value = '';
+
     calcularMassa();
 }
 
