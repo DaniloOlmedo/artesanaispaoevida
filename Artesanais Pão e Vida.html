@@ -449,7 +449,7 @@ let BD = {
     insumos: JSON.parse(localStorage.getItem('insumos') || '[]'),
     fichas: JSON.parse(localStorage.getItem('fichas') || '[]'),
     formulasMassa: JSON.parse(localStorage.getItem('formulasMassa') || '[]'),
-    receitaMassa: [{nome:'Farinha', perc:100}],
+    receitaMassa: [],
     vendas: JSON.parse(localStorage.getItem('vendas') || '[]'),
     compras: JSON.parse(localStorage.getItem('compras') || '[]'),
     estoque: JSON.parse(localStorage.getItem('estoque') || '[]'),
@@ -811,7 +811,7 @@ function aplicarMargemGlobal(){
     alert('✅ Aplicada margem de ' + mgGlobal + '% em TODOS!');
 }
 
-// === CALCULADORA DE MASSA ===
+// === CALCULADORA DE MASSA — VOCÊ ADICIONA TUDO, INCLUSIVE FARINHA! ===
 function calcularMassa(){
     let peso = parseFloat(document.getElementById('pesoTotalMassa').value) || 0;
     let un = document.getElementById('unidPesoMassa').value;
@@ -826,31 +826,26 @@ function calcularMassa(){
     }
 
     let somaPerc = BD.receitaMassa.reduce((s, x) => s + x.perc, 0);
-    if (somaPerc <= 0) return;
+    if (somaPerc <= 0) return alert('Adicione ingredientes primeiro! Ex: Farinha 100%');
 
-    let farinhaGramas = pesoTotal / (somaPerc / 100);
-    document.getElementById('grFarinha').textContent = farinhaGramas.toFixed(1) + ' g';
+    // ✅ Calcula baseado na soma das porcentagens que VOCÊ digitou
+    let baseGramas = pesoTotal / (somaPerc / 100);
+    document.getElementById('grFarinha').textContent = baseGramas.toFixed(1) + ' g';
 
     let tb = document.getElementById('tabelaMassaIng');
-    tb.innerHTML = `<tr style="background:#e8f5e9;">
-        <td><strong>🍞 Farinha</strong></td>
-        <td>100%</td>
-        <td>${farinhaGramas.toFixed(1)} g</td>
-        <td>--</td>
-    </tr>`;
+    tb.innerHTML = '';
+    let pesoCalculado = 0;
 
-    let pesoCalculado = farinhaGramas;
+    // ✅ MOSTRA TODOS os ingredientes — inclusive a FARINHA!
     BD.receitaMassa.forEach((item, i) => {
-        if (item.nome !== 'Farinha') {
-            let g = (item.perc / 100) * farinhaGramas;
-            pesoCalculado += g;
-            tb.innerHTML += `<tr>
-                <td>${item.nome}</td>
-                <td>${item.perc}%</td>
-                <td>${g.toFixed(1)} g</td>
-                <td><button class="btn vermelho pequeno" onclick="removerItemMassa(${i})">✕</button></td>
-            </tr>`;
-        }
+        let g = (item.perc / 100) * baseGramas;
+        pesoCalculado += g;
+        tb.innerHTML += `<tr>
+            <td>${item.nome}</td>
+            <td>${item.perc}%</td>
+            <td>${g.toFixed(1)} g</td>
+            <td><button class="btn vermelho pequeno" onclick="removerItemMassa(${i})">✕</button></td>
+        </tr>`;
     });
 
     let dif = pesoCalculado - pesoTotal;
