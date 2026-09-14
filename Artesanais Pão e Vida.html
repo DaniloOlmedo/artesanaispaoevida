@@ -857,21 +857,22 @@ function calcularMassa(){
 /// === ADICIONAR INGREDIENTE ===
 function adicionarIngMassa(){
     let nome = document.getElementById('ingMassaNome').value.trim();
-    let perc = parseFloat(document.getElementById('ingMassaPerc').value);
+    let perc = parseFloat(document.getElementById('ingMassaPerc').value.replace(',','.'));
     
     if(!nome || isNaN(perc) || perc <= 0) {
-        alert('Digite o nome e a porcentagem corretamente!');
+        alert('⚠️ Digite o nome e a porcentagem! Ex: Farinha | 100');
         return;
     }
-
+    
     BD.receitaMassa.push({ nome: nome, perc: perc });
-
+    
+    // ✅ LIMPA E ATUALIZA NA HORA
     document.getElementById('ingMassaNome').value = '';
     document.getElementById('ingMassaPerc').value = '';
-
+    
     calcularMassa();
+    console.log('✅ Adicionado:', nome, perc + '%');
 }
-
 // === ESTOQUE ===
 function salvarEstoque(){
     let sabor=document.getElementById('estoqueSabor').value.trim();
