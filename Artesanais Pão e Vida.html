@@ -830,11 +830,12 @@ function aplicarMargemGlobal(){
     alert('✅ Aplicada margem de ' + mgGlobal + '% em TODOS!');
 }
 
-// === CALCULADORA DE MASSA — VOCÊ ADICIONA TUDO, INCLUSIVE FARINHA! ===
+// === CALCULADORA DE MASSA — CORRIGIDA E CONFERIDA ===
 function calcularMassa(){
     let peso = parseFloat(document.getElementById('pesoTotalMassa').value) || 0;
     let un = document.getElementById('unidPesoMassa').value;
     let pesoTotal = un === "kg" ? peso * 1000 : peso;
+
     if (pesoTotal <= 0) {
         document.getElementById('resPesoTotal').textContent = "-- g";
         document.getElementById('resPesoCalculado').textContent = "-- g";
@@ -842,15 +843,17 @@ function calcularMassa(){
         document.getElementById('grFarinha').textContent = "-- g";
         return;
     }
+
     let somaPerc = BD.receitaMassa.reduce((s, x) => s + x.perc, 0);
     if (somaPerc <= 0) return alert('Adicione ingredientes primeiro! Ex: Farinha 100%');
-    // ✅ Calcula baseado na soma das porcentagens que VOCÊ digitou
+
     let baseGramas = pesoTotal / (somaPerc / 100);
     document.getElementById('grFarinha').textContent = baseGramas.toFixed(1) + ' g';
+
     let tb = document.getElementById('tabelaMassaIng');
     tb.innerHTML = '';
     let pesoCalculado = 0;
-    // ✅ MOSTRA TODOS os ingredientes — inclusive a FARINHA!
+
     BD.receitaMassa.forEach((item, i) => {
         let g = (item.perc / 100) * baseGramas;
         pesoCalculado += g;
@@ -861,6 +864,7 @@ function calcularMassa(){
             <td><button class="btn vermelho pequeno" onclick="removerItemMassa(${i})">✕</button></td>
         </tr>`;
     });
+
     let dif = pesoCalculado - pesoTotal;
     document.getElementById('resPesoTotal').textContent = pesoTotal.toFixed(1) + ' g';
     document.getElementById('resPesoCalculado').textContent = pesoCalculado.toFixed(1) + ' g';
@@ -868,30 +872,26 @@ function calcularMassa(){
     document.getElementById('resDiferenca').style.color = Math.abs(dif) < 0.5 ? "green" : "orange";
 }
 
-/// === ADICIONAR INGREDIENTE — NOME CORRIGIDO ===
+// ✅ NOMES CORRIGIDOS = BATE COM O SEU HTML!
 function adicionarIngredienteMassa(){
-    let nome = document.getElementById('ingMassaNome').value.trim();
-    let perc = parseFloat(document.getElementById('ingMassaPerc').value.replace(',','.'));
-    
+    let nome = document.getElementById('ingNomeMassa').value.trim();       // ✅ CORRETO!
+    let perc = parseFloat(document.getElementById('ingPercMassa').value.replace(',','.')); // ✅ CORRETO!
+
     if(!nome || isNaN(perc) || perc <= 0) {
-        alert('⚠️ Digite o nome e a porcentagem! Ex: Farinha | 100');
+        alert('⚠️ Digite nome e %! Ex: Farinha | 100');
         return;
     }
-    
+
     BD.receitaMassa.push({ nome: nome, perc: perc });
-    
-    // ✅ SALVA NO BANCO E ATUALIZA NA HORA
-    salvarBD();
-    
-    // ✅ LIMPA OS CAMPOS
-    document.getElementById('ingMassaNome').value = '';
-    document.getElementById('ingMassaPerc').value = '';
-    
+    salvarBD(); // ✅ SALVA NO BANCO!
+
+    document.getElementById('ingNomeMassa').value = '';
+    document.getElementById('ingPercMassa').value = '';
+
     calcularMassa();
     console.log('✅ Adicionado:', nome, perc + '%');
 }
 
-// ✅ REMOVER INGREDIENTE — ESTAVA FALTANDO!
 function removerItemMassa(i){
     if(confirm('Remover este ingrediente?')){
         BD.receitaMassa.splice(i, 1);
@@ -900,28 +900,47 @@ function removerItemMassa(i){
     }
 }
 
-// === ESTOQUE ===
-function salvarEstoque(){
-    let sabor=document.getElementById('estoqueSabor').value.trim();
-    let qtd=parseInt(document.getElementById('estoqueQtd').value)||0;
-    let prod=parseInt(document.getElementById('estoqueProduzir').value)||0;
-    if(!sabor) return alert('Digite o sabor!');
-    let idx=BD.estoque.findIndex(x=>x.sabor===sabor);
-    if(idx===-1) BD.estoque.push({sabor:sabor, estoque:qtd, produzir:prod});
-    else { BD.estoque[idx].estoque=qtd; BD.estoque[idx].produzir=prod; }
+function salvarFormulaMassa(){
+    let nome = document.getElementById('nomeFormulaMassa').value.trim();
+    if(!nome) return alert('Digite o nome da receita!');
+    if(!BD.formulasMassa) BD.formulasMassa = [];
+
+    let idx = BD.formulasMassa.findIndex(f=>f.nome===nome);
+    let itensSalvar = BD.receitaMassa.map(i=>({nome:i.nome, perc:i.perc}));
+
+    if(idx===-1) BD.formulasMassa.push({nome:nome, itens:itensSalvar});
+    else {
+        if(confirm('Receita já existe. Atualizar?')) BD.formulasMassa[idx].itens = itensSalvar;
+        else return;
+    }
     salvarBD();
-    atualizarTabelaEstoque();
-    document.getElementById('estoqueSabor').value='';
-    document.getElementById('estoqueQtd').value='';
-    document.getElementById('estoqueProduzir').value='';
-}
-function atualizarTabelaEstoque(){
-    let tb=document.getElementById('tabelaEstoque'); tb.innerHTML='';
-    BD.estoque.forEach((e,i)=>{
-        tb.innerHTML+=`<tr><td>${e.sabor}</td><td style="text-align:center; font-weight:bold;">${e.estoque}</td><td style="text-align:center;">${e.produzir}</td><td style="text-align:center; font-weight:bold; color:var(--cor1);">${e.estoque+e.produzir}</td><td style="text-align:center;"><button class="btn vermelho pequeno" onclick="BD.estoque.splice(${i},1); salvarBD(); atualizarTabelaEstoque();">✕</button></td></tr>`;
-    });
+    carregarSelectFormulasMassa();
+    alert('✅ Receita salva!');
 }
 
+function carregarSelectFormulasMassa(){
+    let sel = document.getElementById('selFormulaMassa');
+    sel.innerHTML = '<option value="">-- Selecione uma receita --</option>';
+    if(BD.formulasMassa) BD.formulasMassa.forEach((f,i)=>sel.innerHTML+=`<option value="${i}">${f.nome}</option>`);
+}
+
+function carregarFormulaMassa(){
+    let sel = document.getElementById('selFormulaMassa');
+    let idx = sel.value;
+    if(idx==='') return;
+    BD.receitaMassa = BD.formulasMassa[idx].itens.map(i=>({nome:i.nome, perc:i.perc}));
+    calcularMassa();
+}
+
+function novaReceitaMassa(){
+    if(confirm('Começar nova receita?')){
+        BD.receitaMassa = [];
+        document.getElementById('nomeFormulaMassa').value='';
+        document.getElementById('pesoTotalMassa').value='';
+        salvarBD();
+        calcularMassa();
+    }
+}
 // === VENDAS E COMANDA ===
 function carregarSelectProdutosVenda(){
     let sel=document.getElementById('selProdutoVenda');
