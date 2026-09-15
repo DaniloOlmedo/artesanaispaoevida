@@ -272,7 +272,8 @@
 <section id="massa" class="pagina">
     <div class="painel">
         <h2>🧮 Calculadora de Massa — Base 100% Farinha</h2>
-        <div class="aviso">Informe o peso desejado → sistema calcula farinha e ingredientes em GRAMAS. Salve suas receitas!</div>
+        <div class="aviso">Farinha = 100%. Digite os demais ingredientes em % sobre a farinha. Defina o peso total desejado e calcule em GRAMAS. Salve suas receitas!</div>
+
         <label>📂 Receitas Salvas:</label>
         <div class="flex-linha" style="margin-bottom:10px;">
             <select id="selFormulaMassa" onchange="carregarFormulaMassa()">
@@ -281,35 +282,54 @@
             <button class="btn pequeno" onclick="salvarFormulaMassa()">💾 Salvar</button>
             <button class="btn vermelho pequeno" onclick="excluirFormulaMassa()">🗑️ Excluir</button>
         </div>
-        <label>Nome da Receita (para salvar):</label>
-        <input type="text" id="nomeFormulaMassa" placeholder="Ex: Massa de Pizza, Massa de Empanada...">
-        <hr>
+
+        <label>Nome da Receita:</label>
+        <input type="text" id="nomeFormulaMassa" placeholder="Ex: Pão Rústico">
+
         <label>Peso total desejado:</label>
         <div class="flex-linha">
-            <input type="number" id="pesoTotalMassa" step="0.001" placeholder="Ex: 2,4" oninput="calcularMassa()">
+            <input type="number" step="0.01" id="pesoTotalMassa" placeholder="Ex: 4.2" oninput="calcularMassa()">
             <select id="unidPesoMassa" onchange="calcularMassa()">
                 <option value="kg">kg</option>
                 <option value="g">gramas</option>
             </select>
         </div>
-        <h3 style="margin:16px 0 8px;">Receita (% sobre a Farinha)</h3>
-        <div class="linha-ingrediente">
-            <input type="text" id="ingMassaNome" placeholder="Ingrediente">
-            <input type="number" id="ingMassaPerc" step="0.1" placeholder="%">
-            <button class="btn" onclick="adicionarIngMassa()">+</button>
+
+        <h3>Receita (% sobre a Farinha)</h3>
+        <div class="flex-linha">
+            <input type="text" id="ingNomeMassa" placeholder="Ingrediente" style="flex:2;">
+            <input type="number" step="0.1" id="ingPercMassa" placeholder="%" style="flex:1;" onkeydown="if(event.key==='Enter'){adicionarIngredienteMassa();}">
+            <button class="btn pequeno" onclick="adicionarIngredienteMassa()">+ Adicionar</button>
         </div>
-        <table class="tabela">
-            <thead><tr><th>Ingrediente</th><th>Porcentagem</th><th>Gramas</th><th>Ação</th></tr></thead>
-            <tbody id="tabelaMassaIng">
+
+        <table style="margin-top:10px; width:100%;">
+            <thead>
+                <tr style="background:#eee;">
+                    <th>Ingrediente</th>
+                    <th>%</th>
+                    <th>Gramas</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaIngMassa">
+                <!-- Farinha já vem fixa -->
+                <tr id="linhaFarinha">
+                    <td>🍞 Farinha</td>
+                    <td>100%</td>
+                    <td id="grFarinha">-- g</td>
+                    <td>--</td>
+                </tr>
             </tbody>
         </table>
-        <div class="resultado">
-            <h4>✅ Resultado</h4>
-            <p>Peso desejado: <strong id="resPesoTotal">-- g</strong></p>
-            <p>Peso calculado: <strong id="resPesoCalculado">-- g</strong></p>
-            <p>Diferença: <strong id="resDiferenca">-- g</strong></p>
+
+        <div style="margin-top:15px; padding:10px; background:#e8f5e9; border-radius:6px;">
+            <h3>✅ Resultado</h3>
+            <p><strong>Peso desejado:</strong> <span id="resPesoTotal">-- g</span></p>
+            <p><strong>Peso calculado:</strong> <span id="resPesoCalculado">-- g</span></p>
+            <p><strong>Diferença:</strong> <span id="resDiferenca">-- g</span></p>
         </div>
-        <button class="btn laranja" onclick="limparReceitaMassa()">🔄 Nova Receita</button>
+
+        <button class="btn" style="margin-top:10px;" onclick="novaReceitaMassa()">🔄 Nova Receita</button>
     </div>
 </section>
 
@@ -815,7 +835,6 @@ function calcularMassa(){
     let peso = parseFloat(document.getElementById('pesoTotalMassa').value) || 0;
     let un = document.getElementById('unidPesoMassa').value;
     let pesoTotal = un === "kg" ? peso * 1000 : peso;
-
     if (pesoTotal <= 0) {
         document.getElementById('resPesoTotal').textContent = "-- g";
         document.getElementById('resPesoCalculado').textContent = "-- g";
@@ -823,18 +842,14 @@ function calcularMassa(){
         document.getElementById('grFarinha').textContent = "-- g";
         return;
     }
-
     let somaPerc = BD.receitaMassa.reduce((s, x) => s + x.perc, 0);
     if (somaPerc <= 0) return alert('Adicione ingredientes primeiro! Ex: Farinha 100%');
-
     // ✅ Calcula baseado na soma das porcentagens que VOCÊ digitou
     let baseGramas = pesoTotal / (somaPerc / 100);
     document.getElementById('grFarinha').textContent = baseGramas.toFixed(1) + ' g';
-
     let tb = document.getElementById('tabelaMassaIng');
     tb.innerHTML = '';
     let pesoCalculado = 0;
-
     // ✅ MOSTRA TODOS os ingredientes — inclusive a FARINHA!
     BD.receitaMassa.forEach((item, i) => {
         let g = (item.perc / 100) * baseGramas;
@@ -846,7 +861,6 @@ function calcularMassa(){
             <td><button class="btn vermelho pequeno" onclick="removerItemMassa(${i})">✕</button></td>
         </tr>`;
     });
-
     let dif = pesoCalculado - pesoTotal;
     document.getElementById('resPesoTotal').textContent = pesoTotal.toFixed(1) + ' g';
     document.getElementById('resPesoCalculado').textContent = pesoCalculado.toFixed(1) + ' g';
@@ -854,8 +868,8 @@ function calcularMassa(){
     document.getElementById('resDiferenca').style.color = Math.abs(dif) < 0.5 ? "green" : "orange";
 }
 
-/// === ADICIONAR INGREDIENTE ===
-function adicionarIngMassa(){
+/// === ADICIONAR INGREDIENTE — NOME CORRIGIDO ===
+function adicionarIngredienteMassa(){
     let nome = document.getElementById('ingMassaNome').value.trim();
     let perc = parseFloat(document.getElementById('ingMassaPerc').value.replace(',','.'));
     
@@ -866,13 +880,26 @@ function adicionarIngMassa(){
     
     BD.receitaMassa.push({ nome: nome, perc: perc });
     
-    // ✅ LIMPA E ATUALIZA NA HORA
+    // ✅ SALVA NO BANCO E ATUALIZA NA HORA
+    salvarBD();
+    
+    // ✅ LIMPA OS CAMPOS
     document.getElementById('ingMassaNome').value = '';
     document.getElementById('ingMassaPerc').value = '';
     
     calcularMassa();
     console.log('✅ Adicionado:', nome, perc + '%');
 }
+
+// ✅ REMOVER INGREDIENTE — ESTAVA FALTANDO!
+function removerItemMassa(i){
+    if(confirm('Remover este ingrediente?')){
+        BD.receitaMassa.splice(i, 1);
+        salvarBD();
+        calcularMassa();
+    }
+}
+
 // === ESTOQUE ===
 function salvarEstoque(){
     let sabor=document.getElementById('estoqueSabor').value.trim();
