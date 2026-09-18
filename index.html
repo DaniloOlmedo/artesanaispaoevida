@@ -416,7 +416,8 @@
 
         <h3>Receita (% sobre a Farinha)</h3>
         <div class="flex-linha">
-            <input type="text" id="ingNomeMassa" placeholder="Ingrediente" style="flex:2;">
+            <input type="text" id="ingNomeMassa" list="listaInsumosMassa" placeholder="Ingrediente" style="flex:2;">
+            <datalist id="listaInsumosMassa"></datalist>
             <input type="number" step="0.1" id="ingPercMassa" placeholder="%" style="flex:1;" onkeydown="if(event.key==='Enter'){adicionarIngredienteMassa();}">
             <button class="btn pequeno" onclick="adicionarIngredienteMassa()">+ Adicionar</button>
         </div>
@@ -1318,6 +1319,23 @@ function adicionarIngredienteMassa(){
     calcularMassa();
 }
 
+function atualizarSugestoesInsumosMassa(){
+    const datalist = document.getElementById('listaInsumosMassa');
+    if(!datalist) return;
+    datalist.innerHTML = '';
+    const nomes = new Set();
+    BD.insumos.forEach(insumo=>{
+        if(insumo && typeof insumo.nome === 'string' && insumo.nome.trim()){
+            nomes.add(insumo.nome.trim());
+        }
+    });
+    Array.from(nomes).sort((a,b)=>a.localeCompare(b,'pt-BR')).forEach(nome=>{
+        const option = document.createElement('option');
+        option.value = nome;
+        datalist.appendChild(option);
+    });
+}
+
 function removerItemMassa(i){
     if(confirm('Remover este ingrediente?')){
         BD.receitaMassa.splice(i, 1);
@@ -2036,6 +2054,7 @@ function atualizarTudo(){
     atualizarTabelaCustos();
     atualizarTabelaDespesas();
     atualizarTabelaInsumos();
+    atualizarSugestoesInsumosMassa();
     atualizarListaFichas();
     atualizarTabelaComponentesEstoque();
     atualizarSugestoesComponentes();
