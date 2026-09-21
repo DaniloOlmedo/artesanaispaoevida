@@ -227,6 +227,105 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 
+/* ===== Fila da cozinha ===== */
+.fila-resumo{display:flex;gap:18px;flex-wrap:wrap;padding:10px 14px;background:var(--realce);border-radius:8px;margin-bottom:12px;font-size:.95rem}
+.fila-colunas{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;align-items:start}
+.fila-col{background:var(--bg);border-radius:10px;padding:10px}
+.fila-col h3{margin:0 0 8px;font-size:1rem;color:var(--texto)}
+.fila-card{background:var(--painel);border:1px solid var(--borda);border-left:5px solid var(--verde2);border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:var(--sombra)}
+.fila-card.atrasado{border-left-color:var(--erro);background:rgba(198,40,40,.07)}
+.fila-topo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.fila-tempo{margin-left:auto;font-weight:700;font-size:.9rem}
+.fila-itens{margin:6px 0;font-size:1rem}
+.fila-acoes{margin:8px 0 0}.fila-acoes .btn{min-width:0;flex:1 1 auto;padding:10px 12px}
+
+/* ===== Modo totem / painel ===== */
+#totemRoot,#painelRoot{position:fixed;inset:0;z-index:400;background:var(--bg);overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.modo-totem>section,body.modo-painel>header,body.modo-painel>#faixaAvisos,body.modo-painel>nav,body.modo-painel>section{display:none!important}
+#totemTela{height:100%}
+.tt{height:100%;display:flex;flex-direction:column;padding:16px 22px;gap:12px;font-size:1.15rem;position:relative}
+.tt h1{font-size:2.4rem;color:var(--verde)}.tt h3{font-size:1.15rem;margin:0 0 8px;color:var(--laranja)}
+.tt-brand{font-size:2.6rem;font-weight:800;color:var(--verde);text-align:center}
+.tt-brand-s{font-size:1.5rem;font-weight:800;color:var(--verde)}
+.tt-btn{width:auto;min-height:64px;padding:12px 26px;border:none;border-radius:14px;background:var(--verde2);color:#fff;font-size:1.25rem;font-weight:700;cursor:pointer}
+.tt-btn:disabled{opacity:.45}.tt-btn.cinza{background:transparent;color:var(--texto);border:2px solid var(--campo-borda)}
+.tt-btn.grande{min-height:78px;font-size:1.5rem;padding:14px 34px}
+.tt-msg,.tt-nota{text-align:center;color:var(--suave);font-size:1rem}
+.tt-vazio{color:var(--suave);text-align:center;padding:14px}
+/* home */
+.tt-home{align-items:center;justify-content:center;text-align:center;cursor:pointer}
+.tt-cta{font-size:2.2rem;font-weight:800;background:var(--laranja);color:#fff;padding:26px 44px;border-radius:24px;animation:tt-pulse 2s infinite}
+@keyframes tt-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.tt-espera{font-size:1.6rem}
+.tt-equipe{position:absolute;right:14px;bottom:14px;width:52px;height:52px;border-radius:50%;border:1px solid var(--campo-borda);background:transparent;opacity:.35;font-size:1.3rem;cursor:pointer}
+.tt-quadro{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:min(900px,96%)}
+.tt-quadro.grande{width:96%;flex:1}
+.tt-col{background:var(--painel);border-radius:16px;padding:14px;box-shadow:var(--sombra)}
+.tt-col.pronto{border:3px solid var(--verde2)}
+.tt-senhas{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:60px}
+.tt-senha{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:76px;padding:8px 14px;border-radius:14px;background:var(--realce2);color:var(--laranja)}
+.tt-senha b{font-size:2rem;line-height:1}.tt-senha small{font-size:.8rem}
+.tt-senha.pronta{background:var(--verde2);color:#fff;animation:tt-pulse 1.5s infinite}
+.tt-quadro.grande .tt-senha b{font-size:4rem}.tt-quadro.grande .tt-senha{min-width:130px;padding:14px 22px}.tt-quadro.grande .tt-col h3{font-size:1.8rem}
+.tt-painel{align-items:center;justify-content:center}
+/* menu */
+.tt-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tt-passos{font-size:1.05rem;color:var(--suave)}.tt-passos b{color:var(--verde)}
+.tt-corpo{flex:1;display:flex;gap:16px;min-height:0}
+.tt-esq{flex:1.7;display:flex;flex-direction:column;min-width:0}
+.tt-dir{flex:1;min-width:280px;background:var(--painel);border-radius:16px;padding:14px;display:flex;flex-direction:column;box-shadow:var(--sombra)}
+.tt-abas{display:flex;gap:10px;margin-bottom:10px}
+.tt-abas button{flex:1;min-height:60px;border:2px solid var(--campo-borda);border-radius:14px;background:var(--painel);font-size:1.2rem;font-weight:700;cursor:pointer}
+.tt-abas button.on{background:var(--verde2);color:#fff;border-color:var(--verde2)}
+.tt-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;align-content:start;padding:2px}
+.tt-card{position:relative;text-align:left;min-height:140px;padding:14px;border-radius:16px;border:2px solid var(--campo-borda);background:var(--painel);display:flex;flex-direction:column;justify-content:space-between;gap:6px;cursor:pointer}
+.tt-card:active{transform:scale(.97);background:var(--realce)}
+.tt-card b{font-size:1.25rem;line-height:1.2}.tt-card small{color:var(--suave)}
+.tt-preco{font-size:1.5rem;font-weight:800;color:var(--verde)}
+.tt-card.esgotado{opacity:.45}.tt-card.esgotado .tt-preco{color:var(--erro);font-size:1.1rem}
+.tt-badge{position:absolute;top:-8px;right:-8px;background:var(--laranja);color:#fff;min-width:34px;height:34px;border-radius:17px;display:flex;align-items:center;justify-content:center;font-weight:800}
+.tt-itens{flex:1;overflow-y:auto}
+.tt-linha{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--borda)}
+.tt-linha small{display:block;color:var(--suave)}.tt-sub{font-weight:700;white-space:nowrap}
+.tt-qtd button{width:48px;height:48px;font-size:1.4rem;border-radius:12px}.tt-qtd b{min-width:30px;font-size:1.2rem}
+.tt-total{display:flex;justify-content:space-between;font-size:1.5rem;padding:10px 0}.tt-total b{color:var(--verde);font-size:1.8rem}
+.tt-eta{background:var(--realce2);border-radius:12px;padding:10px 14px;font-size:1.2rem}.tt-eta small{display:block;color:var(--suave);font-size:.9rem}
+/* revisão */
+.tt-rolar{overflow-y:auto;align-items:flex-start}
+.tt-col-a,.tt-col-b{flex:1;min-width:300px;display:flex;flex-direction:column;gap:12px}
+.tt-sec{background:var(--painel);border-radius:16px;padding:14px;box-shadow:var(--sombra)}
+.tt-item-obs{border-bottom:1px dashed var(--borda);padding-bottom:10px;margin-bottom:10px}
+.tt-chips,.tt-opts{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.tt-chip{min-height:46px;padding:6px 16px;border-radius:23px;border:2px solid var(--campo-borda);background:var(--painel);font-size:1rem;cursor:pointer;width:auto}
+.tt-chip.on{background:var(--laranja);border-color:var(--laranja);color:#fff}
+.tt-opt{min-height:64px;padding:10px 20px;border-radius:14px;border:2px solid var(--campo-borda);background:var(--painel);font-size:1.15rem;font-weight:700;cursor:pointer;flex:1;width:auto}
+.tt-opt.on{background:var(--verde2);border-color:var(--verde2);color:#fff}
+.tt-in{width:100%;min-height:56px;padding:12px;font-size:1.15rem;border-radius:12px;margin:4px 0}.tt-in.grande{min-height:70px;font-size:1.5rem}
+.tt-rodape{display:flex;justify-content:space-between;gap:12px}
+.tt-sugs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tt-sug{min-height:80px;padding:10px;border-radius:14px;border:2px dashed var(--laranja);background:var(--realce2);display:flex;flex-direction:column;gap:4px;cursor:pointer;font-size:1rem;width:auto}
+.tt-sug span{color:var(--laranja);font-weight:800}
+/* fim */
+.tt-fim{align-items:center;justify-content:center;text-align:center;overflow-y:auto}
+.tt-check{font-size:4rem}
+.tt-senha-grande{font-size:6rem;font-weight:900;color:#fff;background:var(--laranja);border-radius:28px;padding:6px 60px;line-height:1.1}
+.tt-senha-grande small{display:block;font-size:1.1rem;font-weight:600}
+.tt-nome{font-size:2rem;font-weight:700}
+.tt-pagbox{font-size:1.5rem;background:var(--painel);padding:16px 26px;border-radius:16px}
+.tt-pix{background:var(--painel);border-radius:16px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;max-width:420px}
+.tt-qr{width:260px;max-width:70vw;background:#fff;padding:6px;border-radius:8px}.tt-qr svg{width:100%;height:auto;display:block}
+.tt-pix textarea{font-size:.7rem;min-height:70px}
+.tt-fim-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.tt-idle{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:10;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-size:1.6rem}
+.tt-idle>div{background:var(--painel);color:var(--texto);padding:34px 44px;border-radius:24px;display:flex;flex-direction:column;gap:16px}
+@media(max-width:760px){.tt-corpo{flex-direction:column}.tt-dir{min-width:0}.tt-quadro{grid-template-columns:1fr}.tt-brand{font-size:1.8rem}.tt-cta{font-size:1.5rem;padding:18px 26px}.tt-senha-grande{font-size:4rem;padding:6px 30px}.tt{padding:10px}}
+@media print{
+  .comanda-impressao .prev{text-align:center;font-size:20px;font-weight:bold;margin:2px 0}
+  .comanda-impressao .corte{text-align:center;font-size:14px;margin:26px 0 10px;border-top:2px dashed #000;padding-top:8px}
+  .comanda-impressao .via-itens{font-size:18px;margin:8px 0;text-align:center}
+  .comanda-impressao .via-msg{text-align:center;font-size:14px;margin-top:8px}
+}
+
 </style>
 </head>
 <body>
@@ -243,7 +342,9 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 <nav class="navegacao" id="nav" aria-label="Seções">
   <button class="nav-btn" data-p="dashboard" onclick="irPara('dashboard')">📊 Painel</button>
   <button class="nav-btn" data-p="vendas" onclick="irPara('vendas')">🛒 Vendas</button>
+  <button class="nav-btn" data-p="fila" onclick="irPara('fila')">👨‍🍳 Fila<span class="selo" id="seloFila">0</span></button>
   <button class="nav-btn" data-p="caixa" onclick="irPara('caixa')">💵 Caixa<span class="selo" id="seloCaixa">0</span></button>
+  <button class="nav-btn" data-p="atendimento" onclick="irPara('atendimento')">⏱️ Atendimento</button>
   <button class="nav-btn" data-p="fichas" onclick="irPara('fichas')">📋 Fichas</button>
   <button class="nav-btn" data-p="precificacao" onclick="irPara('precificacao')">🏷️ Precificação</button>
   <button class="nav-btn" data-p="insumos" onclick="irPara('insumos')">🧪 Insumos</button>
@@ -341,6 +442,7 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
     <div class="barra-total">
       <div><div class="suave pequeno-txt" id="resumoTotais">Subtotal R$ 0,00</div><div class="tot" id="totalCarrinho">R$ 0,00</div></div>
       <div class="flex-linha" style="gap:8px;flex:0 1 auto;align-items:center">
+        <label class="linha" style="margin:0"><input type="checkbox" id="enviarFila" onchange="salvarPrefFila()"> 👨‍🍳 Enviar p/ fila</label>
         <label class="linha" style="margin:0"><input type="checkbox" id="imprimirAuto" checked onchange="salvarPrefImpressao()"> 🖨️ Imprimir</label>
         <button class="btn grande" type="button" onclick="finalizarVenda()" style="margin:0">✅ Finalizar pedido</button>
       </div>
@@ -358,7 +460,7 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
         <select id="filtroPeriodo" onchange="mudarPeriodoVendas()"><option value="hoje">Hoje</option><option value="mes">Mês</option><option value="dia">Data específica</option><option value="tudo">Tudo</option></select></div>
       <div id="wrapFiltroMes" class="oculto"><label for="filtroMes">Mês</label><input type="month" id="filtroMes" onchange="renderVendas(true)"></div>
       <div id="wrapFiltroDia" class="oculto"><label for="filtroDia">Dia</label><input type="date" id="filtroDia" onchange="renderVendas(true)"></div>
-      <div><label for="filtroStatus">Status</label><select id="filtroStatus" onchange="renderVendas(true)"><option value="">Todos</option><option value="pendente">⏳ Pendentes</option><option value="pago">✅ Pagos</option></select></div>
+      <div><label for="filtroStatus">Status</label><select id="filtroStatus" onchange="renderVendas(true)"><option value="">Todos</option><option value="pendente">⏳ Pendentes</option><option value="pago">✅ Pagos</option><option value="retro">📜 Históricos</option></select></div>
       <div><label for="buscaVendas">Buscar</label><input type="search" id="buscaVendas" placeholder="Cliente, produto, senha..." oninput="renderVendas(true)"></div>
     </div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data/Hora</th><th>Senha</th><th>Cliente</th><th>Itens</th><th class="n">Total</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabelaVendas"></tbody></table></div>
@@ -378,6 +480,44 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
       <div><label for="retroForma">Forma de pagamento</label><select id="retroForma"><option value="dinheiro">💵 Dinheiro</option><option value="pix">⚡ PIX</option><option value="debito">💳 Débito</option><option value="credito">💳 Crédito</option></select></div>
     </div>
     <button class="btn laranja" type="button" onclick="lancarVendaRetroativa()">+ Lançar no histórico</button>
+    <div id="retroSessao" class="dica" style="margin-top:10px;font-size:.95rem"></div>
+  </div>
+
+  <div class="painel" id="painelRetro">
+    <div class="cab-painel"><h2>🧾 Lançamentos históricos — conferir e corrigir</h2>
+      <button class="btn cinza pequeno" type="button" onclick="desfazerUltimoRetro()">↩ Desfazer o último lançamento</button></div>
+    <div class="aviso">Tudo o que você lança como histórico aparece aqui (não fica escondido na lista de pedidos de hoje). Use <b>✏️</b> para corrigir data, produto, quantidade, valor ou pagamento, <b>⧉</b> para repetir um lançamento com outra data e <b>✕</b> para excluir. Marque vários para excluir ou mudar a data de uma vez.</div>
+    <div class="bloco-calc">
+      <div><label for="retroVer">Mostrar</label><select id="retroVer" onchange="renderRetro()"><option value="ultimos">Últimos lançados (30)</option><option value="mes">Vendas de um mês</option><option value="tudo">Todos</option></select></div>
+      <div id="wrapRetroMes" class="oculto"><label for="retroMes">Mês da venda</label><input type="month" id="retroMes" onchange="renderRetro()"></div>
+      <div><label for="retroBusca">Buscar</label><input type="search" id="retroBusca" placeholder="Produto, data, valor, pagamento..." oninput="renderRetro()"></div>
+    </div>
+    <div class="resultado" id="retroResumo"></div>
+    <div id="retroLote" class="grupo-botoes" style="align-items:center"></div>
+    <div class="tabela-wrap"><table class="tabela" style="min-width:820px"><thead><tr><th><input type="checkbox" id="retroTodos" onchange="retroSelTodos(this.checked)" aria-label="Selecionar todos"></th><th>Data da venda</th><th>Produto</th><th class="n">Qtd</th><th class="n">Unit.</th><th class="n">Total</th><th>Pagamento</th><th></th><th>Lançado em</th><th>Ações</th></tr></thead><tbody id="tabelaRetro"></tbody></table></div>
+  </div>
+</section>
+
+<!-- ============ FILA ============ -->
+<section id="fila" class="pagina">
+  <div class="painel">
+    <div class="cab-painel"><h2>👨‍🍳 Fila da cozinha</h2>
+      <div class="acoes"><button class="btn" type="button" onclick="iniciarTotem()">🖥️ Abrir modo totem</button><button class="btn cinza" type="button" onclick="window.open(location.href.split('#')[0]+'#painel','_blank')">📺 Painel de chamada (outra tela)</button></div></div>
+    <div id="filaLista"></div>
+  </div>
+</section>
+
+<!-- ============ ATENDIMENTO ============ -->
+<section id="atendimento" class="pagina">
+  <div class="painel">
+    <div class="cab-painel"><h2>⏱️ Atendimento e indicadores</h2>
+      <select id="atPeriodo" style="width:auto" onchange="renderAtendimento()" aria-label="Período"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo">Tudo</option></select></div>
+    <div class="dica">Os tempos são medidos quando você usa <b>Iniciar → Pronto → Entregar</b> na aba Fila (pedidos do totem entram automaticamente nela).</div>
+    <div class="grade" id="atCards" style="margin-top:10px"></div>
+    <div id="atCalibracao" class="dica"></div>
+    <h3>💡 O que melhorar</h3>
+    <div id="atInsights"></div>
+    <div class="graficos" id="atGraficos" style="margin-top:12px"></div>
   </div>
 </section>
 
@@ -429,6 +569,9 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
     <div id="meiBarra"></div>
     <p id="meiAlerta" style="font-weight:700;margin-top:8px"></p>
     <p id="meiProjecaoTexto" style="margin-top:6px"></p>
+    <h3>De onde vem o faturamento (mês a mês)</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Faturamento</th><th class="n">Vendas normais</th><th class="n">Históricos lançados</th><th class="n">Acumulado</th><th></th></tr></thead><tbody id="meiMesAMes"></tbody></table></div>
+    <div class="dica">"Históricos" são os lançamentos retroativos. Clique em <b>Ver</b> para abrir a lista daquele mês e conferir/corrigir cada um.</div>
   </div>
 </section>
 
@@ -490,6 +633,8 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
         <div><label for="markupDesejado">Margem de lucro desejada (%)</label><input type="number" id="markupDesejado" step="0.1" inputmode="decimal" oninput="recalcularFichaAtual()"><div class="dica">Sobre o preço de venda, depois de taxas. Vazio = usa a margem padrão.</div></div>
         <div><label for="rendimentoG">Rendimento total (g) — para usar como insumo</label><input type="number" id="rendimentoG" step="1" min="0" inputmode="decimal" oninput="recalcularFichaAtual()"></div>
         <div><label class="linha" style="margin-top:26px"><input type="checkbox" id="fichaAtivo" onchange="recalcularFichaAtual()"> Mostrar nos botões de venda</label></div>
+        <div><label for="tempoPreparo">⏱ Tempo de preparo (min por unidade)</label><input type="number" id="tempoPreparo" step="0.5" min="0" inputmode="decimal" oninput="recalcularFichaAtual()"><div class="dica">Vazio = usa o padrão (Custos → Totem). Alimenta a previsão de espera.</div></div>
+        <div><label class="linha" style="margin-top:26px"><input type="checkbox" id="fichaTotem" onchange="recalcularFichaAtual()"> Mostrar no totem</label><label class="linha"><input type="checkbox" id="fichaSugerir" onchange="recalcularFichaAtual()"> Sugerir como complemento no totem</label></div>
       </div>
       <div class="resultado" id="resultadoFicha"></div>
       <div class="bloco-calc">
@@ -516,7 +661,7 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
       <div><label for="prodCusto">Custo unitário R$</label><input type="number" step="0.01" id="prodCusto" inputmode="decimal" onkeydown="if(event.key==='Enter')adicionarProdutoSimples()"></div>
       <button class="btn" type="button" onclick="adicionarProdutoSimples()">+</button>
     </div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Preço</th><th class="n">Custo</th><th class="n">Margem líq.</th><th>Ações</th></tr></thead><tbody id="tabelaProdutosSimples"></tbody></table></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Preço</th><th class="n">Custo</th><th class="n">Margem líq.</th><th>Totem</th><th>Ações</th></tr></thead><tbody id="tabelaProdutosSimples"></tbody></table></div>
   </div>
 </section>
 
@@ -702,6 +847,41 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
   </div>
 
   <div class="painel">
+    <h2>🖥️ Totem e atendimento</h2>
+    <div class="aviso">O totem é uma tela para o <b>cliente</b> fazer o pedido sozinho no tablet, enquanto você produz. O pedido entra direto na Fila da cozinha e a comanda é impressa.</div>
+    <h3>Aparência e segurança</h3>
+    <div class="bloco-calc">
+      <div><label for="cfgTotemNome">Nome exibido</label><input id="cfgTotemNome" oninput="salvarConfigTotem()" placeholder="Artesanais Pão e Vida"></div>
+      <div><label for="cfgTotemMsg">Mensagem para o cliente</label><input id="cfgTotemMsg" oninput="salvarConfigTotem()"></div>
+      <div><label for="cfgTotemPin">PIN da equipe (4 a 6 números)</label><input id="cfgTotemPin" type="password" inputmode="numeric" maxlength="6" oninput="salvarConfigTotem()"></div>
+      <div><label for="cfgTotemChips">Observações rápidas (separe por vírgula)</label><input id="cfgTotemChips" oninput="salvarConfigTotem()"></div>
+      <div><label for="cfgTotemTimeout">Reiniciar após parado (segundos)</label><input id="cfgTotemTimeout" type="number" min="20" inputmode="numeric" oninput="salvarConfigTotem()"></div>
+      <div><label for="cfgTotemRetorno">Voltar ao início após o pedido (s)</label><input id="cfgTotemRetorno" type="number" min="8" inputmode="numeric" oninput="salvarConfigTotem()"></div>
+    </div>
+    <h3>Tempo de espera (previsão mostrada ao cliente)</h3>
+    <div class="bloco-calc">
+      <div><label for="cfgCapacidade">Unidades preparadas ao mesmo tempo</label><input id="cfgCapacidade" type="number" min="1" step="1" inputmode="numeric" oninput="salvarConfigTotem()"><div class="dica">Ex.: o forno assa 2 pizzas por vez = 2.</div></div>
+      <div><label for="cfgTempoFicha">Tempo padrão de preparo (min)</label><input id="cfgTempoFicha" type="number" min="0" step="0.5" inputmode="decimal" oninput="salvarConfigTotem()"><div class="dica">Para fichas sem tempo próprio. Bebidas = 0.</div></div>
+      <div><label for="cfgTempoBase">Tempo fixo de atendimento (min)</label><input id="cfgTempoBase" type="number" min="0" step="0.5" inputmode="decimal" oninput="salvarConfigTotem()"></div>
+    </div>
+    <label class="linha"><input type="checkbox" id="cfgCalibrar" onchange="salvarConfigTotem()"> Ajustar a previsão automaticamente com os tempos reais medidos</label>
+    <label class="linha"><input type="checkbox" id="cfgVoz" onchange="salvarConfigTotem()"> Chamar a senha por voz e bipe quando o pedido ficar pronto</label>
+    <h3>Pagamento e impressão</h3>
+    <label class="linha"><input type="checkbox" id="cfgTotemExige" onchange="salvarConfigTotem()"> Só iniciar o preparo depois de receber o pagamento (pedidos do totem)</label>
+    <label class="linha"><input type="checkbox" id="cfgTotemImprimir" onchange="salvarConfigTotem()"> Imprimir a comanda automaticamente quando o cliente enviar</label>
+    <label class="linha"><input type="checkbox" id="cfgPdvFila" onchange="salvarConfigTotem()"> Pedidos feitos no balcão também entram na fila da cozinha</label>
+    <div class="bloco-calc"><div><label for="cfgTotemVias">Vias impressas do pedido do totem</label><select id="cfgTotemVias" onchange="salvarConfigTotem()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente)</option></select></div></div>
+    <h3>PIX no totem (opcional)</h3>
+    <div class="aviso alerta-a">O totem mostra o QR do PIX com o valor, mas <b>o sistema não sabe se o cliente pagou</b>: você confirma o recebimento na Fila (botão "Receber (PIX)") olhando o app do banco. Teste antes com R$ 0,01.</div>
+    <div class="bloco-calc">
+      <div><label for="cfgPixChave">Chave PIX</label><input id="cfgPixChave" oninput="salvarConfigTotem()" placeholder="CPF/CNPJ, e-mail, +5511999999999 ou chave aleatória"></div>
+      <div><label for="cfgPixNome">Nome do recebedor (até 25)</label><input id="cfgPixNome" maxlength="25" oninput="salvarConfigTotem()" placeholder="Como aparece no banco"></div>
+      <div><label for="cfgPixCidade">Cidade (até 15)</label><input id="cfgPixCidade" maxlength="15" oninput="salvarConfigTotem()"></div>
+    </div>
+    <div class="grupo-botoes"><button class="btn azul" type="button" onclick="testarPix()">🧪 Testar QR do PIX (R$ 0,01)</button><button class="btn" type="button" onclick="iniciarTotem()">🖥️ Abrir modo totem</button></div>
+  </div>
+
+  <div class="painel">
     <h2>💰 Custos fixos mensais (estimativa)</h2>
     <div class="aviso">Aluguel, salários, energia, água, telefone, internet etc. Serve para o ponto de equilíbrio e para sugerir o rateio por unidade.</div>
     <div class="linha-form" style="grid-template-columns:2fr 1fr 1fr auto">
@@ -745,6 +925,9 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
       <button class="btn" type="button" onclick="abrirImportacaoBackup()">⬆️ Importar backup</button>
     </div>
     <input id="arquivoBackup" type="file" accept="application/json,.json" class="oculto" onchange="importarBackup(event)">
+    <input id="arquivoMesclar" type="file" accept="application/json,.json" class="oculto" onchange="mesclarVendasArquivo(event)">
+    <div class="aviso" style="margin-top:10px">Usa o sistema em <b>dois aparelhos</b> (ex.: tablet do totem e celular)? Cada um guarda os seus próprios dados. Exporte o backup do outro aparelho e use <b>Mesclar vendas</b> aqui: entram só os pedidos, despesas, perdas e compras que ainda não existem (nada é substituído).</div>
+    <div class="grupo-botoes"><button class="btn azul" type="button" onclick="$('arquivoMesclar').click()">🔀 Mesclar vendas de outro aparelho</button></div>
     <p id="statusBackup" class="suave" style="margin-top:6px"></p>
     <div id="dadosResumo" class="grade" style="margin-top:12px"></div>
   </div>
@@ -777,11 +960,15 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 <datalist id="listaInsumosDL"></datalist>
 <datalist id="listaComponentesSugeridos"></datalist>
 
+<div id="totemRoot" class="oculto"><div id="totemTela"></div><div id="ttIdle" class="tt-idle oculto"><div><h2>Ainda está aí?</h2><p>Seu pedido será cancelado em <b id="ttIdleSeg">10</b> segundos.</p><button class="tt-btn grande" onclick="totemAtividade()">👍 Continuar pedindo</button></div></div></div>
+<div id="painelRoot" class="oculto"></div>
 <div id="toasts" aria-live="polite"></div>
 <div id="areaImpressao" class="comanda-impressao"></div>
 <div id="areaRelatorio"></div>
 
 <script>
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(o*r,n*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
+
 'use strict';
 /* =====================================================================
    NÚCLEO — utilitários, interface (toast/modal), armazenamento,
@@ -934,13 +1121,18 @@ function formModal({titulo, campos, salvar, textoSalvar = 'Salvar', aviso = '', 
 const CHAVES = {
   custos:'custosFixos', taxas:'taxas', insumos:'insumos', fichas:'fichas', formulasMassa:'formulasMassa',
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
-  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias'
+  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
-  valoresComanda:false, imprimirAuto:true, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem'
+  valoresComanda:false, imprimirAuto:true, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem',
+  // atendimento / totem
+  pdvNaFila:false, capacidade:2, tempoBase:2, tempoPadraoFicha:8, calibrar:true, voz:true,
+  totemPin:'', totemNome:'', totemMensagem:'Retire seu pedido no balcão quando chamarem a sua senha.', totemExigePagamento:true, totemImprimir:true, totemVias:2,
+  totemTimeout:75, totemRetorno:30, totemChips:['Sem cebola','Sem azeitona','Bem assada','Molho à parte'],
+  pixChave:'', pixNome:'', pixCidade:''
 };
 const PRODUTOS_INICIAIS = [
   {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custo:0},
@@ -950,7 +1142,7 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
@@ -1198,6 +1390,7 @@ function normalizarBD(){
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
+  if(!BD.totemStats || typeof BD.totemStats !== 'object' || Array.isArray(BD.totemStats)) BD.totemStats = {};
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
   ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas'].forEach(k => {
@@ -1286,7 +1479,11 @@ function normalizarBD(){
   });
   BD.despesas.forEach(d => { d.valor = parseNum(d.valor); });
   BD.compras.forEach(c => { c.valor = parseNum(c.valor); c.cnpj = c.cnpj || ''; c.numero = c.numero || ''; c.mercado = c.mercado || ''; });
-  BD.produtos.forEach(p => { p.preco = parseNum(p.preco); p.custo = parseNum(p.custo !== undefined ? p.custo : p.custoEstimado); });
+  BD.produtos.forEach(p => { p.preco = parseNum(p.preco); p.custo = parseNum(p.custo !== undefined ? p.custo : p.custoEstimado);
+    if(p.sugerir === undefined) p.sugerir = true; if(p.totem === undefined) p.totem = true; });
+  BD.fichas.forEach(f => { if(f.sugerir === undefined) f.sugerir = false; if(f.totem === undefined) f.totem = true;
+    if(f.tempoPreparo === '' || f.tempoPreparo === null) delete f.tempoPreparo; });
+  if(!Array.isArray(BD.config.totemChips)) BD.config.totemChips = CONFIG_PADRAO.totemChips.slice();
 }
 
 /* ---------- faixa de avisos ---------- */
@@ -1554,7 +1751,7 @@ function renderCustos(){
     '<tr><td>' + esc(c.desc) + '</td><td class="n">' + brl(c.val) + '</td><td>' + esc(c.cat) + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarCusto(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="removerCusto(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum custo fixo cadastrado.</div></td></tr>';
   $('somaCustosFixos').textContent = brl(custosFixosMensais());
-  carregarTaxasNaTela(); renderDespesas(); carregarConfigNaTela();
+  carregarTaxasNaTela(); renderDespesas(); carregarConfigNaTela(); carregarConfigTotemNaTela();
 }
 
 /* ---------- taxas ---------- */
@@ -1783,6 +1980,8 @@ function renderFichas(){
   $('markupDesejado').value = (f.markupDesejado === null || f.markupDesejado === undefined) ? '' : f.markupDesejado;
   $('markupDesejado').placeholder = 'Padrão: ' + fmt(margemPadrao(), 1);
   $('rendimentoG').value = f.rendimentoG || ''; $('fichaAtivo').checked = f.ativo !== false;
+  $('tempoPreparo').value = (f.tempoPreparo === undefined || f.tempoPreparo === null) ? '' : f.tempoPreparo; $('tempoPreparo').placeholder = 'Padrão: ' + (BD.config.tempoPadraoFicha || 0);
+  $('fichaTotem').checked = f.totem !== false; $('fichaSugerir').checked = !!f.sugerir;
   $('precoPraticado').value = f.precoPraticado || '';
   renderSeletoresEmbalagem(); renderCorpoFicha(f);
 }
@@ -1887,6 +2086,8 @@ function recalcularFichaAtual(){
   f.perdaPerc = Math.min(90, Math.max(0, parseNum($('perdaPerc').value)));
   const mk = $('markupDesejado').value.trim(); f.markupDesejado = mk === '' ? null : parseNum(mk);
   f.rendimentoG = Math.max(0, parseNum($('rendimentoG').value)); f.ativo = $('fichaAtivo').checked;
+  const tp = $('tempoPreparo').value.trim(); if(tp === '') delete f.tempoPreparo; else f.tempoPreparo = Math.max(0, parseNum(tp));
+  f.totem = $('fichaTotem').checked; f.sugerir = $('fichaSugerir').checked;
   recalcularTudo(); salvar('fichas', 'insumos');
   renderResultadoFicha(f); renderResultadoPraticado(f); renderListaFichas();
 }
@@ -2396,6 +2597,7 @@ function atualizarBadges(){
   const baixos = BD.estoqueComponentes.filter(c => c.qtd <= c.min).length;
   const s1 = $('seloEstoque'); if(s1){ s1.textContent = baixos; s1.classList.toggle('on', baixos > 0); }
   const pend = pedidosPendentes().length;
+  const ativos = pedidosAtivos().filter(p => p.data === dataHoje()).length; const s3 = $('seloFila'); if(s3){ s3.textContent = ativos; s3.classList.toggle('on', ativos > 0); }
   const s2 = $('seloCaixa'); if(s2){ s2.textContent = pend; s2.classList.toggle('on', pend > 0); }
 }
 
@@ -2427,6 +2629,7 @@ function definirConsumo(c){
   consumoAtual = c; BD.config.consumoPadrao = c; salvar('config');
   document.querySelectorAll('#segConsumo button').forEach(b => b.classList.toggle('on', b.dataset.c === c));
 }
+function salvarPrefFila(){ BD.config.pdvNaFila = $('enviarFila').checked; salvar('config'); }
 function salvarPrefImpressao(){ BD.config.imprimirAuto = $('imprimirAuto').checked; salvar('config'); }
 
 /* ---------- grade de produtos e seletores ---------- */
@@ -2592,14 +2795,14 @@ function aplicarPagamento(linhas, pagamentos, dataPag){
   linhas.forEach(l => {
     l.pago = true; l.pagamentos = clona(pagamentos); l.pedidoTotal = r2(totalPedido);
     l.formaPagamento = pagamentos.length > 1 ? 'misto' : pagamentos[0].forma;
-    l.dataPagamento = dataPag;
+    l.dataPagamento = dataPag; l.pagoEm = Date.now();
     const fr = totalPedido > 0 ? l.valorTotal / totalPedido : 0;
     let taxa = 0; pagamentos.forEach(p => { taxa += p.valor * fr * taxaPercForma(p.forma) / 100; });
     l.taxaValor = Math.round(taxa * 1e6) / 1e6; l.taxaPerc = l.valorTotal > 0 ? taxa / l.valorTotal * 100 : 0;
   });
 }
 function limparPagamento(linhas){
-  linhas.forEach(l => { l.pago = false; l.formaPagamento = 'pendente'; delete l.pagamentos; delete l.pedidoTotal; delete l.taxaValor; delete l.taxaPerc; delete l.dataPagamento; });
+  linhas.forEach(l => { l.pago = false; l.formaPagamento = 'pendente'; delete l.pagamentos; delete l.pedidoTotal; delete l.taxaValor; delete l.taxaPerc; delete l.dataPagamento; delete l.pagoEm; });
 }
 const linhasDoPedido = pid => BD.vendas.filter(v => String(v.pedidoId) === String(pid));
 function agruparPedidos(lista){
@@ -2626,6 +2829,31 @@ function distribuirDesconto(itens, subtotal, desconto){
   });
   return out;
 }
+// Cria as linhas do pedido (usado pelo balcão e pelo totem), baixa estoque e grava.
+function registrarPedido({itens, cliente, telefone, desconto = 0, pagamentos = null, origem = 'balcao', status = 'entregue', retirarEm = null, estimativaMin = null, estimativaBase = null, pagamentoPrevisto = ''}){
+  const subtotal = r2(soma(itens, c => c.valorUnit * c.quantidade));
+  let pedidoId = Date.now(); while(linhasDoPedido(pedidoId).length) pedidoId++;
+  const agora = Date.now(); const senha = proximaSenha(); const data = dataHoje(); const horario = horaAgora();
+  const dist = distribuirDesconto(itens, subtotal, desconto);
+  const linhas = itens.map((it, i) => {
+    const valorTotal = r2(dist[i].bruto - dist[i].parte);
+    const custoUnit = custoUnitDoProduto(it.tipo, it.produtoId, it.tipoConsumo);
+    const l = {id: uid(), pedidoId, senha, data, horario, cliente: cliente || 'Cliente sem nome', telefone: telefone || '', produto: it.produto, produtoId: it.produtoId, tipoProduto: it.tipo,
+      quantidade: it.quantidade, valorUnit: it.valorUnit, descontoValor: dist[i].parte, valorTotal, custoUnit, custoTotal: custoUnit * it.quantidade,
+      tipoConsumo: it.tipoConsumo, observacao: it.obs || '', pago: false, formaPagamento: 'pendente', consumo: baixarConsumo(consumoDoItem(it)),
+      origem, status, criadoEm: agora, viaSugestao: !!it.sug};
+    if(estimativaMin !== null) l.estimativaMin = estimativaMin;
+    if(estimativaBase !== null) l.estimativaBase = estimativaBase;
+    if(retirarEm) l.retirarEm = retirarEm;
+    if(pagamentoPrevisto) l.pagamentoPrevisto = pagamentoPrevisto;
+    if(status === 'entregue') l.entregueEm = agora;
+    return l;
+  });
+  if(pagamentos) aplicarPagamento(linhas, pagamentos, data);
+  linhas.forEach(l => BD.vendas.push(l));
+  salvarAgora('vendas', 'estoqueComponentes');
+  return {pedidoId, senha, total: r2(subtotal - desconto), linhas};
+}
 async function finalizarVenda(){
   if(!carrinhoAtual.length) return toast('O pedido está vazio.', 'alerta');
   const faltas = faltasDeEstoque(agregarConsumo(carrinhoAtual));
@@ -2642,37 +2870,40 @@ async function finalizarVenda(){
   const rec = parseNum($('valorRecebido').value);
   const dinheiroDevido = pagamentos ? soma(pagamentos.filter(p => p.forma === 'dinheiro'), p => p.valor) : 0;
   if(dinheiroDevido > 0 && rec > 0 && rec + 1e-9 < dinheiroDevido) return toast('O valor recebido é menor que o valor em dinheiro.', 'alerta');
-
   const cliente = $('clienteNome').value.trim() || 'Cliente sem nome'; const telefone = $('clienteTelefone').value.trim();
-  const pedidoId = Date.now(); const senha = proximaSenha(); const data = dataHoje(); const horario = horaAgora();
-  const dist = distribuirDesconto(carrinhoAtual, tot.subtotal, tot.desconto);
-  const linhas = carrinhoAtual.map((it, i) => {
-    const valorTotal = r2(dist[i].bruto - dist[i].parte);
-    const custoUnit = custoUnitDoProduto(it.tipo, it.produtoId, it.tipoConsumo);
-    return {id: uid(), pedidoId, senha, data, horario, cliente, telefone, produto: it.produto, produtoId: it.produtoId, tipoProduto: it.tipo,
-      quantidade: it.quantidade, valorUnit: it.valorUnit, descontoValor: dist[i].parte, valorTotal, custoUnit, custoTotal: custoUnit * it.quantidade,
-      tipoConsumo: it.tipoConsumo, observacao: it.obs || '', pago: false, formaPagamento: 'pendente', consumo: baixarConsumo(consumoDoItem(it))};
-  });
-  if(pago) aplicarPagamento(linhas, pagamentos, data);
-  linhas.forEach(l => BD.vendas.push(l));
-  salvarAgora('vendas', 'estoqueComponentes');
-  ultimoPedidoImpresso = pedidoId;
+  const naFila = !!($('enviarFila') && $('enviarFila').checked);
+  const est = naFila ? estimar(carrinhoAtual) : null;
+  const r = registrarPedido({itens: carrinhoAtual, cliente, telefone, desconto: tot.desconto, pagamentos, origem: 'balcao', status: naFila ? 'novo' : 'entregue',
+    estimativaMin: est ? est.max : null, estimativaBase: est ? est.base : null});
+  if(BD.config.pdvNaFila !== naFila){ BD.config.pdvNaFila = naFila; salvar('config'); }
+  ultimoPedidoImpresso = r.pedidoId;
   const imprimir = $('imprimirAuto').checked;
   const trocoMsg = (dinheiroDevido > 0 && rec > dinheiroDevido) ? ' Troco: ' + brl(r2(rec - dinheiroDevido)) : '';
   limparCarrinho(false); renderVendas(true); atualizarBadges(); renderEstoque();
-  toast('Pedido nº ' + senha + ' registrado (' + brl(tot.total) + ').' + trocoMsg, 'ok', {ms: trocoMsg ? 9000 : 4000});
-  if(imprimir) imprimirComandaPedido(pedidoId);
+  toast('Pedido nº ' + r.senha + ' registrado (' + brl(tot.total) + ').' + (est ? ' Previsão: ' + est.texto + '.' : '') + trocoMsg, 'ok', {ms: trocoMsg ? 9000 : 4000});
+  if(imprimir) imprimirComandaPedido(r.pedidoId);
 }
 
 /* ---------- comanda ---------- */
+function horaDeMs(ms){ const d = new Date(ms); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
 function comandaHTML(pid){
   const p = agruparPedidos(linhasDoPedido(pid))[0]; if(!p) return '';
-  const status = p.pago ? 'PAGO' + (p.linhas[0].formaPagamento && p.linhas[0].formaPagamento !== 'pendente' ? ' (' + (rotForma[p.linhas[0].formaPagamento] || '').replace(/^\S+\s/, '').toUpperCase() + ')' : '') : '*** COBRAR ' + brl(p.total) + ' ***';
-  return '<div class="marca">ARTESANAIS PÃO E VIDA</div>' + (p.senha ? '<div class="senha-c">Nº ' + p.senha + '</div>' : '') +
-    '<div class="data-hora">' + fmtData(p.data) + ' - ' + esc(p.horario) + '</div><div class="linha"></div>' +
+  const l0 = p.linhas[0]; const totem = l0.origem === 'totem';
+  const formaTxt = l0.formaPagamento && l0.formaPagamento !== 'pendente' ? ' (' + (rotForma[l0.formaPagamento] || '').replace(/^\S+\s/, '').toUpperCase() + ')' : '';
+  const status = p.pago ? 'PAGO' + formaTxt : (l0.pagamentoPrevisto === 'pix' ? '*** AGUARDA PIX ' + brl(p.total) + ' ***' : '*** COBRAR ' + brl(p.total) + ' ***');
+  const prev = l0.estimativaMin && l0.criadoEm ? '<div class="prev">PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000) + '</div>' : '';
+  const retirar = l0.retirarEm ? '<div class="prev">RETIRAR ÀS ' + horaDeMs(l0.retirarEm) + '</div>' : '';
+  let h = '<div class="marca">ARTESANAIS PÃO E VIDA</div>' + (totem ? '<div class="telefone-comanda">PEDIDO PELO TOTEM</div>' : '') + (p.senha ? '<div class="senha-c">Nº ' + p.senha + '</div>' : '') +
+    '<div class="data-hora">' + fmtData(p.data) + ' - ' + esc(p.horario) + '</div>' + prev + retirar + '<div class="linha"></div>' +
     '<div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + (p.telefone ? '<div class="telefone-comanda">Tel: ' + esc(p.telefone) + '</div>' : '') + '<div class="linha"></div>' +
     p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.observacao ? '<div class="obs">OBS: ' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
     '<div class="linha"></div><div class="total">' + status + (BD.config.valoresComanda ? '<br>TOTAL ' + brl(p.total) : '') + '</div>';
+  if(totem && BD.config.totemVias === 2){
+    h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div><div class="marca">ARTESANAIS PÃO E VIDA</div><div class="senha-c">Nº ' + p.senha + '</div><div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + prev + retirar +
+      '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
+      '<div class="via-msg">' + esc(BD.config.totemMensagem || 'Aguarde ser chamado pela senha.') + '</div>';
+  }
+  return h;
 }
 function imprimirComandaPedido(pid){
   const h = comandaHTML(pid); if(!h) return toast('Pedido não encontrado.', 'erro');
@@ -2713,7 +2944,7 @@ function vendasFiltradas(){
   if(per === 'hoje') lista = lista.filter(v => v.data === dataHoje());
   else if(per === 'mes'){ const m = $('filtroMes').value || mesAtual(); lista = lista.filter(v => (v.data || '').startsWith(m)); }
   else if(per === 'dia'){ const d = $('filtroDia').value || dataHoje(); lista = lista.filter(v => v.data === d); }
-  if(st === 'pendente') lista = lista.filter(v => v.pago === false); else if(st === 'pago') lista = lista.filter(v => v.pago !== false);
+  if(st === 'pendente') lista = lista.filter(v => v.pago === false); else if(st === 'pago') lista = lista.filter(v => v.pago !== false); else if(st === 'retro') lista = lista.filter(v => v.retroativo);
   let pedidos = agruparPedidos(lista);
   if(q) pedidos = pedidos.filter(p => norm(p.cliente).includes(q) || norm(p.telefone).includes(q) || String(p.senha) === q.replace(/^n?[º°]?\s*/, '') || p.linhas.some(l => norm(l.produto).includes(q)));
   return pedidos.sort((a, b) => (b.data + b.horario + String(b.pedidoId).padStart(16, '0')).localeCompare(a.data + a.horario + String(a.pedidoId).padStart(16, '0')));
@@ -2735,7 +2966,7 @@ function renderVendas(reset){
       '<td class="acoes">' + (p.pago ? '' : '<button class="btn pequeno" onclick="receberPedido(\'' + pid + '\')">💰 Receber</button>') +
       (p.linhas[0].retroativo ? '' : '<button class="btn cinza pequeno" onclick="imprimirComandaPedido(\'' + pid + '\')" aria-label="Imprimir comanda" title="Reimprimir">🖨️</button>') +
       (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + pid + '\')" aria-label="Avisar no WhatsApp" title="Avisar no WhatsApp">💬</button>' : '') +
-      '<button class="btn cinza pequeno" onclick="editarPedido(\'' + pid + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirPedido(\'' + pid + '\')" aria-label="Excluir">✕</button></td></tr>');
+      '<button class="btn cinza pequeno" onclick="' + (p.linhas[0].retroativo ? 'editarRetro(\'' + p.linhas[0].id + '\')' : 'editarPedido(\'' + pid + '\')') + '" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirPedido(\'' + pid + '\')" aria-label="Excluir">✕</button></td></tr>');
   });
   $('tabelaVendas').innerHTML = html.length ? html.join('') : '<tr><td colspan="7"><div class="vazio">Nenhum pedido neste filtro.</div></td></tr>';
   $('paginacaoVendas').innerHTML = totalPag > 1 ? '<button class="btn cinza pequeno" ' + (PAG_VENDAS.pagina <= 1 ? 'disabled' : '') + ' onclick="PAG_VENDAS.pagina--;renderVendas()">← Anterior</button><span class="suave" style="align-self:center">Página ' + PAG_VENDAS.pagina + ' de ' + totalPag + ' (' + pedidos.length + ' pedidos)</span><button class="btn cinza pequeno" ' + (PAG_VENDAS.pagina >= totalPag ? 'disabled' : '') + ' onclick="PAG_VENDAS.pagina++;renderVendas()">Próxima →</button>' : '';
@@ -2744,14 +2975,14 @@ function renderVendas(reset){
   $('resumoVendasPeriodo').innerHTML = '<h4>Resumo do filtro</h4><div class="linha-kv"><span>Pedidos / itens</span><b>' + pedidos.length + ' / ' + soma(linhas, l => l.quantidade) + '</b></div><div class="linha-kv"><span>Faturamento</span><b>' + brl(fat) + '</b></div><div class="linha-kv"><span>A receber (pendente)</span><b class="' + (pend > 0 ? 'alerta' : '') + '">' + brl(pend) + '</b></div><div class="linha-kv"><span>Lucro estimado (após custos e taxas)</span><b>' + brl(soma(linhas, lucroVenda)) + '</b></div>';
   $('senhaAtual').textContent = proximaSenha();
 }
-function receberPedido(pid){
+function receberPedido(pid, formaPadrao, aoConcluir){
   const linhas = linhasDoPedido(pid); if(!linhas.length) return;
   const total = r2(soma(linhas, l => l.valorTotal));
   formModal({titulo: 'Receber pagamento — ' + brl(total), aviso: (linhas[0].cliente ? esc(linhas[0].cliente) + ' • ' : '') + 'pedido de ' + fmtData(linhas[0].data), campos: [
-    {id: 'forma', rotulo: 'Forma de pagamento', tipo: 'select', valor: 'pix', opcoes: FORMAS.map(f => ({v: f, t: rotForma[f]}))}
+    {id: 'forma', rotulo: 'Forma de pagamento', tipo: 'select', valor: formaPadrao || 'pix', opcoes: FORMAS.map(f => ({v: f, t: rotForma[f]}))}
   ], textoSalvar: 'Confirmar recebimento', salvar: v => {
     aplicarPagamento(linhas, [{forma: v.forma, valor: total}], dataHoje());
-    salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); toast('Pagamento de ' + brl(total) + ' registrado.', 'ok');
+    salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); refreshFila(); toast('Pagamento de ' + brl(total) + ' registrado.', 'ok'); if(aoConcluir) aoConcluir();
   }});
 }
 function editarPedido(pid){
@@ -2812,27 +3043,11 @@ async function excluirPedido(pid){
   }}});
 }
 
-/* ---------- venda retroativa ---------- */
-function lancarVendaRetroativa(){
-  const data = $('retroData').value; const val = $('retroProduto').value; const qtd = Math.max(1, Math.round(parseNum($('retroQtd').value, 1)));
-  const forma = $('retroForma').value; const consumo = $('retroConsumo').value;
-  if(!data) return toast('Escolha a data da venda.', 'alerta');
-  if(!val) return toast('Escolha o produto.', 'alerta');
-  const [tipo, id] = val.split(':'); const p = acharProduto(tipo, id); if(!p) return;
-  const vu = parseNum($('retroValorUnit').value) || (tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0));
-  if(!(vu > 0)) return toast('Este produto não tem preço. Informe o valor unitário.', 'alerta');
-  const custoUnit = custoUnitDoProduto(tipo, id, consumo);
-  const linha = {id: uid(), pedidoId: 'r' + uid(), senha: 0, data, horario: '', cliente: 'Venda histórica', telefone: '', produto: p.nome, produtoId: id, tipoProduto: tipo,
-    quantidade: qtd, valorUnit: vu, descontoValor: 0, valorTotal: r2(vu * qtd), custoUnit, custoTotal: custoUnit * qtd, tipoConsumo: consumo, observacao: '', retroativo: true, consumo: []};
-  aplicarPagamento([linha], [{forma, valor: linha.valorTotal}], data);
-  BD.vendas.push(linha); salvarAgora('vendas');
-  $('retroQtd').value = 1; $('retroValorUnit').value = '';
-  renderVendas(true); toast('Venda histórica lançada em ' + fmtData(data) + '.', 'ok');
-}
+/* venda retroativa: ver 13_retro.js */
 function renderVendasPagina(){
-  renderSelectsProdutos(); renderGradeProdutos(); renderCarrinho();
+  renderSelectsProdutos(); renderGradeProdutos(); renderCarrinho(); renderRetro();
   if(!$('retroData').value) $('retroData').value = dataHoje();
-  $('imprimirAuto').checked = BD.config.imprimirAuto !== false;
+  $('imprimirAuto').checked = BD.config.imprimirAuto !== false; $('enviarFila').checked = !!BD.config.pdvNaFila;
   definirConsumo(BD.config.consumoPadrao || consumoAtual);
   mudarPeriodoVendas();
 }
@@ -2961,6 +3176,13 @@ function renderMei(){
   $('meiBarra').innerHTML = '<div class="barra ' + (perc >= 100 ? 'vermelho' : perc >= 80 ? 'laranja' : '') + '"><i style="width:' + Math.min(100, perc) + '%"></i></div>';
   $('meiAlerta').className = perc >= 90 ? 'erro' : (perc >= 70 ? 'alerta' : 'ok');
   $('meiAlerta').textContent = perc >= 120 ? '🚨 Acima de 120% do teto: risco de desenquadramento. Fale com seu contador.' : perc >= 100 ? '🚨 Você passou do teto do MEI. Excessos pequenos costumam gerar DAS complementar; fale com seu contador.' : perc >= 90 ? '⚠️ Você já usou ' + fmt(perc, 0) + '% do teto. Fique atento.' : perc >= 70 ? '🟡 ' + fmt(perc, 0) + '% do teto usado.' : '🟢 Dentro do limite (' + fmt(perc, 0) + '%).';
+  let acum = 0; const linhasMei = [];
+  for(let m = 1; m <= 12; m++){
+    const ym = ano + '-' + pad2(m); const doMes = BD.vendas.filter(v => (v.data || '').startsWith(ym));
+    const tot = soma(doMes, v => v.valorTotal); const hist = soma(doMes.filter(v => v.retroativo), v => v.valorTotal); acum += tot;
+    if(tot > 0) linhasMei.push('<tr><td>' + fmtMes(ym) + '</td><td class="n"><b>' + brl(tot) + '</b></td><td class="n">' + brl(tot - hist) + '</td><td class="n">' + (hist > 0 ? '<b>' + brl(hist) + '</b> <small class="suave">(' + doMes.filter(v => v.retroativo).length + ')</small>' : '—') + '</td><td class="n">' + brl(acum) + ' <small class="suave">(' + fmt(limite > 0 ? acum / limite * 100 : 0, 0) + '%)</small></td><td>' + (hist > 0 ? '<button class="btn cinza pequeno" onclick="verRetro(\'' + ym + '\')">Ver</button>' : '') + '</td></tr>');
+  }
+  $('meiMesAMes').innerHTML = linhasMei.length ? linhasMei.join('') : '<tr><td colspan="6"><div class="vazio">Sem vendas em ' + ano + ' ainda.</div></td></tr>';
   $('meiProjecaoTexto').textContent = proj > limite ? 'No ritmo atual você deve ultrapassar o teto em cerca de ' + brl(proj - limite) + ' até o fim do ano.' : 'No ritmo atual você termina o ano dentro do teto.';
 }
 
@@ -3087,14 +3309,15 @@ function adicionarProdutoSimples(){
   const nome = $('prodNome').value.trim(); const preco = parseNum($('prodPreco').value); const custo = parseNum($('prodCusto').value);
   if(!nome || preco <= 0) return toast('Informe o nome e o preço de venda.', 'alerta');
   if(BD.produtos.some(p => norm(p.nome) === norm(nome))) return toast('Já existe um produto com esse nome.', 'alerta');
-  BD.produtos.push({id: uid(), nome, preco, custo}); ['prodNome', 'prodPreco', 'prodCusto'].forEach(i => $(i).value = '');
+  BD.produtos.push({id: uid(), nome, preco, custo, sugerir: true, totem: true}); ['prodNome', 'prodPreco', 'prodCusto'].forEach(i => $(i).value = '');
   salvar('produtos'); renderProdutosSimples(); toast('Produto cadastrado.', 'ok');
 }
 function editarProdutoSimples(id){
   const p = BD.produtos.find(x => x.id === id); if(!p) return;
-  formModal({titulo: 'Editar produto', campos: [{id: 'nome', rotulo: 'Nome', valor: p.nome}, {id: 'preco', rotulo: 'Preço de venda (R$)', tipo: 'numero', valor: p.preco}, {id: 'custo', rotulo: 'Custo unitário (R$)', tipo: 'numero', valor: p.custo}],
+  formModal({titulo: 'Editar produto', campos: [{id: 'nome', rotulo: 'Nome', valor: p.nome}, {id: 'preco', rotulo: 'Preço de venda (R$)', tipo: 'numero', valor: p.preco}, {id: 'custo', rotulo: 'Custo unitário (R$)', tipo: 'numero', valor: p.custo},
+    {id: 'tempo', rotulo: 'Tempo de preparo (min, 0 = pronta entrega)', tipo: 'numero', valor: p.tempoPreparo ?? ''}, {id: 'totem', rotulo: 'Mostrar no totem', tipo: 'checkbox', valor: p.totem !== false}, {id: 'sugerir', rotulo: 'Sugerir como complemento no totem', tipo: 'checkbox', valor: p.sugerir !== false}],
     salvar: v => { if(!v.nome || !(v.preco > 0)){ toast('Nome e preço válidos, por favor.', 'alerta'); return false; }
-      const antigo = p.nome; p.nome = v.nome; p.preco = v.preco; p.custo = v.custo || 0;
+      const antigo = p.nome; p.nome = v.nome; p.preco = v.preco; p.custo = v.custo || 0; p.totem = v.totem; p.sugerir = v.sugerir; if(v.tempo === null) delete p.tempoPreparo; else p.tempoPreparo = Math.max(0, v.tempo);
       const c = componenteEstoque(antigo); if(c && norm(antigo) !== norm(v.nome) && !componenteEstoque(v.nome)) c.nome = v.nome;
       salvar('produtos', 'estoqueComponentes'); renderProdutosSimples(); }});
 }
@@ -3108,8 +3331,8 @@ function renderProdutosSimples(){
   const lista = BD.produtos.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   $('tabelaProdutosSimples').innerHTML = lista.length ? lista.map(p => {
     const mg = p.preco > 0 ? (p.preco * (1 - taxaPercForma(BD.config.taxaBase) / 100) - p.custo) / p.preco * 100 : 0;
-    return '<tr><td>' + esc(p.nome) + (componenteEstoque(p.nome) ? ' <span class="tag">estoque controlado</span>' : '') + '</td><td class="n">' + brl(p.preco) + '</td><td class="n">' + (p.custo > 0 ? brl(p.custo) : '<span class="tag laranja">sem custo</span>') + '</td><td class="n">' + (p.custo > 0 ? fmt(mg, 1) + '%' : '—') + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarProdutoSimples(\'' + p.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="removerProdutoSimples(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>';
-  }).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum produto simples.</div></td></tr>';
+    return '<tr><td>' + esc(p.nome) + (componenteEstoque(p.nome) ? ' <span class="tag">estoque controlado</span>' : '') + '</td><td class="n">' + brl(p.preco) + '</td><td class="n">' + (p.custo > 0 ? brl(p.custo) : '<span class="tag laranja">sem custo</span>') + '</td><td class="n">' + (p.custo > 0 ? fmt(mg, 1) + '%' : '—') + '</td><td>' + (p.totem === false ? '<span class="tag cinza">oculto</span>' : '<span class="tag">visível</span>') + (p.sugerir !== false ? ' <span class="tag laranja">sugere</span>' : '') + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarProdutoSimples(\'' + p.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="removerProdutoSimples(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+  }).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum produto simples.</div></td></tr>';
 }
 
 /* ---------- tela DADOS ---------- */
@@ -3134,12 +3357,34 @@ function renderDados(){
   renderDiagnostico();
 }
 
+/* ---------- mesclar vendas de outro aparelho ---------- */
+function mesclarVendasArquivo(event){
+  const arq = event.target.files && event.target.files[0]; event.target.value = ''; if(!arq) return;
+  const leitor = new FileReader();
+  leitor.onload = async () => {
+    try{
+      const b = JSON.parse(leitor.result); const d = validarBackup(b);
+      const novos = (lista, atual) => { const ids = new Set(atual.map(x => x.id)); return lista.filter(x => x && x.id && !ids.has(x.id)); };
+      const nv = novos(d.vendas, BD.vendas), nd = novos(d.despesas, BD.despesas), np = novos(d.perdas, BD.perdas), nc = novos(d.compras, BD.compras);
+      const dias = Object.keys(d.caixaDias).filter(k => !BD.caixaDias[k]);
+      if(!nv.length && !nd.length && !np.length && !nc.length && !dias.length) return toast('Nada novo para mesclar: tudo isso já existe aqui.', 'alerta');
+      const ped = new Set(nv.map(v => String(v.pedidoId))).size;
+      if(!await confirmar('Do arquivo entram:\n' + ped + ' pedido(s) (' + nv.length + ' itens) • ' + nd.length + ' despesa(s) • ' + np.length + ' perda(s) • ' + nc.length + ' compra(s) • ' + dias.length + ' fechamento(s) de caixa.\nNada do que já existe aqui é alterado ou apagado. O estoque NÃO é modificado.', {titulo: 'Mesclar vendas', ok: 'Mesclar'})) return;
+      guardarBackupAnterior('antes de mesclar vendas de outro aparelho');
+      nv.forEach(v => BD.vendas.push(v)); nd.forEach(x => BD.despesas.push(x)); np.forEach(x => BD.perdas.push(x)); nc.forEach(x => BD.compras.push(x)); dias.forEach(k => { BD.caixaDias[k] = d.caixaDias[k]; });
+      normalizarBD(); salvarTudo(); renderTudo(); toast('Mesclagem concluída: ' + ped + ' pedido(s) adicionados.', 'ok', {ms: 6000});
+    }catch(e){ toast('Não foi possível mesclar: ' + e.message, 'erro', {ms: 7000}); }
+  };
+  leitor.readAsText(arq, 'UTF-8');
+}
+
 
 /* =====================================================================
    PAINEL, GRÁFICOS e DIAGNÓSTICO
    ===================================================================== */
 const abrevNum = v => v >= 1000 ? fmt(v / 1000, 1) + 'k' : fmt(v, 0);
-function graficoBarras(titulo, pontos, vazio){
+function graficoBarras(titulo, pontos, vazio, fmtV){
+  const F = fmtV || brl;
   const W = 320, H = 150, topo = 16, base = 24, n = pontos.length;
   const max = Math.max(1, ...pontos.map(p => p.v));
   if(!pontos.some(p => p.v > 0)) return '<div class="grafico"><h3>' + esc(titulo) + '</h3><div class="vazio">' + esc(vazio || 'Sem dados ainda.') + '</div></div>';
@@ -3147,7 +3392,7 @@ function graficoBarras(titulo, pontos, vazio){
   const barras = pontos.map((p, i) => {
     const h = p.v / max * alt; const x = 4 + i * bw; const y = H - base - h;
     const mostrarRot = n <= 8 || i % Math.ceil(n / 8) === 0 || i === n - 1;
-    return '<g><title>' + esc(p.rot) + ': ' + brl(p.v) + '</title><rect class="barra-g' + (p.hoje ? ' hoje' : '') + '" x="' + (x + 1.5).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + Math.max(2, bw - 3).toFixed(1) + '" height="' + Math.max(0, h).toFixed(1) + '" rx="2"/>' +
+    return '<g><title>' + esc(p.rot) + ': ' + F(p.v) + '</title><rect class="barra-g' + (p.hoje ? ' hoje' : '') + '" x="' + (x + 1.5).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + Math.max(2, bw - 3).toFixed(1) + '" height="' + Math.max(0, h).toFixed(1) + '" rx="2"/>' +
       (p.v > 0 && (n <= 8 || p.v === max) ? '<text class="val" x="' + (x + bw / 2).toFixed(1) + '" y="' + (y - 3).toFixed(1) + '" text-anchor="middle">' + abrevNum(p.v) + '</text>' : '') +
       (mostrarRot ? '<text class="rot" x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle">' + esc(p.rot) + '</text>' : '') + '</g>';
   }).join('');
@@ -3270,9 +3515,694 @@ function renderDiagnostico(){
 
 
 /* =====================================================================
+   ATENDIMENTO — status do pedido, tempo de espera, fila da cozinha,
+   chamada de senha e indicadores (com sugestões automáticas).
+   Pedidos antigos (sem "status") são tratados como já entregues.
+   ===================================================================== */
+const STATUS_ORDEM = ['novo', 'preparo', 'pronto', 'entregue'];
+const statusLinha = l => l.status || 'entregue';
+const statusPedido = p => statusLinha(p.linhas[0]);
+const origemPedido = p => p.linhas[0].origem || 'balcao';
+const aguardandoPagamento = p => !p.pago && origemPedido(p) === 'totem' && !!BD.config.totemExigePagamento && statusPedido(p) === 'novo';
+const pedidosAtivos = () => agruparPedidos(BD.vendas.filter(v => v.status && v.status !== 'entregue' && !v.retroativo));
+let FILA_MODAL = null;
+
+/* ---------- tempo de preparo e estimativa de espera ---------- */
+function tempoPreparoUnit(tipo, id){
+  const o = acharProduto(tipo, id); if(!o) return 0;
+  if(o.tempoPreparo !== undefined && o.tempoPreparo !== null && o.tempoPreparo !== '') return Math.max(0, parseNum(o.tempoPreparo));
+  return tipo === 'ficha' ? Math.max(0, BD.config.tempoPadraoFicha || 0) : 0;
+}
+const tipoDoItem = it => it.tipo || it.tipoProduto;
+const trabalhoItens = itens => soma(itens, it => tempoPreparoUnit(tipoDoItem(it), it.produtoId) * it.quantidade);
+const capacidade = () => Math.max(1, BD.config.capacidade || 1);
+function backlogMin(){
+  const cap = capacidade(), agora = Date.now(); let tot = 0;
+  pedidosAtivos().filter(p => p.data === dataHoje() && !aguardandoPagamento(p)).forEach(p => {
+    const w = trabalhoItens(p.linhas); const st = statusPedido(p);
+    if(st === 'preparo'){ const dec = (agora - (p.linhas[0].iniciadoEm || agora)) / 60000; tot += Math.max(w > 0 ? 1 : 0, w - dec * cap) / cap; }
+    else if(st === 'novo') tot += w / cap;
+  });
+  return tot;
+}
+function amostrasEstimativa(){
+  const desde = Date.now() - 14 * 86400000; const out = [];
+  agruparPedidos(BD.vendas.filter(v => v.prontoEm && v.iniciadoEm && v.estimativaBase > 0 && v.criadoEm > desde)).forEach(p => {
+    const l = p.linhas[0]; const real = (l.prontoEm - l.criadoEm) / 60000;
+    if(real > 0.2 && real < 180) out.push({real, previsto: l.estimativaBase});
+  });
+  return out;
+}
+function fatorCalibracao(){
+  if(!BD.config.calibrar) return 1;
+  const a = amostrasEstimativa(); if(a.length < 8) return 1;
+  const r = a.map(x => x.real / x.previsto).sort((x, y) => x - y);
+  return Math.min(2, Math.max(0.6, r[Math.floor(r.length / 2)]));
+}
+// Faixa estreita e levemente conservadora (evita frustração e desistência)
+function estimar(itens){
+  const cap = capacidade(); const work = trabalhoItens(itens);
+  const base = backlogMin() + (work > 0 ? work / cap + (BD.config.tempoBase || 0) : 1);
+  const est = base * fatorCalibracao();
+  const lo = Math.max(1, Math.ceil(est) + (work > 0 ? 1 : 0)); const hi = lo + Math.max(2, Math.ceil(lo * 0.2));
+  return {base, min: lo, max: hi, texto: lo + '–' + hi + ' min', prontoEm: Date.now() + hi * 60000, fila: pedidosAtivos().filter(p => p.data === dataHoje() && !aguardandoPagamento(p)).length};
+}
+
+/* ---------- transições ---------- */
+function mudarStatus(pid, status){
+  const agora = Date.now();
+  linhasDoPedido(pid).forEach(l => {
+    l.status = status;
+    if(status === 'novo'){ delete l.iniciadoEm; delete l.prontoEm; delete l.entregueEm; }
+    if(status === 'preparo'){ l.iniciadoEm = l.iniciadoEm || agora; delete l.prontoEm; delete l.entregueEm; }
+    if(status === 'pronto'){ l.iniciadoEm = l.iniciadoEm || agora; l.prontoEm = agora; delete l.entregueEm; }
+    if(status === 'entregue'){ l.iniciadoEm = l.iniciadoEm || l.criadoEm || agora; l.prontoEm = l.prontoEm || agora; l.entregueEm = agora; }
+  });
+  salvarAgora('vendas'); refreshFila(); atualizarBadges();
+}
+const pedidoPorId = pid => agruparPedidos(linhasDoPedido(pid))[0];
+function iniciarPedido(pid){
+  const p = pedidoPorId(pid); if(!p) return;
+  if(aguardandoPagamento(p)) return toast('Receba o pagamento antes de iniciar o preparo.', 'alerta');
+  mudarStatus(pid, 'preparo');
+}
+function prontoPedido(pid){ mudarStatus(pid, 'pronto'); const p = pedidoPorId(pid); if(p) chamarSenha(p); }
+function entregarPedido(pid){
+  const p = pedidoPorId(pid); if(!p) return;
+  if(!p.pago) return receberPedido(pid, 'dinheiro', () => { mudarStatus(pid, 'entregue'); toast('Pedido entregue.', 'ok'); });
+  mudarStatus(pid, 'entregue'); toast('Pedido nº ' + (p.senha || '') + ' entregue.', 'ok');
+}
+function voltarPedido(pid){
+  const p = pedidoPorId(pid); if(!p) return;
+  const i = STATUS_ORDEM.indexOf(statusPedido(p)); if(i > 0) mudarStatus(pid, STATUS_ORDEM[i - 1]);
+}
+function tocarBip(){
+  try{
+    const C = window.AudioContext || window.webkitAudioContext; if(!C) return;
+    const ctx = new C();
+    [880, 1175].forEach((f, i) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+      const t = ctx.currentTime + i * 0.2; g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.18); o.start(t); o.stop(t + 0.19); });
+  }catch(e){}
+}
+function falar(txt){
+  try{ if(!BD.config.voz || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+    const u = new SpeechSynthesisUtterance(txt); u.lang = 'pt-BR'; u.rate = 0.95; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }catch(e){}
+}
+function chamarSenha(p){
+  tocarBip();
+  const nome = (p.cliente && p.cliente !== 'Cliente sem nome') ? ', ' + p.cliente.split(' ')[0] : '';
+  falar('Senha ' + (p.senha || '') + nome + '. Seu pedido está pronto.');
+}
+function chamarDeNovo(pid){ const p = pedidoPorId(pid); if(p) chamarSenha(p); }
+
+/* ---------- FILA da cozinha ---------- */
+const minutosDesde = ms => Math.max(0, Math.floor((Date.now() - ms) / 60000));
+function acoesFila(p){
+  const pid = String(p.pedidoId); const st = statusPedido(p);
+  const b = (rot, fn, cls = '') => '<button type="button" class="btn ' + cls + '" onclick="' + fn + '">' + rot + '</button>';
+  const pixPrev = p.linhas[0].pagamentoPrevisto === 'pix';
+  if(aguardandoPagamento(p)) return b('💰 Receber' + (pixPrev ? ' (PIX)' : ''), "receberPedido('" + pid + "','" + (pixPrev ? 'pix' : 'dinheiro') + "')") + b('✕ Cancelar', "excluirPedido('" + pid + "')", 'vermelho');
+  if(st === 'novo') return b('🔥 Iniciar', "iniciarPedido('" + pid + "')") + b('✏️', "editarPedido('" + pid + "')", 'cinza') + b('✕', "excluirPedido('" + pid + "')", 'vermelho');
+  if(st === 'preparo') return b('✅ Pronto', "prontoPedido('" + pid + "')") + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('✏️', "editarPedido('" + pid + "')", 'cinza');
+  if(st === 'pronto') return b('📦 Entregar' + (p.pago ? '' : ' e receber'), "entregarPedido('" + pid + "')") + b('🔔', "chamarDeNovo('" + pid + "')", 'laranja') + (p.telefone ? b('💬', "abrirWhatsApp('" + pid + "')", 'cinza') : '') + b('↩', "voltarPedido('" + pid + "')", 'cinza');
+  return '';
+}
+function cardFilaHTML(p){
+  const l0 = p.linhas[0]; const st = statusPedido(p); const esp = l0.criadoEm ? minutosDesde(l0.criadoEm) : 0;
+  const atrasado = st !== 'pronto' && l0.estimativaMin && esp > l0.estimativaMin;
+  const pagTag = p.pago ? '<span class="tag">✅ pago' + (l0.formaPagamento && l0.formaPagamento !== 'pendente' ? ' ' + esc((rotForma[l0.formaPagamento] || '').replace(/^\S+\s/, '')) : '') + '</span>' : '<span class="tag laranja">💰 a pagar ' + brl(p.total) + (l0.pagamentoPrevisto === 'pix' ? ' (PIX)' : '') + '</span>';
+  const agendado = l0.retirarEm ? '<span class="tag cinza">retirar ' + horaDeMs(l0.retirarEm) + '</span>' : '';
+  return '<div class="fila-card' + (atrasado ? ' atrasado' : '') + '"><div class="fila-topo"><span class="senha">' + (p.senha || '—') + '</span><b>' + esc(p.cliente) + '</b>' +
+    '<span class="tag cinza">' + (origemPedido(p) === 'totem' ? '🖥️ totem' : '🛒 balcão') + '</span><span class="fila-tempo' + (atrasado ? ' erro' : '') + '">' + (l0.criadoEm ? esp + ' min' : '') + (l0.estimativaMin ? ' / prev ' + l0.estimativaMin : '') + '</span></div>' +
+    '<div class="fila-itens">' + p.linhas.map(l => '<div><b>' + l.quantidade + '×</b> ' + esc(l.produto) + ' ' + (l.tipoConsumo === 'local' ? '🍽️' : '🥡') + (l.observacao ? '<div class="observacao-venda">' + esc(l.observacao) + '</div>' : '') + '</div>').join('') + '</div>' +
+    '<div>' + pagTag + agendado + '</div><div class="grupo-botoes fila-acoes">' + acoesFila(p) + '</div></div>';
+}
+function colunaFilaHTML(titulo, lista, vazio){
+  return '<div class="fila-col"><h3>' + titulo + ' <span class="tag">' + lista.length + '</span></h3>' + (lista.length ? lista.map(cardFilaHTML).join('') : '<div class="vazio">' + vazio + '</div>') + '</div>';
+}
+function filaHTML(){
+  const hoje = dataHoje(); const ativos = pedidosAtivos();
+  const ordena = (a, b) => ((a.linhas[0].retirarEm || a.linhas[0].criadoEm || 0) - (b.linhas[0].retirarEm || b.linhas[0].criadoEm || 0));
+  const doDia = ativos.filter(p => p.data === hoje); const antigos = ativos.filter(p => p.data < hoje);
+  const aguard = doDia.filter(aguardandoPagamento).sort(ordena);
+  const novos = doDia.filter(p => statusPedido(p) === 'novo' && !aguardandoPagamento(p)).sort(ordena);
+  const prep = doDia.filter(p => statusPedido(p) === 'preparo').sort(ordena);
+  const prontos = doDia.filter(p => statusPedido(p) === 'pronto').sort(ordena);
+  const entregues = agruparPedidos(BD.vendas.filter(v => v.status === 'entregue' && v.entregueEm && v.data === hoje && !v.retroativo && v.origem)).sort((a, b) => b.linhas[0].entregueEm - a.linhas[0].entregueEm).slice(0, 8);
+  const est = estimar([]);
+  let h = '<div class="fila-resumo"><span>⏱ Espera para um novo pedido: <b>' + (backlogMin() < 0.5 ? 'sem fila' : '≈ ' + Math.ceil(backlogMin() + BD.config.tempoBase) + ' min') + '</b></span><span>Na fila: <b>' + (novos.length + prep.length) + '</b></span><span>Prontos aguardando: <b>' + prontos.length + '</b></span>' + (aguard.length ? '<span class="alerta">💰 Aguardando pagamento: <b>' + aguard.length + '</b></span>' : '') + '</div>';
+  if(antigos.length) h += '<div class="aviso alerta-a">⚠️ ' + antigos.length + ' pedido(s) de dias anteriores ainda abertos (' + antigos.map(p => 'nº ' + (p.senha || '?') + ' ' + esc(p.cliente)).join(', ') + '). <button class="btn cinza pequeno" onclick="encerrarPedidosAntigos()">Marcar como entregues</button></div>';
+  h += '<div class="fila-colunas">' + (BD.config.totemExigePagamento || aguard.length ? colunaFilaHTML('💰 Aguardando pagamento', aguard, 'Nenhum.') : '') + colunaFilaHTML('🆕 Novos', novos, 'Sem pedidos novos.') + colunaFilaHTML('🔥 Em preparo', prep, 'Nada no forno.') + colunaFilaHTML('✅ Prontos', prontos, 'Nenhum aguardando retirada.') + '</div>';
+  h += '<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">📦 Entregues hoje (' + entregues.length + ')</summary>' + (entregues.length ? entregues.map(p => { const l = p.linhas[0]; return '<div class="linha-kv"><span>Nº ' + (p.senha || '?') + ' ' + esc(p.cliente) + ' — ' + p.linhas.map(x => x.quantidade + '× ' + esc(x.produto)).join(', ') + '</span><span>' + horaDeMs(l.entregueEm) + (l.criadoEm ? ' • esperou ' + Math.max(0, Math.round((l.prontoEm - l.criadoEm) / 60000)) + ' min' : '') + '</span></div>'; }).join('') : '<div class="vazio">Nenhum ainda.</div>') + '</details>';
+  return h;
+}
+async function encerrarPedidosAntigos(){
+  const antigos = pedidosAtivos().filter(p => p.data < dataHoje());
+  if(!await confirmar('Marcar ' + antigos.length + ' pedido(s) antigo(s) como entregues? (Eles não entram nas médias de tempo.)', {ok: 'Marcar'})) return;
+  antigos.forEach(p => p.linhas.forEach(l => { l.status = 'entregue'; l.entregueEm = l.entregueEm || Date.now(); delete l.prontoEm; delete l.iniciadoEm; }));
+  salvarAgora('vendas'); refreshFila();
+}
+function refreshFila(){
+  const el = $('filaLista'); if(el && paginaAtual() === 'fila') el.innerHTML = filaHTML();
+  if(FILA_MODAL && FILA_MODAL.corpo && FILA_MODAL.corpo.isConnected){ const c = FILA_MODAL.corpo.querySelector('#filaModalBody'); if(c) c.innerHTML = filaHTML(); }
+  if(typeof TOTEM !== 'undefined' && TOTEM.ativo && TOTEM.passo === 'home') renderTotem();
+  if(typeof PAINEL !== 'undefined' && PAINEL.ativo) renderPainel();
+  atualizarBadges();
+}
+function renderFila(){ $('filaLista').innerHTML = filaHTML(); }
+function abrirFilaEquipe(){
+  FILA_MODAL = abrirModal({titulo: '👨‍🍳 Fila da cozinha', largo: true, html: '<div id="filaModalBody">' + filaHTML() + '</div>', botoes: [{rotulo: 'Voltar', classe: 'cinza'}], aoFechar: () => { FILA_MODAL = null; }});
+}
+setInterval(() => { if(document.hidden) return; if(paginaAtual() === 'fila' || FILA_MODAL || (typeof PAINEL !== 'undefined' && PAINEL.ativo) || (typeof TOTEM !== 'undefined' && TOTEM.ativo && TOTEM.passo === 'home')) refreshFila(); }, 20000);
+
+/* ---------- INDICADORES ---------- */
+const percentil = (arr, p) => { if(!arr.length) return 0; const a = arr.slice().sort((x, y) => x - y); return a[Math.min(a.length - 1, Math.floor(p * a.length))]; };
+const media = arr => arr.length ? soma(arr) / arr.length : 0;
+function linhasPeriodo(per){
+  const hoje = dataHoje();
+  let de = '0000-00-00';
+  if(per === 'hoje') de = hoje; else if(per === '7'){ const d = new Date(); d.setDate(d.getDate() - 6); de = dataLocal(d); } else if(per === '30'){ const d = new Date(); d.setDate(d.getDate() - 29); de = dataLocal(d); }
+  return BD.vendas.filter(v => v.data >= de && !v.retroativo);
+}
+function statsTotemPeriodo(per){
+  const hoje = dataHoje(); let de = '0000-00-00';
+  if(per === 'hoje') de = hoje; else if(per === '7'){ const d = new Date(); d.setDate(d.getDate() - 6); de = dataLocal(d); } else if(per === '30'){ const d = new Date(); d.setDate(d.getDate() - 29); de = dataLocal(d); }
+  const t = {sessoes: 0, concluidas: 0, abandonadas: 0, seg: 0, passo_menu: 0, passo_revisao: 0};
+  Object.keys(BD.totemStats).filter(d => d >= de).forEach(d => Object.keys(t).forEach(k => { t[k] += BD.totemStats[d][k] || 0; }));
+  return t;
+}
+function calcularIndicadores(per){
+  const linhas = linhasPeriodo(per);
+  const todos = agruparPedidos(linhas);
+  const fila = todos.filter(p => p.linhas[0].criadoEm && p.linhas[0].status);
+  const prontos = fila.filter(p => p.linhas[0].prontoEm && p.linhas[0].iniciadoEm && (p.linhas[0].prontoEm - p.linhas[0].iniciadoEm) > 5000);
+  const espera = prontos.map(p => (p.linhas[0].prontoEm - p.linhas[0].criadoEm) / 60000);
+  const preparo = prontos.map(p => (p.linhas[0].prontoEm - p.linhas[0].iniciadoEm) / 60000);
+  const comEst = prontos.filter(p => p.linhas[0].estimativaMin);
+  const dentro = comEst.filter(p => (p.linhas[0].prontoEm - p.linhas[0].criadoEm) / 60000 <= p.linhas[0].estimativaMin).length;
+  const ate = fila.filter(p => p.pago && p.linhas[0].pagoEm && p.linhas[0].criadoEm && origemPedido(p) === 'totem').map(p => (p.linhas[0].pagoEm - p.linhas[0].criadoEm) / 60000);
+  const porHora = {}, esperaHora = {};
+  fila.forEach(p => { const h = new Date(p.linhas[0].criadoEm).getHours(); porHora[h] = (porHora[h] || 0) + 1; });
+  prontos.forEach(p => { const h = new Date(p.linhas[0].criadoEm).getHours(); (esperaHora[h] = esperaHora[h] || []).push((p.linhas[0].prontoEm - p.linhas[0].criadoEm) / 60000); });
+  const totem = todos.filter(p => origemPedido(p) === 'totem'); const balcao = todos.filter(p => origemPedido(p) !== 'totem' && p.linhas[0].origem);
+  const ticket = arr => arr.length ? soma(arr, p => p.total) / arr.length : 0;
+  const comSug = totem.filter(p => p.linhas.some(l => l.viaSugestao)).length;
+  const pag = {}; linhas.filter(v => v.pago !== false).forEach(v => pagamentosDaLinha(v).forEach(x => { pag[x.forma] = (pag[x.forma] || 0) + x.valor; }));
+  return {per, pedidos: todos.length, fila: fila.length, prontos: prontos.length, esperaMedia: media(espera), esperaP90: percentil(espera, 0.9), preparoMedio: media(preparo),
+    dentro, comEst: comEst.length, pctDentro: comEst.length ? dentro / comEst.length * 100 : null, tempoPagar: media(ate), porHora, esperaHora,
+    totemN: totem.length, balcaoN: balcao.length, ticketTotem: ticket(totem), ticketBalcao: ticket(balcao), comSug, pctSug: totem.length ? comSug / totem.length * 100 : null, pag, tot: statsTotemPeriodo(per), calibracao: fatorCalibracao(), amostras: amostrasEstimativa().length};
+}
+function gerarInsights(k){
+  const L = []; const add = (n, t) => L.push({n, t});
+  if(k.prontos >= 5){
+    if(k.pctDentro !== null && k.comEst >= 5){
+      if(k.pctDentro < 70) add('aviso', 'Só ' + fmt(k.pctDentro, 0) + '% dos pedidos ficaram prontos dentro da previsão informada. O tempo real está maior que o estimado: aumente o "tempo de preparo" das fichas ou reduza a "capacidade simultânea" (Custos → Totem). Com a calibração automática ligada o sistema se ajusta sozinho (fator atual ×' + fmt(k.calibracao, 2) + ').');
+      else if(k.pctDentro > 97 && k.calibracao < 0.85) add('info', 'Quase todos os pedidos saem antes da previsão: suas estimativas estão folgadas. Uma previsão mais curta pode atrair clientes que hoje desistem da fila.');
+      else add('ok', fmt(k.pctDentro, 0) + '% dos pedidos saíram dentro da previsão. Boa calibração.');
+    }
+    if(k.esperaP90 > 15) add('aviso', '1 em cada 10 clientes esperou mais de ' + fmt(k.esperaP90, 0) + ' min. Esperas longas aumentam a desistência: avalie deixar massa/recheio pré-montados nos horários de pico ou ampliar a capacidade.');
+    const hs = Object.keys(k.porHora).map(Number); if(hs.length){
+      const pico = hs.reduce((a, b) => k.porHora[b] > k.porHora[a] ? b : a); const totalPed = soma(Object.values(k.porHora));
+      const share = (k.porHora[pico] + (k.porHora[pico + 1] || 0)) / totalPed * 100;
+      add('info', 'Seu pico é às ' + pico + 'h: ' + fmt(share, 0) + '% dos pedidos caem entre ' + pico + 'h e ' + (pico + 2) + 'h. Deixe massas abertas e o forno aquecido ~20 min antes desse horário.');
+    }
+  }
+  if(k.totemN >= 5 && k.balcaoN >= 5 && k.ticketBalcao > 0){
+    const d = (k.ticketTotem / k.ticketBalcao - 1) * 100;
+    add(d >= 0 ? 'ok' : 'aviso', 'Ticket médio no totem: ' + brl(k.ticketTotem) + ' contra ' + brl(k.ticketBalcao) + ' no balcão (' + (d >= 0 ? '+' : '') + fmt(d, 0) + '%).' + (d < 0 ? ' Ative "Sugerir no totem" em bebidas e sobremesas para estimular o complemento.' : ''));
+  }
+  if(k.pctSug !== null && k.totemN >= 5) add(k.pctSug < 10 ? 'aviso' : 'ok', fmt(k.pctSug, 0) + '% dos pedidos do totem incluíram um item sugerido.' + (k.pctSug < 10 ? ' Teste marcar mais itens como "sugerir" (ex.: bebida gelada, sobremesa) ou oferecer combo com desconto.' : ''));
+  const t = k.tot;
+  if(t.sessoes >= 5){
+    const ab = t.abandonadas / t.sessoes * 100;
+    if(ab > 30) add('aviso', fmt(ab, 0) + '% das pessoas que começam um pedido no totem desistem (' + t.passo_menu + ' no cardápio, ' + t.passo_revisao + ' na revisão). Se desistem na revisão, deixe o nome como único campo obrigatório; no cardápio, verifique itens esgotados e a espera exibida.');
+    else add('ok', 'Desistência no totem: ' + fmt(ab, 0) + '% das sessões.');
+    if(t.concluidas) add('info', 'Um pedido no totem leva em média ' + fmt(t.seg / t.concluidas, 0) + ' s. Abaixo de 90 s é um bom sinal de que a tela está simples.');
+  }
+  if(k.tempoPagar > 3) add('aviso', 'Pedidos do totem levam em média ' + fmt(k.tempoPagar, 1) + ' min para serem pagos. Isso atrasa o forno: ofereça PIX no totem ou coloque uma segunda pessoa no caixa nos horários de pico.');
+  const totPag = soma(Object.values(k.pag)); if(totPag > 0){
+    const cartao = ((k.pag.credito || 0) + (k.pag.debito || 0)) / totPag * 100;
+    if(cartao > 40) add('info', fmt(cartao, 0) + '% do faturamento foi em cartão (taxas maiores). Estimular PIX no totem reduz custo de taxa.');
+  }
+  if(k.amostras < 8 && k.fila >= 1) add('info', 'A calibração automática da previsão começa após 8 pedidos concluídos pela fila (já tem ' + k.amostras + ').');
+  if(!L.length) add('info', 'Ainda há poucos pedidos passando pela fila. Use "Iniciar / Pronto / Entregar" na aba Fila para o sistema medir seus tempos e gerar sugestões.');
+  return L;
+}
+function renderAtendimento(){
+  const per = $('atPeriodo').value; const k = calcularIndicadores(per);
+  const m = v => v ? fmt(v, 1) + ' min' : '—';
+  $('atCards').innerHTML =
+    cardHTML('Pedidos no período', k.pedidos, k.fila + ' passaram pela fila') + cardHTML('Espera média', m(k.esperaMedia), 'do pedido até ficar pronto') + cardHTML('90% esperam até', m(k.esperaP90), 'pior caso do dia a dia', k.esperaP90 > 15 ? 'vermelho' : '') +
+    cardHTML('Preparo médio', m(k.preparoMedio), 'da cozinha, sem contar a fila') + cardHTML('Dentro da previsão', k.pctDentro === null ? '—' : fmt(k.pctDentro, 0) + '%', k.comEst + ' com previsão', k.pctDentro !== null && k.pctDentro < 70 ? 'laranja' : '') +
+    cardHTML('Ticket totem × balcão', brl(k.ticketTotem) + ' / ' + brl(k.ticketBalcao), k.totemN + ' totem • ' + k.balcaoN + ' balcão') + cardHTML('Pedidos com sugestão', k.pctSug === null ? '—' : fmt(k.pctSug, 0) + '%', 'itens sugeridos no totem') +
+    cardHTML('Desistência no totem', k.tot.sessoes ? fmt(k.tot.abandonadas / k.tot.sessoes * 100, 0) + '%' : '—', k.tot.sessoes + ' sessões', k.tot.sessoes && k.tot.abandonadas / k.tot.sessoes > 0.3 ? 'vermelho' : '') +
+    cardHTML('Tempo até pagar (totem)', m(k.tempoPagar), '');
+  const horas = []; const hs = Object.keys(k.porHora).map(Number);
+  if(hs.length) for(let h = Math.min(...hs); h <= Math.max(...hs); h++) horas.push({rot: h + 'h', v: k.porHora[h] || 0});
+  const esp = []; const hs2 = Object.keys(k.esperaHora).map(Number);
+  if(hs2.length) for(let h = Math.min(...hs2); h <= Math.max(...hs2); h++) esp.push({rot: h + 'h', v: media(k.esperaHora[h] || [])});
+  $('atGraficos').innerHTML = graficoBarras('Pedidos por hora', horas, 'Sem pedidos pela fila ainda.', v => fmt(v, 0)) + graficoBarras('Espera média por hora (min)', esp, 'Sem dados de tempo ainda.', v => fmt(v, 1) + ' min');
+  const ins = gerarInsights(k);
+  $('atInsights').innerHTML = ins.map(i => '<div class="aviso ' + (i.n === 'aviso' ? 'alerta-a' : (i.n === 'ok' ? 'ok-a' : '')) + '">' + (i.n === 'aviso' ? '⚠️ ' : (i.n === 'ok' ? '✅ ' : '💡 ')) + esc(i.t) + '</div>').join('');
+  $('atCalibracao').innerHTML = k.amostras >= 8 ? 'Calibração automática: suas previsões estão sendo multiplicadas por <b>×' + fmt(k.calibracao, 2) + '</b> (' + k.amostras + ' pedidos medidos nos últimos 14 dias).' : 'Calibração automática ainda inativa (' + k.amostras + ' de 8 pedidos medidos).';
+}
+
+
+/* =====================================================================
+   TOTEM de autoatendimento (cliente), PAINEL de chamada e PIX (QR)
+   Tudo roda no mesmo aparelho e nos mesmos dados do sistema.
+   ===================================================================== */
+const TOTEM = {ativo: false, passo: 'home', carrinho: [], cliente: '', tel: '', consumo: 'viagem', retirar: 0, pag: 'balcao', aba: 'comida', t0: 0, ult: 0, sessao: false, enviando: false, final: null, idleAviso: false, idleFim: 0, retorno: 0, ticks: 0};
+const PAINEL = {ativo: false, timer: null};
+let _totemTimer = null, _wakeLock = null;
+
+/* ---------- PIX (BR Code estático) ---------- */
+const semAcento = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+const tlv = (id, v) => id + String(String(v).length).padStart(2, '0') + v;
+function crc16(str){
+  let crc = 0xFFFF;
+  for(let i = 0; i < str.length; i++){ crc ^= str.charCodeAt(i) << 8; for(let j = 0; j < 8; j++){ crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1); crc &= 0xFFFF; } }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+function pixPayload({chave, nome, cidade, valor, txid}){
+  const conta = tlv('00', 'BR.GOV.BCB.PIX') + tlv('01', String(chave).trim());
+  const tx = String(txid || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 25) || '***';
+  let p = tlv('00', '01') + tlv('01', '11') + tlv('26', conta) + tlv('52', '0000') + tlv('53', '986') + (valor > 0 ? tlv('54', Number(valor).toFixed(2)) : '') +
+    tlv('58', 'BR') + tlv('59', semAcento(nome).slice(0, 25) || 'RECEBEDOR') + tlv('60', semAcento(cidade).slice(0, 15) || 'BRASIL') + tlv('62', tlv('05', tx));
+  p += '6304';
+  return p + crc16(p);
+}
+const pixOk = () => !!(BD.config.pixChave && BD.config.pixNome && BD.config.pixCidade && typeof qrcode !== 'undefined');
+function qrSvg(texto, tam = 6){
+  const q = qrcode(0, 'M'); q.addData(texto); q.make();
+  return q.createSvgTag({cellSize: tam, margin: 2, scalable: true});
+}
+function pixDoPedido(total, senha){
+  return pixPayload({chave: BD.config.pixChave, nome: BD.config.pixNome, cidade: BD.config.pixCidade, valor: total, txid: 'PV' + dataHoje().replace(/-/g, '').slice(2) + 'S' + senha});
+}
+function testarPix(){
+  if(!pixOk()) return toast('Preencha chave, nome e cidade do PIX e salve.', 'alerta');
+  const payload = pixPayload({chave: BD.config.pixChave, nome: BD.config.pixNome, cidade: BD.config.pixCidade, valor: 0.01, txid: 'TESTE'});
+  abrirModal({titulo: 'Teste do PIX — R$ 0,01', html: '<div class="aviso">Escaneie com o app do <b>seu banco</b> (ou outro celular). Confira se o nome do recebedor aparece certo e pague R$ 0,01. Só use o PIX no totem depois de conferir.</div><div style="max-width:280px;margin:auto">' + qrSvg(payload) + '</div><label>Copia e cola</label><textarea readonly rows="4" onclick="this.select()">' + esc(payload) + '</textarea>', botoes: [{rotulo: 'Fechar', classe: 'cinza'}]});
+}
+
+/* ---------- configurações (aba Custos) ---------- */
+function carregarConfigTotemNaTela(){
+  const c = BD.config; const v = (id, x) => { const el = $(id); if(el) el.value = x ?? ''; }; const k = (id, x) => { const el = $(id); if(el) el.checked = !!x; };
+  v('cfgTotemNome', c.totemNome); v('cfgTotemMsg', c.totemMensagem); v('cfgTotemPin', c.totemPin); v('cfgCapacidade', c.capacidade); v('cfgTempoBase', c.tempoBase); v('cfgTempoFicha', c.tempoPadraoFicha);
+  k('cfgCalibrar', c.calibrar); k('cfgVoz', c.voz); k('cfgTotemExige', c.totemExigePagamento); k('cfgTotemImprimir', c.totemImprimir); v('cfgTotemVias', String(c.totemVias)); v('cfgTotemTimeout', c.totemTimeout); v('cfgTotemRetorno', c.totemRetorno);
+  v('cfgTotemChips', (c.totemChips || []).join(', ')); v('cfgPixChave', c.pixChave); v('cfgPixNome', c.pixNome); v('cfgPixCidade', c.pixCidade); k('cfgPdvFila', c.pdvNaFila);
+}
+function salvarConfigTotem(){
+  const c = BD.config; const g = id => $(id).value.trim();
+  c.totemNome = g('cfgTotemNome'); c.totemMensagem = g('cfgTotemMsg'); const pin = g('cfgTotemPin'); if(pin === '' || /^\d{4,6}$/.test(pin)) c.totemPin = pin;
+  c.capacidade = Math.max(1, parseNum($('cfgCapacidade').value, 2)); c.tempoBase = Math.max(0, parseNum($('cfgTempoBase').value, 2)); c.tempoPadraoFicha = Math.max(0, parseNum($('cfgTempoFicha').value, 8));
+  c.calibrar = $('cfgCalibrar').checked; c.voz = $('cfgVoz').checked; c.totemExigePagamento = $('cfgTotemExige').checked; c.totemImprimir = $('cfgTotemImprimir').checked;
+  c.totemVias = $('cfgTotemVias').value === '1' ? 1 : 2; c.totemTimeout = Math.max(20, parseNum($('cfgTotemTimeout').value, 75)); c.totemRetorno = Math.max(8, parseNum($('cfgTotemRetorno').value, 30));
+  c.totemChips = g('cfgTotemChips').split(',').map(x => x.trim()).filter(Boolean).slice(0, 8);
+  c.pixChave = g('cfgPixChave'); c.pixNome = g('cfgPixNome'); c.pixCidade = g('cfgPixCidade'); c.pdvNaFila = $('cfgPdvFila').checked;
+  salvar('config');
+}
+
+/* ---------- ciclo de vida ---------- */
+const nomeTotem = () => BD.config.totemNome || 'Artesanais Pão e Vida';
+function definirPinTotem(depois){
+  formModal({titulo: '🔒 Defina o PIN da equipe', aviso: 'É a senha para sair do modo totem e ver a fila. 4 a 6 números. Você pode trocar depois em Custos.', campos: [{id: 'pin', rotulo: 'PIN (4 a 6 números)', valor: ''}], salvar: v => {
+    if(!/^\d{4,6}$/.test(v.pin)){ toast('Use de 4 a 6 números.', 'alerta'); return false; }
+    BD.config.totemPin = v.pin; salvarAgora('config'); setTimeout(depois, 50);
+  }});
+}
+function pedirPin(cb, titulo){
+  abrirModal({titulo: titulo || '🔒 PIN da equipe', html: '<input id="pinCampo" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••" style="font-size:1.6rem;text-align:center;letter-spacing:.4em">', botoes: [
+    {rotulo: 'Cancelar', classe: 'cinza'},
+    {rotulo: 'Entrar', fn: ctl => { const v = ctl.el.querySelector('#pinCampo').value; if(v !== String(BD.config.totemPin)){ toast('PIN incorreto.', 'erro'); return false; } setTimeout(cb, 30); }}
+  ]});
+}
+function catalogoTotem(aba){
+  return catalogoVenda().filter(p => p.preco > 0 && acharProduto(p.tipo, p.id).totem !== false && (aba === 'comida' ? p.tipo === 'ficha' : p.tipo === 'produto'));
+}
+function resetTotem(){
+  Object.assign(TOTEM, {carrinho: [], cliente: '', tel: '', consumo: BD.config.consumoPadrao || 'viagem', retirar: 0, pag: 'balcao', aba: 'comida', sessao: false, enviando: false, final: null, idleAviso: false, t0: 0});
+  const i = $('ttIdle'); if(i) i.classList.add('oculto');
+}
+function iniciarTotem(){
+  if(!BD.config.totemPin) return definirPinTotem(iniciarTotem);
+  if(!catalogoTotem('comida').length && !catalogoTotem('bebida').length && !catalogoTotem('produto').length) return toast('Nenhum produto com preço para mostrar no totem. Defina os preços nas fichas.', 'alerta', {ms: 6000});
+  TOTEM.ativo = true; resetTotem();
+  document.body.classList.add('modo-totem'); $('totemRoot').classList.remove('oculto');
+  totemIr('home');
+  try{ if(location.hash !== '#totem') history.replaceState(null, '', '#totem'); }catch(e){}
+  try{ if(document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); }catch(e){}
+  try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { _wakeLock = l; }).catch(() => {}); }catch(e){}
+  clearInterval(_totemTimer); _totemTimer = setInterval(totemTick, 1000);
+}
+function sairTotem(){
+  TOTEM.ativo = false; clearInterval(_totemTimer); resetTotem();
+  document.body.classList.remove('modo-totem'); $('totemRoot').classList.add('oculto');
+  try{ if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); }catch(e){}
+  try{ if(_wakeLock){ _wakeLock.release(); _wakeLock = null; } }catch(e){}
+  irPara('fila');
+}
+function totemEquipe(){
+  pedirPin(() => abrirModal({titulo: '👩‍🍳 Equipe', html: '<div class="grupo-botoes" style="flex-direction:column"><button class="btn grande" onclick="fecharTodosModais();abrirFilaEquipe()">👨‍🍳 Ver fila da cozinha</button><button class="btn laranja grande" onclick="fecharTodosModais();sairTotem()">🚪 Sair do modo totem</button></div>', botoes: [{rotulo: 'Voltar ao totem', classe: 'cinza'}]}));
+}
+function fecharTodosModais(){ while(_modais.length) fecharModal(_modais[_modais.length - 1]); }
+function totemAtividade(){ TOTEM.ult = Date.now(); if(TOTEM.idleAviso){ TOTEM.idleAviso = false; const i = $('ttIdle'); if(i) i.classList.add('oculto'); } }
+function totemIr(passo){ TOTEM.passo = passo; TOTEM.ult = Date.now(); TOTEM.idleAviso = false; const i = $('ttIdle'); if(i) i.classList.add('oculto'); if(passo === 'fim') TOTEM.retorno = BD.config.totemRetorno || 30; renderTotem(); }
+function totemStat(campo, inc = 1){ const d = dataHoje(); const o = BD.totemStats[d] || (BD.totemStats[d] = {}); o[campo] = (o[campo] || 0) + inc; salvar('totemStats'); }
+function totemComecar(){ TOTEM.sessao = true; TOTEM.t0 = Date.now(); totemStat('sessoes'); totemIr('menu'); }
+async function totemCancelar(){
+  if(TOTEM.carrinho.length && !await confirmar('Cancelar o seu pedido e voltar ao início?', {ok: 'Sim, cancelar', cancelar: 'Continuar pedindo', perigo: true})) return;
+  totemAbandonar('cancelou');
+}
+function totemAbandonar(){
+  if(TOTEM.sessao){ totemStat('abandonadas'); totemStat('passo_' + (TOTEM.passo === 'revisao' ? 'revisao' : 'menu')); }
+  resetTotem(); totemIr('home');
+}
+function totemTick(){
+  if(!TOTEM.ativo) return;
+  const agora = Date.now(); TOTEM.ticks++;
+  if(TOTEM.passo === 'menu' || TOTEM.passo === 'revisao'){
+    const ocioso = (agora - TOTEM.ult) / 1000;
+    if(ocioso > (BD.config.totemTimeout || 75) && !TOTEM.idleAviso){ TOTEM.idleAviso = true; TOTEM.idleFim = agora + 10000; const i = $('ttIdle'); if(i) i.classList.remove('oculto'); }
+    if(TOTEM.idleAviso){ const s = Math.max(0, Math.ceil((TOTEM.idleFim - agora) / 1000)); const e = $('ttIdleSeg'); if(e) e.textContent = s; if(agora >= TOTEM.idleFim) totemAbandonar('timeout'); }
+  }else if(TOTEM.passo === 'fim'){
+    TOTEM.retorno--; const e = $('ttRetorno'); if(e) e.textContent = Math.max(0, TOTEM.retorno);
+    if(TOTEM.retorno <= 0){ resetTotem(); totemIr('home'); }
+  }else if(TOTEM.passo === 'home' && TOTEM.ticks % 10 === 0) renderTotem();
+}
+
+/* ---------- carrinho do totem ---------- */
+const totemTotal = () => r2(soma(TOTEM.carrinho, c => c.valorUnit * c.quantidade));
+const qtdNoCarrinho = (tipo, id) => soma(TOTEM.carrinho.filter(c => c.tipo === tipo && c.produtoId === id), c => c.quantidade);
+function totemSemEstoque(extra){
+  return faltasDeEstoque(agregarConsumo(extra ? TOTEM.carrinho.concat([extra]) : TOTEM.carrinho)).length > 0;
+}
+function totemAdd(tipo, id, sug){
+  totemLerCampos();
+  const p = acharProduto(tipo, id); if(!p) return;
+  const preco = tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0); if(!(preco > 0)) return;
+  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: 1, tipoConsumo: TOTEM.consumo, obs: '', valorUnit: preco, sug: !!sug};
+  if(totemSemEstoque(novo)) return toast('😕 Esse item acabou (ou não há mais unidades).', 'alerta');
+  const ex = TOTEM.carrinho.find(c => c.tipo === tipo && c.produtoId === id && !c.obs);
+  if(ex){ ex.quantidade++; if(sug) ex.sug = true; } else TOTEM.carrinho.push(novo);
+  TOTEM.ult = Date.now(); renderTotem();
+}
+function totemQtd(u, d){
+  totemLerCampos();
+  const c = TOTEM.carrinho.find(x => x.uid === u); if(!c) return;
+  if(d > 0 && totemSemEstoque({...c, quantidade: d, uid: 'x'})) return toast('😕 Não há mais unidades desse item.', 'alerta');
+  c.quantidade += d; if(c.quantidade <= 0) TOTEM.carrinho = TOTEM.carrinho.filter(x => x.uid !== u);
+  if(!TOTEM.carrinho.length && TOTEM.passo === 'revisao'){ TOTEM.passo = 'menu'; }
+  renderTotem();
+}
+function totemAba(a){ TOTEM.aba = a; renderTotem(); }
+function totemLerCampos(){
+  const n = $('tt_nome'); if(n) TOTEM.cliente = n.value; const t = $('tt_tel'); if(t) TOTEM.tel = t.value;
+  TOTEM.carrinho.forEach((c, i) => { const o = $('tt_o' + i); if(o) c.obs = o.value.trim(); });
+}
+function totemChip(i, k){
+  totemLerCampos(); const c = TOTEM.carrinho[i]; const chip = BD.config.totemChips[k]; if(!c || !chip) return;
+  const partes = c.obs ? c.obs.split(',').map(x => x.trim()).filter(Boolean) : [];
+  const ix = partes.findIndex(x => norm(x) === norm(chip)); if(ix >= 0) partes.splice(ix, 1); else partes.push(chip);
+  c.obs = partes.join(', '); renderTotem();
+}
+function totemConsumo(c){
+  totemLerCampos(); const antes = TOTEM.carrinho.map(i => i.tipoConsumo);
+  TOTEM.carrinho.forEach(i => { i.tipoConsumo = c; });
+  if(totemSemEstoque()){ TOTEM.carrinho.forEach((i, k) => { i.tipoConsumo = antes[k]; }); return toast('😕 A embalagem para essa opção acabou. Escolha a outra.', 'alerta'); }
+  TOTEM.consumo = c; renderTotem();
+}
+function totemRetirar(m){ totemLerCampos(); TOTEM.retirar = m; renderTotem(); }
+function totemPag(p){ totemLerCampos(); TOTEM.pag = p; renderTotem(); }
+function totemRevisar(){ if(!TOTEM.carrinho.length) return; totemIr('revisao'); }
+
+/* ---------- telas ---------- */
+function quadroSenhasHTML(grande){
+  const ativos = pedidosAtivos().filter(p => p.data === dataHoje() && !aguardandoPagamento(p));
+  const prep = ativos.filter(p => ['novo', 'preparo'].includes(statusPedido(p))).sort((a, b) => (a.senha || 0) - (b.senha || 0));
+  const pront = ativos.filter(p => statusPedido(p) === 'pronto').sort((a, b) => (a.linhas[0].prontoEm || 0) - (b.linhas[0].prontoEm || 0));
+  const chip = (p, cls) => '<span class="tt-senha ' + cls + '"><b>' + (p.senha || '?') + '</b>' + (p.cliente && p.cliente !== 'Cliente sem nome' ? '<small>' + esc(p.cliente.split(' ')[0]) + '</small>' : '') + '</span>';
+  return '<div class="tt-quadro' + (grande ? ' grande' : '') + '"><div class="tt-col pronto"><h3>✅ Prontos — retire no balcão</h3><div class="tt-senhas">' + (pront.length ? pront.map(p => chip(p, 'pronta')).join('') : '<span class="tt-vazio">—</span>') + '</div></div>' +
+    '<div class="tt-col prep"><h3>🔥 Em preparo</h3><div class="tt-senhas">' + (prep.length ? prep.map(p => chip(p, '')).join('') : '<span class="tt-vazio">—</span>') + '</div></div></div>';
+}
+function esperaAtualTexto(){
+  const t = catalogoTotem('comida')[0]; const e = estimar(t ? [{tipo: t.tipo, produtoId: t.id, quantidade: 1}] : []);
+  return e.texto;
+}
+function telaHome(){
+  return '<div class="tt tt-home" onclick="totemComecar()"><div class="tt-brand">🍞 ' + esc(nomeTotem()) + '</div><div class="tt-cta">👆 Toque aqui para fazer o seu pedido</div>' +
+    '<div class="tt-espera">⏱ Espera atual: <b>' + esperaAtualTexto() + '</b></div>' + quadroSenhasHTML(false) +
+    '<div class="tt-msg">' + esc(BD.config.totemMensagem || '') + '</div><button class="tt-equipe" onclick="event.stopPropagation();totemEquipe()" aria-label="Equipe">🔒</button></div>';
+}
+function cardProdutoTotem(p){
+  const o = acharProduto(p.tipo, p.id); const q = qtdNoCarrinho(p.tipo, p.id);
+  const esg = totemSemEstoque({uid: 'x', tipo: p.tipo, produtoId: p.id, quantidade: 1, tipoConsumo: TOTEM.consumo});
+  const tempo = tempoPreparoUnit(p.tipo, p.id);
+  return '<button type="button" class="tt-card' + (esg ? ' esgotado' : '') + '" ' + (esg ? 'disabled' : 'onclick="totemAdd(\'' + p.tipo + '\',\'' + p.id + '\')"') + '>' + (q ? '<span class="tt-badge">' + q + '</span>' : '') + '<b>' + esc(p.nome) + '</b>' +
+    (tempo > 0 ? '<small>⏱ ≈ ' + Math.ceil(tempo) + ' min de preparo</small>' : '<small>pronta entrega</small>') + '<span class="tt-preco">' + (esg ? (q ? 'MÁXIMO ATINGIDO' : 'ESGOTADO') : brl(p.preco)) + '</span></button>';
+}
+function carrinhoTotemHTML(editavel){
+  if(!TOTEM.carrinho.length) return '<div class="tt-vazio">Seu pedido está vazio.<br>Toque nos produtos.</div>';
+  return TOTEM.carrinho.map(c => '<div class="tt-linha"><div><b>' + esc(c.produto) + '</b><small>' + brl(c.valorUnit) + '</small></div>' + (editavel ? '<div class="qtd-ctl tt-qtd"><button onclick="totemQtd(\'' + c.uid + '\',-1)" aria-label="Diminuir">−</button><b>' + c.quantidade + '</b><button onclick="totemQtd(\'' + c.uid + '\',1)" aria-label="Aumentar">+</button></div>' : '<b>' + c.quantidade + '×</b>') + '<span class="tt-sub">' + brl(c.valorUnit * c.quantidade) + '</span></div>').join('');
+}
+function etaHTML(){
+  const e = estimar(TOTEM.carrinho); const fila = e.fila;
+  return '<div class="tt-eta">⏱ Previsão: <b>' + e.texto + '</b><small>' + (fila ? fila + ' pedido(s) na frente' : 'sem fila agora') + '</small></div>';
+}
+function telaMenu(){
+  const lista = catalogoTotem(TOTEM.aba === 'comida' ? 'comida' : 'bebida');
+  const temBeb = catalogoTotem('bebida').length > 0;
+  return '<div class="tt tt-menu"><div class="tt-top"><div class="tt-brand-s">🍞 ' + esc(nomeTotem()) + '</div><div class="tt-passos"><b>1 Escolha</b> › 2 Revise › 3 Envie</div><button class="tt-btn cinza" onclick="totemCancelar()">✕ Cancelar</button></div>' +
+    '<div class="tt-corpo"><div class="tt-esq"><div class="tt-abas"><button class="' + (TOTEM.aba === 'comida' ? 'on' : '') + '" onclick="totemAba(\'comida\')">🍕 Comidas</button>' + (temBeb ? '<button class="' + (TOTEM.aba === 'bebida' ? 'on' : '') + '" onclick="totemAba(\'bebida\')">🥤 Bebidas e outros</button>' : '') + '</div>' +
+    '<div class="tt-grid">' + (lista.length ? lista.map(cardProdutoTotem).join('') : '<div class="tt-vazio">Nada disponível aqui.</div>') + '</div></div>' +
+    '<div class="tt-dir"><h3>🧾 Seu pedido</h3><div class="tt-itens">' + carrinhoTotemHTML(true) + '</div>' + etaHTML() + '<div class="tt-total">Total <b>' + brl(totemTotal()) + '</b></div>' +
+    '<button class="tt-btn grande" ' + (TOTEM.carrinho.length ? '' : 'disabled') + ' onclick="totemRevisar()">Continuar ➜</button></div></div></div>';
+}
+function sugestoesTotemHTML(){
+  const sug = catalogoTotem('comida').concat(catalogoTotem('bebida')).filter(p => acharProduto(p.tipo, p.id).sugerir && !qtdNoCarrinho(p.tipo, p.id) && !totemSemEstoque({uid: 'x', tipo: p.tipo, produtoId: p.id, quantidade: 1, tipoConsumo: TOTEM.consumo})).slice(0, 4);
+  if(!sug.length) return '';
+  return '<div class="tt-sec"><h3>😋 Que tal levar também?</h3><div class="tt-sugs">' + sug.map(p => '<button type="button" class="tt-sug" onclick="totemAdd(\'' + p.tipo + '\',\'' + p.id + '\',true)"><b>' + esc(p.nome) + '</b><span>+ ' + brl(p.preco) + '</span></button>').join('') + '</div></div>';
+}
+function telaRevisao(){
+  const chips = BD.config.totemChips || []; const cfg = BD.config;
+  const itens = TOTEM.carrinho.map((c, i) => '<div class="tt-item-obs"><div class="tt-linha"><div><b>' + c.quantidade + '× ' + esc(c.produto) + '</b></div><span class="tt-sub">' + brl(c.valorUnit * c.quantidade) + '</span></div>' +
+    '<div class="tt-chips">' + chips.map((ch, k) => '<button type="button" class="tt-chip' + (c.obs && c.obs.split(',').some(x => norm(x.trim()) === norm(ch)) ? ' on' : '') + '" onclick="totemChip(' + i + ',' + k + ')">' + esc(ch) + '</button>').join('') + '</div>' +
+    '<input id="tt_o' + i + '" class="tt-in" placeholder="Outra observação (opcional)" value="' + esc(c.obs) + '" maxlength="80"></div>').join('');
+  const quando = [[0, 'Assim que ficar pronto'], [15, 'Em 15 min'], [30, 'Em 30 min'], [45, 'Em 45 min']].map(([m, t]) => '<button type="button" class="tt-opt' + (TOTEM.retirar === m ? ' on' : '') + '" onclick="totemRetirar(' + m + ')">' + t + '</button>').join('');
+  const e = estimar(TOTEM.carrinho); const prevMs = Math.max(Date.now() + e.max * 60000, TOTEM.retirar ? Date.now() + TOTEM.retirar * 60000 : 0);
+  return '<div class="tt tt-rev"><div class="tt-top"><div class="tt-brand-s">🍞 ' + esc(nomeTotem()) + '</div><div class="tt-passos">1 Escolha › <b>2 Revise</b> › 3 Envie</div><button class="tt-btn cinza" onclick="totemCancelar()">✕ Cancelar</button></div>' +
+    '<div class="tt-corpo tt-rolar"><div class="tt-col-a"><div class="tt-sec"><h3>🧾 Seu pedido</h3>' + itens + '<div class="tt-total">Total <b>' + brl(totemTotal()) + '</b></div></div>' + sugestoesTotemHTML() + '</div>' +
+    '<div class="tt-col-b"><div class="tt-sec"><h3>Como vai ser?</h3><div class="tt-opts"><button type="button" class="tt-opt' + (TOTEM.consumo === 'local' ? ' on' : '') + '" onclick="totemConsumo(\'local\')">🍽️ Comer aqui</button><button type="button" class="tt-opt' + (TOTEM.consumo === 'viagem' ? ' on' : '') + '" onclick="totemConsumo(\'viagem\')">🥡 Levar</button></div></div>' +
+    '<div class="tt-sec"><h3>Quando quer retirar?</h3><div class="tt-opts">' + quando + '</div><div class="tt-eta">⏱ Previsão: <b>' + e.texto + '</b> — por volta das <b>' + horaDeMs(prevMs) + '</b></div></div>' +
+    '<div class="tt-sec"><h3>Seu nome</h3><input id="tt_nome" class="tt-in grande" placeholder="Como devemos chamar você?" value="' + esc(TOTEM.cliente) + '" maxlength="30" autocomplete="off"><input id="tt_tel" class="tt-in" type="tel" inputmode="tel" placeholder="WhatsApp (opcional) — avisamos quando estiver pronto" value="' + esc(TOTEM.tel) + '" maxlength="20" autocomplete="off"></div>' +
+    '<div class="tt-sec"><h3>Pagamento</h3><div class="tt-opts"><button type="button" class="tt-opt' + (TOTEM.pag === 'balcao' ? ' on' : '') + '" onclick="totemPag(\'balcao\')">💳 Pagar no balcão</button>' + (pixOk() ? '<button type="button" class="tt-opt' + (TOTEM.pag === 'pix' ? ' on' : '') + '" onclick="totemPag(\'pix\')">⚡ PIX agora</button>' : '') + '</div>' + (cfg.totemExigePagamento ? '<small class="tt-nota">O preparo começa depois da confirmação do pagamento.</small>' : '') + '</div></div></div>' +
+    '<div class="tt-rodape"><button class="tt-btn cinza" onclick="totemIr(\'menu\')">← Voltar</button><button class="tt-btn grande" onclick="totemEnviar()">✅ Enviar pedido — ' + brl(totemTotal()) + '</button></div></div>';
+}
+function telaFim(){
+  const f = TOTEM.final || {};
+  const pagamento = f.pix ? '<div class="tt-pix"><h3>⚡ Pague com PIX</h3><div class="tt-qr">' + qrSvg(f.pix, 5) + '</div><textarea readonly rows="3" onclick="this.select()">' + esc(f.pix) + '</textarea><button class="tt-btn cinza" onclick="totemCopiarPix()">📋 Copiar código PIX</button><small>Depois de pagar, mostre o comprovante no balcão.</small></div>' : '<div class="tt-pagbox">💳 <b>Pague no balcão</b> informando o número da sua senha.</div>';
+  return '<div class="tt tt-fim"><div class="tt-check">✅</div><h1>Pedido enviado!</h1><div class="tt-senha-grande"><small>Sua senha</small>' + (f.senha || '') + '</div><div class="tt-nome">' + esc(f.nome || '') + '</div>' +
+    '<div class="tt-eta">⏱ Previsão: <b>' + esc(f.est ? f.est.texto : '') + '</b> — por volta das <b>' + (f.est ? horaDeMs(f.prevMs) : '') + '</b></div>' + pagamento +
+    '<div class="tt-msg">' + esc(BD.config.totemMensagem || '') + '</div><div class="tt-fim-btns"><button class="tt-btn" onclick="totemNovoPedido()">➕ Fazer outro pedido</button><button class="tt-btn cinza" onclick="resetTotem();totemIr(\'home\')">Concluir (volta em <span id="ttRetorno">' + TOTEM.retorno + '</span>s)</button></div></div>';
+}
+function totemCopiarPix(){ try{ navigator.clipboard.writeText(TOTEM.final.pix); toast('Código PIX copiado.', 'ok'); }catch(e){ toast('Toque no código e copie manualmente.', 'alerta'); } }
+function totemNovoPedido(){ resetTotem(); totemComecar(); }
+function renderTotem(){
+  if(!TOTEM.ativo) return;
+  const el = $('totemTela'); if(!el) return;
+  const g = el.querySelector('.tt-grid'); const st = g ? g.scrollTop : 0; const foco = document.activeElement && document.activeElement.id;
+  const rol = el.querySelector('.tt-rolar'); const st2 = rol ? rol.scrollTop : 0;
+  el.innerHTML = TOTEM.passo === 'home' ? telaHome() : TOTEM.passo === 'menu' ? telaMenu() : TOTEM.passo === 'revisao' ? telaRevisao() : telaFim();
+  const g2 = el.querySelector('.tt-grid'); if(g2) g2.scrollTop = st; const rol2 = el.querySelector('.tt-rolar'); if(rol2) rol2.scrollTop = st2;
+  if(foco && $(foco) && ['tt_nome', 'tt_tel'].includes(foco)) $(foco).focus();
+}
+async function totemEnviar(){
+  if(TOTEM.enviando) return; totemLerCampos();
+  const nome = TOTEM.cliente.trim();
+  if(nome.length < 2){ toast('Digite o seu nome para chamarmos você.', 'alerta'); const n = $('tt_nome'); if(n) n.focus(); return; }
+  if(!TOTEM.carrinho.length) return totemIr('menu');
+  const faltas = faltasDeEstoque(agregarConsumo(TOTEM.carrinho));
+  if(faltas.length){ toast('😕 ' + faltas[0].nome + ' acabou enquanto você escolhia. Ajuste o pedido.', 'alerta', {ms: 6000}); return totemIr('menu'); }
+  TOTEM.enviando = true;
+  try{
+    const itens = TOTEM.carrinho.map(c => ({...c})); const est = estimar(itens);
+    const retirarEm = TOTEM.retirar > 0 ? Date.now() + TOTEM.retirar * 60000 : null;
+    const r = registrarPedido({itens, cliente: nome, telefone: TOTEM.tel.trim(), origem: 'totem', status: 'novo', retirarEm, estimativaMin: est.max, estimativaBase: est.base, pagamentoPrevisto: (TOTEM.pag === 'pix' && pixOk()) ? 'pix' : 'balcao'});
+    totemStat('concluidas'); totemStat('seg', Math.round((Date.now() - TOTEM.t0) / 1000));
+    TOTEM.final = {senha: r.senha, total: r.total, nome, est, pedidoId: r.pedidoId, prevMs: Math.max(est.prontoEm, retirarEm || 0), pix: (TOTEM.pag === 'pix' && pixOk()) ? pixDoPedido(r.total, r.senha) : ''};
+    TOTEM.sessao = false; totemIr('fim'); refreshFila(); renderEstoque();
+    if(BD.config.totemImprimir) setTimeout(() => imprimirComandaPedido(r.pedidoId), 500);
+  }finally{ TOTEM.enviando = false; }
+}
+
+/* ---------- painel de chamada (segunda tela / outra aba) ---------- */
+function iniciarPainel(){
+  PAINEL.ativo = true; document.body.classList.add('modo-painel'); $('painelRoot').classList.remove('oculto'); renderPainel();
+  clearInterval(PAINEL.timer); PAINEL.timer = setInterval(renderPainel, 5000);
+}
+function sairPainel(){
+  PAINEL.ativo = false; clearInterval(PAINEL.timer); document.body.classList.remove('modo-painel'); $('painelRoot').classList.add('oculto'); irPara('fila');
+}
+function renderPainel(){
+  if(!PAINEL.ativo) return;
+  $('painelRoot').innerHTML = '<div class="tt tt-painel"><div class="tt-brand">🍞 ' + esc(nomeTotem()) + '</div><div class="tt-espera">⏱ Espera atual: <b>' + esperaAtualTexto() + '</b></div>' + quadroSenhasHTML(true) + '<div class="tt-msg">' + esc(BD.config.totemMensagem || '') + '</div><button class="tt-equipe" onclick="sairPainel()" aria-label="Sair do painel">✕</button></div>';
+}
+
+
+/* =====================================================================
+   LANÇAMENTOS HISTÓRICOS — conferir, corrigir, repetir, mover e excluir
+   ===================================================================== */
+const SESSAO_INI = Date.now();
+const RETRO_SEL = new Set();
+let RETRO_DESTAQUE = null; let RETRO_VISIVEIS = [];
+const linhasRetro = () => BD.vendas.filter(v => v.retroativo);
+const lancadoMs = v => v.lancadoEm || 0;
+const fmtLanc = v => v.lancadoEm ? new Date(v.lancadoEm).toLocaleString('pt-BR', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'}) : '—';
+const cmpRecente = (a, b) => (lancadoMs(b) - lancadoMs(a)) || String(b.id).localeCompare(String(a.id));
+const resumoLinhaRetro = v => fmtData(v.data) + ' — ' + v.quantidade + '× ' + v.produto + ' = ' + brl(v.valorTotal);
+
+/* ---------- lançar (com aviso de duplicado e desfazer) ---------- */
+async function lancarVendaRetroativa(){
+  const data = $('retroData').value; const val = $('retroProduto').value; const qtd = Math.max(1, Math.round(parseNum($('retroQtd').value, 1)));
+  const forma = $('retroForma').value; const consumo = $('retroConsumo').value;
+  if(!data) return toast('Escolha a data da venda.', 'alerta');
+  if(!val) return toast('Escolha o produto.', 'alerta');
+  const [tipo, id] = val.split(':'); const p = acharProduto(tipo, id); if(!p) return;
+  const vu = parseNum($('retroValorUnit').value) || (tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0));
+  if(!(vu > 0)) return toast('Este produto não tem preço. Informe o valor unitário.', 'alerta');
+  if(data > dataHoje() && !await confirmar('A data ' + fmtData(data) + ' é no futuro. Lançar mesmo assim?', {ok: 'Lançar mesmo assim'})) return;
+  const igual = linhasRetro().find(v => v.data === data && v.produtoId === id && v.quantidade === qtd && Math.abs(v.valorUnit - vu) < 0.005 && formaLinha(v) === forma);
+  if(igual && !await confirmar('Já existe um lançamento igual (' + resumoLinhaRetro(igual) + ').\nLançar de novo mesmo assim?', {titulo: 'Possível duplicado', ok: 'Lançar mesmo assim'})) return;
+  const custoUnit = custoUnitDoProduto(tipo, id, consumo);
+  const linha = {id: uid(), pedidoId: 'r' + uid(), senha: 0, data, horario: '', cliente: 'Venda histórica', telefone: '', produto: p.nome, produtoId: id, tipoProduto: tipo,
+    quantidade: qtd, valorUnit: vu, descontoValor: 0, valorTotal: r2(vu * qtd), custoUnit, custoTotal: custoUnit * qtd, tipoConsumo: consumo, observacao: '', retroativo: true, consumo: [], lancadoEm: Date.now()};
+  aplicarPagamento([linha], [{forma, valor: linha.valorTotal}], data);
+  BD.vendas.push(linha); salvarAgora('vendas');
+  RETRO_DESTAQUE = linha.id; $('retroQtd').value = 1; $('retroValorUnit').value = '';
+  renderRetro(true); renderVendas(true);
+  toast('✔ Lançado: ' + resumoLinhaRetro(linha), 'ok', {ms: 9000, acao: {rotulo: 'Desfazer', fn: () => {
+    BD.vendas = BD.vendas.filter(v => v.id !== linha.id); RETRO_SEL.delete(linha.id); salvarAgora('vendas'); renderRetro(); renderVendas(true); toast('Lançamento desfeito.', 'ok');
+  }}});
+  const sel = $('retroProduto'); if(sel) sel.focus();
+}
+
+/* ---------- lista ---------- */
+function retroFiltradas(){
+  const modo = $('retroVer').value; const q = norm($('retroBusca').value); let l = linhasRetro();
+  if(modo === 'mes'){ const m = $('retroMes').value || mesAtual(); l = l.filter(v => (v.data || '').startsWith(m)); }
+  if(q) l = l.filter(v => norm(v.produto).includes(q) || fmtData(v.data).includes(q) || norm(rotForma[formaLinha(v)] || '').includes(q) || fmt(v.valorTotal).includes(q.replace('.', ',')));
+  return modo === 'ultimos' ? l.sort(cmpRecente) : l.sort((a, b) => (b.data || '').localeCompare(a.data || '') || cmpRecente(a, b));
+}
+function retroSessao(){
+  const l = linhasRetro().filter(v => v.lancadoEm && v.lancadoEm >= SESSAO_INI);
+  const c = $('retroSessao'); if(!c) return;
+  c.innerHTML = l.length ? '📝 Nesta sessão você lançou <b>' + l.length + '</b> lançamento(s) somando <b>' + brl(soma(l, v => v.valorTotal)) + '</b>. Confira a lista logo abaixo.' : '';
+}
+function renderRetro(irParaTopo){
+  if(!$('retroVer')) return;
+  if(!$('retroMes').value) $('retroMes').value = mesAtual();
+  const modo = $('retroVer').value; $('wrapRetroMes').classList.toggle('oculto', modo !== 'mes');
+  const todas = retroFiltradas(); const lim = modo === 'ultimos' ? 30 : 200; const vis = todas.slice(0, lim); RETRO_VISIVEIS = vis.map(v => v.id);
+  Array.from(RETRO_SEL).forEach(id => { if(!BD.vendas.some(v => v.id === id)) RETRO_SEL.delete(id); });
+  $('tabelaRetro').innerHTML = vis.length ? vis.map(v => '<tr' + (v.id === RETRO_DESTAQUE ? ' style="background:rgba(0,136,85,.16)"' : '') + '><td><input type="checkbox" ' + (RETRO_SEL.has(v.id) ? 'checked ' : '') + 'onchange="retroSel(\'' + v.id + '\',this.checked)" aria-label="Selecionar"></td>' +
+    '<td><b>' + fmtData(v.data) + '</b>' + (v.id === RETRO_DESTAQUE ? ' <span class="tag">novo</span>' : '') + '</td><td>' + esc(v.produto) + '</td><td class="n">' + v.quantidade + '</td><td class="n">' + brl(v.valorUnit) + '</td><td class="n"><b>' + brl(v.valorTotal) + '</b></td>' +
+    '<td><span class="tag cinza">' + esc((rotForma[formaLinha(v)] || '').replace(/^\S+\s/, '')) + '</span></td><td>' + (v.tipoConsumo === 'local' ? '🍽️' : '🥡') + '</td><td><small class="suave">' + fmtLanc(v) + (v.editadoEm ? ' ✏️' : '') + '</small></td>' +
+    '<td class="acoes"><button class="btn cinza pequeno" onclick="editarRetro(\'' + v.id + '\')" aria-label="Corrigir" title="Corrigir">✏️</button><button class="btn cinza pequeno" onclick="repetirRetro(\'' + v.id + '\')" aria-label="Repetir com outra data" title="Repetir com outra data">⧉</button><button class="btn vermelho pequeno" onclick="excluirRetro(\'' + v.id + '\')" aria-label="Excluir">✕</button></td></tr>'
+  ).join('') : '<tr><td colspan="10"><div class="vazio">' + (linhasRetro().length ? 'Nenhum lançamento neste filtro.' : 'Nenhum lançamento histórico ainda. Use o formulário acima.') + '</div></td></tr>';
+  const ano = anoAtual(); const totalAno = soma(linhasRetro().filter(v => (v.data || '').startsWith(ano)), v => v.valorTotal);
+  let porMes = '';
+  if(modo !== 'mes' && todas.length){ const m = {}; todas.forEach(v => { const k = (v.data || '').slice(0, 7); m[k] = m[k] || {n: 0, t: 0}; m[k].n++; m[k].t += v.valorTotal; });
+    porMes = '<h4>Por mês da venda</h4>' + Object.keys(m).sort().reverse().map(k => '<div class="linha-kv"><span>' + fmtMes(k) + ' <small class="suave">(' + m[k].n + ' lançamento' + (m[k].n > 1 ? 's' : '') + ')</small></span><b>' + brl(m[k].t) + '</b></div>').join(''); }
+  $('retroResumo').innerHTML = '<h4>Conferência</h4><div class="linha-kv"><span>Lançamentos neste filtro</span><b>' + todas.length + ' (' + soma(todas, v => v.quantidade) + ' itens)</b></div><div class="linha-kv"><span>Soma dos lançamentos</span><b>' + brl(soma(todas, v => v.valorTotal)) + '</b></div><div class="linha-kv"><span>Históricos de ' + ano + ' (entram no teto do MEI)</span><b>' + brl(totalAno) + '</b></div>' + porMes +
+    (todas.length > vis.length ? '<p class="dica">Mostrando ' + vis.length + ' de ' + todas.length + '. Filtre por mês ou busque para ver os demais.</p>' : '');
+  renderRetroLote(); retroSessao();
+  if(irParaTopo){ const c = $('painelRetro'); if(c && c.scrollIntoView) c.scrollIntoView({behavior: 'smooth', block: 'nearest'}); }
+}
+function retroSel(id, on){ if(on) RETRO_SEL.add(id); else RETRO_SEL.delete(id); renderRetroLote(); }
+function retroSelTodos(on){ RETRO_VISIVEIS.forEach(id => { if(on) RETRO_SEL.add(id); else RETRO_SEL.delete(id); }); renderRetro(); }
+function renderRetroLote(){
+  const n = RETRO_SEL.size; const c = $('retroLote'); if(!c) return;
+  c.innerHTML = n ? '<span class="tag">' + n + ' selecionado(s) — ' + brl(soma(BD.vendas.filter(v => RETRO_SEL.has(v.id)), v => v.valorTotal)) + '</span><button class="btn laranja pequeno" onclick="moverRetroLote()">📅 Mudar a data dos selecionados</button><button class="btn vermelho pequeno" onclick="excluirRetroLote()">🗑️ Excluir selecionados</button><button class="btn cinza pequeno" onclick="RETRO_SEL.clear();renderRetro()">Limpar seleção</button>' : '';
+  const t = $('retroTodos'); if(t) t.checked = RETRO_VISIVEIS.length > 0 && RETRO_VISIVEIS.every(id => RETRO_SEL.has(id));
+}
+
+/* ---------- corrigir ---------- */
+function editarRetro(id){
+  const l = BD.vendas.find(v => v.id === id && v.retroativo); if(!l) return;
+  const cat = catalogoVenda(); const atualVal = l.tipoProduto + ':' + l.produtoId; const existe = cat.some(p => p.tipo + ':' + p.id === atualVal);
+  const opcoes = (existe ? [] : [{v: atualVal, t: l.produto + ' (produto removido)'}]).concat(cat.map(p => ({v: p.tipo + ':' + p.id, t: p.nome})));
+  formModal({titulo: '✏️ Corrigir lançamento histórico', aviso: 'Lançado em ' + fmtLanc(l) + '. Ao salvar, custo, taxas e o teto do MEI são recalculados.', campos: [
+    {id: 'data', rotulo: 'Data da venda', tipo: 'data', valor: l.data},
+    {id: 'produto', rotulo: 'Produto', tipo: 'select', valor: atualVal, opcoes},
+    {id: 'qtd', rotulo: 'Quantidade', tipo: 'numero', valor: l.quantidade},
+    {id: 'valor', rotulo: 'Valor unitário (R$)', tipo: 'numero', valor: l.valorUnit},
+    {id: 'consumo', rotulo: 'Consumo', tipo: 'select', valor: l.tipoConsumo || 'viagem', opcoes: [{v: 'viagem', t: '🥡 Viagem'}, {v: 'local', t: '🍽️ Local'}]},
+    {id: 'forma', rotulo: 'Forma de pagamento', tipo: 'select', valor: formaLinha(l), opcoes: FORMAS.map(f => ({v: f, t: rotForma[f]}))},
+    {id: 'custo', rotulo: 'Custo unitário (R$) — deixe como está para recalcular automaticamente', tipo: 'numero', valor: l.custoUnit}
+  ], salvar: async v => {
+    const qtd = Math.round(v.qtd);
+    if(!v.data){ toast('Informe a data.', 'alerta'); return false; }
+    if(!(qtd >= 1) || !(v.valor > 0)){ toast('Quantidade e valor unitário precisam ser maiores que zero.', 'alerta'); return false; }
+    if(v.data > dataHoje() && !await confirmar('A data ' + fmtData(v.data) + ' é no futuro. Salvar mesmo assim?', {ok: 'Salvar'})) return false;
+    const [tipo, pid] = v.produto.split(':'); const p = acharProduto(tipo, pid);
+    const mudouProd = v.produto !== atualVal || v.consumo !== (l.tipoConsumo || 'viagem');
+    if(v.produto !== atualVal && p){ l.produto = p.nome; l.produtoId = pid; l.tipoProduto = tipo; }
+    l.custoUnit = (mudouProd && Math.abs((v.custo ?? 0) - l.custoUnit) < 1e-9 && p) ? custoUnitDoProduto(tipo, pid, v.consumo) : (v.custo ?? l.custoUnit);
+    l.data = v.data; l.quantidade = qtd; l.valorUnit = v.valor; l.valorTotal = r2(v.valor * qtd); l.descontoValor = 0; l.custoTotal = l.custoUnit * qtd; l.tipoConsumo = v.consumo;
+    aplicarPagamento([l], [{forma: v.forma, valor: l.valorTotal}], l.data); l.editadoEm = Date.now();
+    RETRO_DESTAQUE = l.id; salvarAgora('vendas'); renderRetro(); renderVendas(true); toast('✔ Corrigido: ' + resumoLinhaRetro(l), 'ok');
+  }});
+}
+function repetirRetro(id){
+  const l = BD.vendas.find(v => v.id === id); if(!l) return;
+  $('retroData').value = l.data; $('retroProduto').value = l.tipoProduto + ':' + l.produtoId; $('retroQtd').value = l.quantidade; $('retroValorUnit').value = l.valorUnit;
+  $('retroConsumo').value = l.tipoConsumo || 'viagem'; $('retroForma').value = formaLinha(l);
+  toast('Formulário preenchido com este lançamento. Troque a data e clique em "Lançar".', 'ok', {ms: 6000});
+  const f = $('retroData'); if(f){ f.scrollIntoView && f.scrollIntoView({behavior: 'smooth', block: 'center'}); f.focus(); }
+}
+async function excluirRetro(id){
+  const l = BD.vendas.find(v => v.id === id && v.retroativo); if(!l) return;
+  if(!await confirmar('Excluir este lançamento?\n' + resumoLinhaRetro(l), {ok: 'Excluir', perigo: true})) return;
+  const copia = clona(l); BD.vendas = BD.vendas.filter(v => v.id !== id); RETRO_SEL.delete(id);
+  salvarAgora('vendas'); renderRetro(); renderVendas(true);
+  toast('Lançamento excluído.', 'ok', {ms: 10000, acao: {rotulo: 'Desfazer', fn: () => { BD.vendas.push(copia); salvarAgora('vendas'); renderRetro(); renderVendas(true); toast('Lançamento restaurado.', 'ok'); }}});
+}
+async function excluirRetroLote(){
+  const sel = BD.vendas.filter(v => RETRO_SEL.has(v.id) && v.retroativo); if(!sel.length) return;
+  if(!await confirmar('Excluir ' + sel.length + ' lançamento(s) somando ' + brl(soma(sel, v => v.valorTotal)) + '?', {ok: 'Excluir ' + sel.length, perigo: true})) return;
+  const copias = clona(sel); const ids = new Set(sel.map(v => v.id));
+  BD.vendas = BD.vendas.filter(v => !ids.has(v.id)); RETRO_SEL.clear(); salvarAgora('vendas'); renderRetro(); renderVendas(true);
+  toast(sel.length + ' lançamento(s) excluído(s).', 'ok', {ms: 12000, acao: {rotulo: 'Desfazer', fn: () => { copias.forEach(c => BD.vendas.push(c)); salvarAgora('vendas'); renderRetro(); renderVendas(true); toast('Lançamentos restaurados.', 'ok'); }}});
+}
+function moverRetroLote(){
+  const sel = BD.vendas.filter(v => RETRO_SEL.has(v.id) && v.retroativo); if(!sel.length) return;
+  formModal({titulo: '📅 Mudar a data de ' + sel.length + ' lançamento(s)', aviso: 'Útil quando você lançou no mês ou no ano errado. Todos os selecionados passam para a data escolhida.', campos: [{id: 'data', rotulo: 'Nova data da venda', tipo: 'data', valor: ''}], textoSalvar: 'Mudar data', salvar: async v => {
+    if(!v.data){ toast('Escolha a nova data.', 'alerta'); return false; }
+    if(v.data > dataHoje() && !await confirmar('A data ' + fmtData(v.data) + ' é no futuro. Mudar mesmo assim?', {ok: 'Mudar'})) return false;
+    const antes = sel.map(l => ({id: l.id, data: l.data, dp: l.dataPagamento}));
+    sel.forEach(l => { l.data = v.data; l.dataPagamento = v.data; l.editadoEm = Date.now(); });
+    salvarAgora('vendas'); renderRetro(); renderVendas(true);
+    toast(sel.length + ' lançamento(s) movido(s) para ' + fmtData(v.data) + '.', 'ok', {ms: 12000, acao: {rotulo: 'Desfazer', fn: () => { antes.forEach(a => { const l = BD.vendas.find(x => x.id === a.id); if(l){ l.data = a.data; l.dataPagamento = a.dp; } }); salvarAgora('vendas'); renderRetro(); renderVendas(true); toast('Datas restauradas.', 'ok'); }}});
+  }});
+}
+async function desfazerUltimoRetro(){
+  const l = linhasRetro().filter(v => v.lancadoEm).sort(cmpRecente)[0];
+  if(!l) return toast('Não há lançamento recente para desfazer.', 'alerta');
+  excluirRetro(l.id);
+}
+// Atalho a partir do controle do MEI: abre a lista já filtrada no mês
+function verRetro(mes){
+  irPara('vendas');
+  if(mes){ $('retroVer').value = 'mes'; $('retroMes').value = mes; } else { $('retroVer').value = 'tudo'; }
+  renderRetro(true);
+}
+
+
+/* =====================================================================
    NAVEGAÇÃO e INICIALIZAÇÃO
    ===================================================================== */
-const PAGINAS = ['dashboard', 'vendas', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
+const PAGINAS = ['dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
 let _pagina = 'dashboard';
 const paginaAtual = () => _pagina;
 
@@ -3293,6 +4223,8 @@ function renderPagina(id){
     switch(id){
       case 'dashboard': renderDashboard(); break;
       case 'vendas': renderVendasPagina(); break;
+      case 'fila': renderFila(); break;
+      case 'atendimento': renderAtendimento(); break;
       case 'caixa': renderCaixa(); break;
       case 'fichas': renderFichas(); renderProdutosSimples(); break;
       case 'precificacao': renderPrecificacao(); break;
@@ -3328,10 +4260,31 @@ function iniciar(){
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   const h = (location.hash || '').replace('#', '');
   irPara(PAGINAS.includes(h) ? h : 'dashboard');
+  if(h === 'painel') iniciarPainel();
+  else if(h === 'totem'){ if(BD.config.totemPin) iniciarTotem(); else toast('Defina um PIN em Custos → Totem para usar o modo totem.', 'alerta', {ms: 6000}); }
+  $('totemRoot').addEventListener('pointerdown', totemAtividade, true); $('totemRoot').addEventListener('touchstart', totemAtividade, true);
   atualizarFaixa();
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){ navigator.serviceWorker.register('sw.js').catch(() => {}); }
 }
-window.addEventListener('hashchange', () => { const h = (location.hash || '').replace('#', ''); if(PAGINAS.includes(h) && h !== _pagina) irPara(h); });
+window.addEventListener('hashchange', () => {
+  const h = (location.hash || '').replace('#', '');
+  if(h === 'painel' && !PAINEL.ativo) return iniciarPainel();
+  if(PAINEL.ativo && h !== 'painel'){ PAINEL.ativo = false; clearInterval(PAINEL.timer); document.body.classList.remove('modo-painel'); $('painelRoot').classList.add('oculto'); }
+  if(PAGINAS.includes(h) && h !== _pagina && !TOTEM.ativo) irPara(h);
+});
+// Sincroniza quando OUTRA aba/janela do mesmo aparelho grava dados (ex.: painel/fila numa aba, totem em outra)
+let _timerSync = null;
+window.addEventListener('storage', e => {
+  const k = e.key && Object.keys(CHAVES).find(x => CHAVES[x] === e.key); if(!k || _sujas.has(k)) return;
+  try{ const v = e.newValue === null ? clona(PADRAO_TIPO[k]) : JSON.parse(e.newValue); BD[k] = v; }catch(_){ return; }
+  clearTimeout(_timerSync);
+  _timerSync = setTimeout(() => {
+    normalizarBD(); if(['insumos', 'fichas', 'formulasMassa'].includes(k)) recalcularTudo();
+    refreshFila();
+    if(!_modais.length && !TOTEM.ativo && !PAINEL.ativo && ['dashboard', 'fila', 'caixa', 'atendimento', 'estoque', 'vendas'].includes(_pagina) && !(document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) renderPagina(_pagina);
+    atualizarBadges();
+  }, 200);
+});
 window.addEventListener('error', e => { console.error(e.error || e.message); });
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
 
