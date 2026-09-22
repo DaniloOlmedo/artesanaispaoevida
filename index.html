@@ -326,13 +326,25 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
   .comanda-impressao .via-msg{text-align:center;font-size:14px;margin-top:8px}
 }
 
+/* ===== Logo do negócio (upload próprio) ===== */
+.marca-flex{display:flex;align-items:center;gap:12px}
+.marca-logo{height:46px;width:46px;object-fit:contain;border-radius:8px;background:#fff;padding:2px}
+.tt-logo{height:1.15em;width:1.15em;object-fit:contain;vertical-align:-0.2em;border-radius:6px;background:#fff;padding:1px;margin-right:.2em}
+.tt-brand .tt-logo,.tt-brand-s .tt-logo{height:1.3em;width:1.3em}
+.marca-preview{display:flex;align-items:center;gap:12px;margin:8px 0}
+.marca-preview img{height:64px;width:64px;object-fit:contain;border-radius:10px;background:#fff;border:1px solid var(--campo-borda);padding:4px}
+.marca-preview .sem-logo{height:64px;width:64px;border-radius:10px;border:2px dashed var(--campo-borda);display:flex;align-items:center;justify-content:center;color:var(--suave);font-size:.75rem;text-align:center}
+
 </style>
 </head>
 <body>
 <header class="cabecalho">
-  <div>
-    <h1 id="marcaTitulo">🍞 Minha Loja</h1>
-    <p id="marcaTagline">Gestão de vendas e produção</p>
+  <div class="marca-flex">
+    <img id="marcaLogoImg" class="marca-logo oculto" alt="">
+    <div>
+      <h1 id="marcaTitulo">🍞 Minha Loja</h1>
+      <p id="marcaTagline">Gestão de vendas e produção</p>
+    </div>
   </div>
   <div class="cab-acoes">
     <button id="btnTema" class="btn-icone" type="button" onclick="alternarTema()" aria-label="Alternar tema claro/escuro" title="Tema">🌓</button>
@@ -1143,7 +1155,7 @@ const CONFIG_PADRAO = {
   totemTimeout:75, totemRetorno:30, totemChips:['Sem cebola','Sem azeitona','Bem assada','Molho à parte'],
   pixChave:'', pixNome:'', pixCidade:'',
   // identidade / marca (para revenda a outros negócios)
-  negocioNome:'', negocioTagline:'Gestão de vendas e produção', negocioEmoji:'🍞', corPrimaria:'#006644'
+  negocioNome:'', negocioTagline:'Gestão de vendas e produção', negocioEmoji:'🍞', negocioLogo:'', corPrimaria:'#006644'
 };
 const PRODUTOS_INICIAIS = [
   {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custo:0},
@@ -1765,7 +1777,7 @@ function renderCustos(){
   ).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum custo fixo cadastrado.</div></td></tr>';
   $('somaCustosFixos').textContent = brl(custosFixosMensais());
   carregarTaxasNaTela(); renderDespesas(); carregarConfigNaTela(); carregarConfigTotemNaTela();
-  const mr = $('marcaResumo'); if(mr) mr.innerHTML = cardHTML('Nome', nomeNegocio()) + cardHTML('Logotipo', BD.config.negocioEmoji || '🍞') + cardHTML('Cor principal', BD.config.corPrimaria || '#006644');
+  const mr = $('marcaResumo'); if(mr) mr.innerHTML = cardHTML('Nome', nomeNegocio()) + cardHTML('Logotipo', temLogo() ? '🖼️ imagem enviada' : (BD.config.negocioEmoji || '🍞')) + cardHTML('Cor principal', BD.config.corPrimaria || '#006644');
 }
 
 /* ---------- taxas ---------- */
@@ -3965,7 +3977,7 @@ function esperaAtualTexto(){
   return e.texto;
 }
 function telaHome(){
-  return '<div class="tt tt-home" onclick="totemComecar()"><div class="tt-brand">' + esc((BD.config.negocioEmoji || '🍞') + ' ' + nomeTotem()) + '</div><div class="tt-cta">👆 Toque aqui para fazer o seu pedido</div>' +
+  return '<div class="tt tt-home" onclick="totemComecar()"><div class="tt-brand">' + logoHTML() + esc(nomeTotem()) + '</div><div class="tt-cta">👆 Toque aqui para fazer o seu pedido</div>' +
     '<div class="tt-espera">⏱ Espera atual: <b>' + esperaAtualTexto() + '</b></div>' + quadroSenhasHTML(false) +
     '<div class="tt-msg">' + esc(BD.config.totemMensagem || '') + '</div><button class="tt-equipe" onclick="event.stopPropagation();totemEquipe()" aria-label="Equipe">🔒</button></div>';
 }
@@ -3987,7 +3999,7 @@ function etaHTML(){
 function telaMenu(){
   const lista = catalogoTotem(TOTEM.aba === 'comida' ? 'comida' : 'bebida');
   const temBeb = catalogoTotem('bebida').length > 0;
-  return '<div class="tt tt-menu"><div class="tt-top"><div class="tt-brand-s">' + esc((BD.config.negocioEmoji || '🍞') + ' ' + nomeTotem()) + '</div><div class="tt-passos"><b>1 Escolha</b> › 2 Revise › 3 Envie</div><button class="tt-btn cinza" onclick="totemCancelar()">✕ Cancelar</button></div>' +
+  return '<div class="tt tt-menu"><div class="tt-top"><div class="tt-brand-s">' + logoHTML() + esc(nomeTotem()) + '</div><div class="tt-passos"><b>1 Escolha</b> › 2 Revise › 3 Envie</div><button class="tt-btn cinza" onclick="totemCancelar()">✕ Cancelar</button></div>' +
     '<div class="tt-corpo"><div class="tt-esq"><div class="tt-abas"><button class="' + (TOTEM.aba === 'comida' ? 'on' : '') + '" onclick="totemAba(\'comida\')">🍕 Comidas</button>' + (temBeb ? '<button class="' + (TOTEM.aba === 'bebida' ? 'on' : '') + '" onclick="totemAba(\'bebida\')">🥤 Bebidas e outros</button>' : '') + '</div>' +
     '<div class="tt-grid">' + (lista.length ? lista.map(cardProdutoTotem).join('') : '<div class="tt-vazio">Nada disponível aqui.</div>') + '</div></div>' +
     '<div class="tt-dir"><h3>🧾 Seu pedido</h3><div class="tt-itens">' + carrinhoTotemHTML(true) + '</div>' + etaHTML() + '<div class="tt-total">Total <b>' + brl(totemTotal()) + '</b></div>' +
@@ -4005,7 +4017,7 @@ function telaRevisao(){
     '<input id="tt_o' + i + '" class="tt-in" placeholder="Outra observação (opcional)" value="' + esc(c.obs) + '" maxlength="80"></div>').join('');
   const quando = [[0, 'Assim que ficar pronto'], [15, 'Em 15 min'], [30, 'Em 30 min'], [45, 'Em 45 min']].map(([m, t]) => '<button type="button" class="tt-opt' + (TOTEM.retirar === m ? ' on' : '') + '" onclick="totemRetirar(' + m + ')">' + t + '</button>').join('');
   const e = estimar(TOTEM.carrinho); const prevMs = Math.max(Date.now() + e.max * 60000, TOTEM.retirar ? Date.now() + TOTEM.retirar * 60000 : 0);
-  return '<div class="tt tt-rev"><div class="tt-top"><div class="tt-brand-s">' + esc((BD.config.negocioEmoji || '🍞') + ' ' + nomeTotem()) + '</div><div class="tt-passos">1 Escolha › <b>2 Revise</b> › 3 Envie</div><button class="tt-btn cinza" onclick="totemCancelar()">✕ Cancelar</button></div>' +
+  return '<div class="tt tt-rev"><div class="tt-top"><div class="tt-brand-s">' + logoHTML() + esc(nomeTotem()) + '</div><div class="tt-passos">1 Escolha › <b>2 Revise</b> › 3 Envie</div><button class="tt-btn cinza" onclick="totemCancelar()">✕ Cancelar</button></div>' +
     '<div class="tt-corpo tt-rolar"><div class="tt-col-a"><div class="tt-sec"><h3>🧾 Seu pedido</h3>' + itens + '<div class="tt-total">Total <b>' + brl(totemTotal()) + '</b></div></div>' + sugestoesTotemHTML() + '</div>' +
     '<div class="tt-col-b"><div class="tt-sec"><h3>Como vai ser?</h3><div class="tt-opts"><button type="button" class="tt-opt' + (TOTEM.consumo === 'local' ? ' on' : '') + '" onclick="totemConsumo(\'local\')">🍽️ Comer aqui</button><button type="button" class="tt-opt' + (TOTEM.consumo === 'viagem' ? ' on' : '') + '" onclick="totemConsumo(\'viagem\')">🥡 Levar</button></div></div>' +
     '<div class="tt-sec"><h3>Quando quer retirar?</h3><div class="tt-opts">' + quando + '</div><div class="tt-eta">⏱ Previsão: <b>' + e.texto + '</b> — por volta das <b>' + horaDeMs(prevMs) + '</b></div></div>' +
@@ -4060,7 +4072,7 @@ function sairPainel(){
 }
 function renderPainel(){
   if(!PAINEL.ativo) return;
-  $('painelRoot').innerHTML = '<div class="tt tt-painel"><div class="tt-brand">' + esc((BD.config.negocioEmoji || '🍞') + ' ' + nomeTotem()) + '</div><div class="tt-espera">⏱ Espera atual: <b>' + esperaAtualTexto() + '</b></div>' + quadroSenhasHTML(true) + '<div class="tt-msg">' + esc(BD.config.totemMensagem || '') + '</div><button class="tt-equipe" onclick="sairPainel()" aria-label="Sair do painel">✕</button></div>';
+  $('painelRoot').innerHTML = '<div class="tt tt-painel"><div class="tt-brand">' + logoHTML() + esc(nomeTotem()) + '</div><div class="tt-espera">⏱ Espera atual: <b>' + esperaAtualTexto() + '</b></div>' + quadroSenhasHTML(true) + '<div class="tt-msg">' + esc(BD.config.totemMensagem || '') + '</div><button class="tt-equipe" onclick="sairPainel()" aria-label="Sair do painel">✕</button></div>';
 }
 
 
@@ -4214,7 +4226,9 @@ function verRetro(mes){
 
 
 /* =====================================================================
-   IDENTIDADE DO NEGÓCIO — nome, cor e ícone usados em toda a interface.
+   IDENTIDADE DO NEGÓCIO — nome, cor e logotipo usados em toda a interface.
+   O logotipo pode ser um EMOJI (padrão) ou uma IMAGEM enviada pelo dono
+   (redimensionada no navegador e guardada como o restante dos dados).
    Permite revender o sistema: cada cópia (hospedada em seu próprio
    endereço) configura sua própria marca, sem mexer em código.
    ===================================================================== */
@@ -4228,18 +4242,50 @@ function clarear(hex, p){
   const h = String(hex || '#006644').replace('#', '');
   const n = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
   const r = parseInt(n.slice(0, 2), 16) || 0, g = parseInt(n.slice(2, 4), 16) || 0, b = parseInt(n.slice(4, 6), 16) || 0;
-  const mix = (c) => Math.round(c + (255 - c) * p);
+  const mix = c => Math.round(c + (255 - c) * p);
   return '#' + [mix(r), mix(g), mix(b)].map(x => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('');
 }
-function faviconSvg(emoji, cor){
+function faviconSvgEmoji(emoji, cor){
   const e = esc(emoji || '🍞');
   return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="' + cor + '"/><text x="32" y="42" font-size="32" text-anchor="middle">' + e + '</text></svg>');
 }
+const temLogo = () => !!(BD.config.negocioLogo && BD.config.negocioLogo.startsWith('data:image'));
+/* HTML do "logotipo" para usar dentro de textos do totem: imagem se houver, senão o emoji */
+function logoHTML(){
+  return temLogo() ? '<img class="tt-logo" src="' + BD.config.negocioLogo + '" alt="">' : esc((BD.config.negocioEmoji || '🍞') + ' ');
+}
+
+/* ---------- redimensionar a imagem enviada (evita um backup gigante) ---------- */
+function carregarImagemComoDataURL(file, maxDim){
+  return new Promise((res, rej) => {
+    if(!file) return rej(new Error('Nenhum arquivo.'));
+    if(!/^image\//.test(file.type)) return rej(new Error('Escolha um arquivo de imagem (PNG, JPG ou SVG).'));
+    if(file.size > 8 * 1024 * 1024) return rej(new Error('Imagem muito grande (máximo 8 MB).'));
+    const leitor = new FileReader();
+    leitor.onerror = () => rej(new Error('Não foi possível ler a imagem.'));
+    leitor.onload = () => {
+      const img = new Image();
+      img.onerror = () => rej(new Error('Arquivo de imagem inválido.'));
+      img.onload = () => {
+        try{
+          const escala = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const w = Math.max(1, Math.round(img.width * escala)), h = Math.max(1, Math.round(img.height * escala));
+          const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          const ctx = cv.getContext('2d'); ctx.clearRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+          res(cv.toDataURL('image/png'));
+        }catch(e){ rej(new Error('Não foi possível processar a imagem.')); }
+      };
+      img.src = leitor.result;
+    };
+    leitor.readAsDataURL(file);
+  });
+}
+
 let _manifestUrl = null;
 function aplicarManifestDinamico(){
-  const cor = BD.config.corPrimaria || '#006644'; const icone = faviconSvg(BD.config.negocioEmoji, cor);
+  const cor = BD.config.corPrimaria || '#006644'; const icone = temLogo() ? BD.config.negocioLogo : faviconSvgEmoji(BD.config.negocioEmoji, cor);
   const m = {name: nomeNegocio(), short_name: nomeNegocio().slice(0, 20), start_url: './index.html', display: 'standalone', background_color: cor, theme_color: cor, lang: 'pt-BR',
-    icons: [{src: icone, sizes: 'any', type: 'image/svg+xml'}, {src: 'icon-192.png', sizes: '192x192', type: 'image/png'}, {src: 'icon-512.png', sizes: '512x512', type: 'image/png'}]};
+    icons: [{src: icone, sizes: 'any', type: temLogo() ? 'image/png' : 'image/svg+xml'}, {src: 'icon-192.png', sizes: '192x192', type: 'image/png'}, {src: 'icon-512.png', sizes: '512x512', type: 'image/png'}]};
   try{
     if(_manifestUrl) URL.revokeObjectURL(_manifestUrl);
     const blob = new Blob([JSON.stringify(m)], {type: 'application/manifest+json'});
@@ -4249,49 +4295,84 @@ function aplicarManifestDinamico(){
   }catch(e){ /* alguns navegadores (ex.: file://) bloqueiam blob: para manifest; a marca continua aplicada no restante */ }
 }
 function aplicarMarca(){
-  const nome = nomeNegocio(); const cor = BD.config.corPrimaria || '#006644';
+  const nome = nomeNegocio(); const cor = BD.config.corPrimaria || '#006644'; const logo = temLogo();
   document.title = nome + ' — Gestão';
-  const h1 = $('marcaTitulo'); if(h1) h1.textContent = (BD.config.negocioEmoji || '🍞') + ' ' + nome;
+  const img = $('marcaLogoImg'); const h1 = $('marcaTitulo');
+  if(img){ img.classList.toggle('oculto', !logo); if(logo) img.src = BD.config.negocioLogo; }
+  if(h1) h1.textContent = logo ? nome : ((BD.config.negocioEmoji || '🍞') + ' ' + nome);
   const p = $('marcaTagline'); if(p) p.textContent = BD.config.negocioTagline || '';
   document.documentElement.style.setProperty('--verde', cor);
   document.documentElement.style.setProperty('--verde2', clarear(cor, 0.18));
   document.documentElement.style.setProperty('--realce', clarear(cor, 0.94));
   document.documentElement.style.setProperty('--laranja', BD.config.corSecundaria || '#cc6633');
+  const iconeUrl = logo ? BD.config.negocioLogo : faviconSvgEmoji(BD.config.negocioEmoji, cor);
   let fav = document.querySelector('link[rel="icon"]'); if(!fav){ fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
-  fav.href = faviconSvg(BD.config.negocioEmoji, cor); fav.type = 'image/svg+xml';
+  fav.href = iconeUrl; fav.type = logo ? 'image/png' : 'image/svg+xml';
+  let touch = document.querySelector('link[rel="apple-touch-icon"]'); if(!touch){ touch = document.createElement('link'); touch.rel = 'apple-touch-icon'; document.head.appendChild(touch); }
+  touch.href = iconeUrl;
   let theme = document.querySelector('meta[name="theme-color"]'); if(theme) theme.content = cor;
   aplicarManifestDinamico();
 }
 function salvarMarca(v){
-  BD.config.negocioNome = v.nome.trim(); BD.config.negocioTagline = v.tagline.trim(); BD.config.negocioEmoji = (v.emoji || '🍞').trim().slice(0, 4) || '🍞'; BD.config.corPrimaria = v.cor || '#006644';
+  BD.config.negocioNome = v.nome.trim(); BD.config.negocioTagline = v.tagline.trim(); BD.config.negocioEmoji = (v.emoji || '🍞').trim().slice(0, 4) || '🍞';
+  BD.config.corPrimaria = v.cor || '#006644'; if(v.logo !== undefined) BD.config.negocioLogo = v.logo;
   salvarAgora('config'); aplicarMarca();
 }
-function editarMarca(){
-  const c = BD.config;
-  formModal({titulo: '🏷️ Identidade do negócio', aviso: 'Aparece no cabeçalho, no totem, na comanda impressa e no ícone do aplicativo instalado.', campos: [
-    {id: 'nome', rotulo: 'Nome do negócio', valor: c.negocioNome}, {id: 'tagline', rotulo: 'Frase abaixo do nome', valor: c.negocioTagline},
-    {id: 'emoji', rotulo: 'Emoji usado como logotipo', valor: c.negocioEmoji, placeholder: '🍞'}, {id: 'cor', rotulo: 'Cor principal', tipo: 'cor', valor: c.corPrimaria}
-  ], salvar: v => {
-    if(!v.nome){ toast('Informe o nome do negócio.', 'alerta'); return false; }
-    salvarMarca(v); renderTudo(); toast('Marca atualizada.', 'ok');
-  }});
+
+/* ---------- editor de marca (com upload e prévia) ---------- */
+function marcaFormHTML(v){
+  return '<label for="mk_nome">Nome do negócio *</label><input id="mk_nome" value="' + esc(v.nome) + '" autocomplete="off">' +
+    '<label for="mk_tagline">Frase abaixo do nome (opcional)</label><input id="mk_tagline" value="' + esc(v.tagline) + '">' +
+    '<div class="bloco-calc"><div><label for="mk_emoji">Emoji (usado se não houver logotipo)</label><input id="mk_emoji" value="' + esc(v.emoji) + '" maxlength="4" placeholder="🍞"></div><div><label for="mk_cor">Cor principal</label><input id="mk_cor" type="color" value="' + esc(v.cor) + '" style="height:48px;padding:4px;cursor:pointer"></div></div>' +
+    '<label>Logotipo (imagem — opcional)</label><div class="marca-preview" id="mk_preview">' + (v.logo ? '<img src="' + v.logo + '">' : '<div class="sem-logo">sem<br>logo</div>') + '<div class="grupo-botoes" style="margin:0"><button type="button" class="btn cinza pequeno" id="mk_escolher">📁 Escolher imagem</button>' + (v.logo ? '<button type="button" class="btn vermelho pequeno" id="mk_remover">✕ Remover</button>' : '') + '</div></div>' +
+    '<input type="file" id="mk_arquivo" accept="image/*" class="oculto"><div class="dica">PNG ou JPG, de preferência quadrado e com fundo transparente ou branco. A imagem é redimensionada automaticamente.</div>';
 }
+function ligarUploadMarca(ctl, estado){
+  const btn = ctl.el.querySelector('#mk_escolher'); const inp = ctl.el.querySelector('#mk_arquivo');
+  btn.onclick = () => inp.click();
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0]; if(!f) return;
+    try{ estado.logo = await carregarImagemComoDataURL(f, 320); atualizarPreviaMarca(ctl, estado); }
+    catch(e){ toast(e.message, 'alerta'); }
+    inp.value = '';
+  };
+  const rm = ctl.el.querySelector('#mk_remover'); if(rm) rm.onclick = () => { estado.logo = ''; atualizarPreviaMarca(ctl, estado); };
+}
+function atualizarPreviaMarca(ctl, estado){
+  ctl.el.querySelector('#mk_preview').innerHTML = (estado.logo ? '<img src="' + estado.logo + '">' : '<div class="sem-logo">sem<br>logo</div>') +
+    '<div class="grupo-botoes" style="margin:0"><button type="button" class="btn cinza pequeno" id="mk_escolher">📁 Escolher imagem</button>' + (estado.logo ? '<button type="button" class="btn vermelho pequeno" id="mk_remover">✕ Remover</button>' : '') + '</div>';
+  ligarUploadMarca(ctl, estado);
+}
+function editarMarca(){
+  const c = BD.config; const estado = {logo: c.negocioLogo || ''};
+  const ctl = abrirModal({
+    titulo: '🏷️ Identidade do negócio', aviso: 'Aparece no cabeçalho, no totem, na comanda impressa e no ícone do aplicativo instalado.',
+    html: marcaFormHTML({nome: c.negocioNome, tagline: c.negocioTagline, emoji: c.negocioEmoji, cor: c.corPrimaria, logo: c.negocioLogo}),
+    botoes: [{rotulo: 'Cancelar', classe: 'cinza'}, {rotulo: 'Salvar', fn: ctl2 => {
+      const nome = ctl2.el.querySelector('#mk_nome').value.trim();
+      if(!nome){ toast('Informe o nome do negócio.', 'alerta'); return false; }
+      salvarMarca({nome, tagline: ctl2.el.querySelector('#mk_tagline').value, emoji: ctl2.el.querySelector('#mk_emoji').value, cor: ctl2.el.querySelector('#mk_cor').value, logo: estado.logo});
+      renderTudo(); toast('Marca atualizada.', 'ok');
+    }}]
+  });
+  ligarUploadMarca(ctl, estado);
+}
+
 /* Assistente de primeira configuração: só aparece numa instalação nova (sem nenhum dado ainda). */
 function assistenteConfiguracaoInicial(depois){
-  abrirModal({
+  const estado = {logo: ''};
+  const ctl = abrirModal({
     titulo: '👋 Bem-vindo!', largo: true,
     html: '<div class="aviso">Antes de começar, configure a identidade deste negócio. Isso aparece no cabeçalho, no totem de autoatendimento, nas comandas impressas e no ícone do aplicativo. Você pode mudar depois em Custos → Identidade do negócio.</div>' +
-      '<label for="sic_nome">Nome do negócio *</label><input id="sic_nome" placeholder="Ex: Padaria Bom Pão" autocomplete="off">' +
-      '<label for="sic_tagline">Frase abaixo do nome (opcional)</label><input id="sic_tagline" placeholder="Ex: Pães e doces artesanais" value="Gestão de vendas e produção">' +
-      '<div class="bloco-calc"><div><label for="sic_emoji">Emoji usado como logotipo</label><input id="sic_emoji" value="🍞" placeholder="🍞" maxlength="4"></div><div><label for="sic_cor">Cor principal</label><input id="sic_cor" type="color" value="#006644" style="height:48px;padding:4px;cursor:pointer"></div></div>' +
-      '<div class="dica">* obrigatório para continuar.</div>',
-    botoes: [{rotulo: 'Começar a usar', fn: ctl => {
-      const nome = ctl.el.querySelector('#sic_nome').value.trim();
+      marcaFormHTML({nome: '', tagline: 'Gestão de vendas e produção', emoji: '🍞', cor: '#006644', logo: ''}) + '<div class="dica">* obrigatório para continuar.</div>',
+    botoes: [{rotulo: 'Começar a usar', fn: ctl2 => {
+      const nome = ctl2.el.querySelector('#mk_nome').value.trim();
       if(!nome){ toast('Digite o nome do negócio para continuar.', 'alerta'); return false; }
-      salvarMarca({nome, tagline: ctl.el.querySelector('#sic_tagline').value, emoji: ctl.el.querySelector('#sic_emoji').value, cor: ctl.el.querySelector('#sic_cor').value});
+      salvarMarca({nome, tagline: ctl2.el.querySelector('#mk_tagline').value, emoji: ctl2.el.querySelector('#mk_emoji').value, cor: ctl2.el.querySelector('#mk_cor').value, logo: estado.logo});
       setTimeout(depois, 30);
     }}]
   });
+  ligarUploadMarca(ctl, estado);
 }
 
 
