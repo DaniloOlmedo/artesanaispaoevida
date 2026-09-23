@@ -416,6 +416,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <div style="flex:2"><label for="buscaProdVenda">Toque no produto para adicionar</label><input type="search" id="buscaProdVenda" placeholder="🔍 Filtrar produtos..." oninput="renderGradeProdutos()"></div>
     </div>
     <div class="grade-prod" id="gradeProdutos"></div>
+    <button class="btn laranja" type="button" onclick="abrirMeioAMeio()" style="margin-top:8px">🍕➗ Meio a meio (dois sabores)</button>
     <details style="margin-top:8px">
       <summary style="cursor:pointer;font-weight:600">➕ Adicionar com observação / quantidade</summary>
       <div class="linha-form" style="grid-template-columns:2fr .7fr 2fr auto;margin-top:8px">
@@ -454,7 +455,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="barra-total">
       <div><div class="suave pequeno-txt" id="resumoTotais">Subtotal R$ 0,00</div><div class="tot" id="totalCarrinho">R$ 0,00</div></div>
       <div class="flex-linha" style="gap:8px;flex:0 1 auto;align-items:center">
-        <label class="linha" style="margin:0"><input type="checkbox" id="enviarFila" onchange="salvarPrefFila()"> 👨‍🍳 Enviar p/ fila</label>
+        <label class="linha oculto" id="linhaEnviarFila" style="margin:0"><input type="checkbox" id="enviarFila" onchange="salvarPrefFila()"> 👨‍🍳 Enviar p/ fila</label>
         <label class="linha" style="margin:0"><input type="checkbox" id="imprimirAuto" checked onchange="salvarPrefImpressao()"> 🖨️ Imprimir</label>
         <button class="btn grande" type="button" onclick="finalizarVenda()" style="margin:0">✅ Finalizar pedido</button>
       </div>
@@ -793,6 +794,11 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Disponível</th><th class="n">Mínimo</th><th>Ações</th></tr></thead><tbody id="tabelaComponentesEstoque"></tbody></table></div>
   </div>
   <div class="painel">
+    <h2>🧮 Fechamento do dia — bateu a contagem?</h2>
+    <div class="aviso">Quando voltar da feira, conte o que sobrou de verdade de cada item e compare com o que o sistema acha que tem. Se sobrou <b>menos</b> do que devia (quebrou, estragou, ficou pra trás), registre como perda — o custo entra no resultado do mês. Se é só sobra que ainda vai vender, use "Só ajustar" — corrige o número sem mexer no resultado.</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Sistema</th><th class="n">Contagem física</th><th class="n">Diferença</th><th>Ação</th></tr></thead><tbody id="tabelaFechamentoDia"></tbody></table></div>
+  </div>
+  <div class="painel">
     <h2>🗑️ Sobras e perdas registradas</h2>
     <div class="dica" style="margin-bottom:8px">Use o botão "Perda" na linha do componente. A perda desconta do estoque e entra no resultado do mês.</div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Componente</th><th class="n">Qtd</th><th>Motivo</th><th class="n">Valor R$</th><th></th></tr></thead><tbody id="tabelaPerdas"></tbody></table></div>
@@ -858,6 +864,8 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <label class="linha"><input type="checkbox" id="cfgValoresComanda" onchange="salvarConfig()"> Mostrar valores (total) na comanda impressa</label>
   </div>
 
+  <div id="planoResumo"></div>
+
   <div class="painel">
     <h2>🏷️ Identidade do negócio</h2>
     <div class="aviso">Nome, cor e logotipo usados em todo o sistema — cabeçalho, totem, comandas e ícone do aplicativo. Você pode revender este sistema: cada cliente tem sua própria cópia (hospedada em seu próprio endereço) e configura a marca dele aqui, sem mexer em código.</div>
@@ -865,7 +873,8 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <button class="btn" type="button" onclick="editarMarca()">✏️ Editar nome, cor e logotipo</button>
   </div>
 
-  <div class="painel">
+<div id="painelTotemPix" class="oculto">
+    <div class="painel">
     <h2>🖥️ Totem e atendimento</h2>
     <div class="aviso">O totem é uma tela para o <b>cliente</b> fazer o pedido sozinho no tablet, enquanto você produz. O pedido entra direto na Fila da cozinha e a comanda é impressa.</div>
     <h3>Aparência e segurança</h3>
@@ -899,6 +908,8 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     </div>
     <div class="grupo-botoes"><button class="btn azul" type="button" onclick="testarPix()">🧪 Testar QR do PIX (R$ 0,01)</button><button class="btn" type="button" onclick="iniciarTotem()">🖥️ Abrir modo totem</button></div>
   </div>
+  </div>
+  <div id="painelUpsellTotem"></div>
 
   <div class="painel">
     <h2>💰 Custos fixos mensais (estimativa)</h2>
@@ -1155,7 +1166,9 @@ const CONFIG_PADRAO = {
   totemTimeout:75, totemRetorno:30, totemChips:['Sem cebola','Sem azeitona','Bem assada','Molho à parte'],
   pixChave:'', pixNome:'', pixCidade:'',
   // identidade / marca (para revenda a outros negócios)
-  negocioNome:'', negocioTagline:'Gestão de vendas e produção', negocioEmoji:'🍞', negocioLogo:'', corPrimaria:'#006644'
+  negocioNome:'', negocioTagline:'Gestão de vendas e produção', negocioEmoji:'🍞', negocioLogo:'', corPrimaria:'#006644',
+  // plano comercial: 'base' (grátis/barato) ou destravado com código -> recursos avançados (totem, fila, indicadores)
+  recursosAvancados:false
 };
 const PRODUTOS_INICIAIS = [
   {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custo:0},
@@ -1414,6 +1427,7 @@ function normalizarBD(){
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
   if(!BD.totemStats || typeof BD.totemStats !== 'object' || Array.isArray(BD.totemStats)) BD.totemStats = {};
+  const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
   ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas'].forEach(k => {
@@ -1509,6 +1523,9 @@ function normalizarBD(){
   if(!Array.isArray(BD.config.totemChips)) BD.config.totemChips = CONFIG_PADRAO.totemChips.slice();
   // Upgrade de uma instalação que já tinha dados (nome era fixo "Artesanais Pão e Vida"): preserva o nome sem pedir nada.
   if(!BD.config.negocioNome && (BD.insumos.length || BD.fichas.length || BD.vendas.length || BD.custos.length || BD.compras.length)) BD.config.negocioNome = 'Artesanais Pão e Vida';
+  // Instalação que JÁ TINHA dados antes desta atualização (ex.: o seu próprio uso): mantém os recursos avançados
+  // liberados automaticamente, sem pedir código. Só uma instalação nova, entregue a um cliente, começa no plano Base.
+  if(!_tinhaRecursosAvancados && (BD.insumos.length || BD.fichas.length || BD.vendas.length || BD.custos.length || BD.compras.length)) BD.config.recursosAvancados = true;
 }
 
 /* ---------- faixa de avisos ---------- */
@@ -2553,7 +2570,7 @@ async function excluirComponenteEstoque(id){
   if(!await confirmar('Excluir "' + c.nome + '" do estoque? Fichas que usam esse nome deixam de controlar esse item.', {ok: 'Excluir', perigo: true})) return;
   BD.estoqueComponentes = BD.estoqueComponentes.filter(x => x.id !== id); salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
 }
-const MOTIVOS_PERDA = ['Queimou / estragou', 'Caiu / descartou', 'Vencido', 'Brinde / degustação', 'Outro'];
+const MOTIVOS_PERDA = ['Queimou / estragou', 'Caiu / descartou', 'Vencido', 'Brinde / degustação', 'Cliente desistiu / não retirou', 'Fechamento do dia — não bateu a contagem', 'Outro'];
 function registrarPerda(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
   formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'Desconta do estoque e entra como perda no resultado do mês.', campos: [
@@ -2573,6 +2590,57 @@ async function removerPerda(id){
   const c = componenteEstoque(p.nome); if(c) c.qtd = arred6(c.qtd + p.qtd);
   BD.perdas = BD.perdas.filter(x => x.id !== id); salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges();
 }
+
+/* ---------- fechamento do dia: contagem física x sistema ---------- */
+// Estimativa de custo de 1 unidade do componente, olhando fichas que o usam (para sugerir o valor da perda)
+function custoEstimadoComponente(nome){
+  const f = BD.fichas.find(x => x.componentes.some(c => norm(c.nome) === norm(nome)));
+  if(f) return f.custoUnitario || 0;
+  const ins = acharInsumoPorNome(nome);
+  return ins ? ins.precoBase : 0;
+}
+function renderFechamentoDia(){
+  const tb = $('tabelaFechamentoDia'); if(!tb) return;
+  const lista = BD.estoqueComponentes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  tb.innerHTML = lista.length ? lista.map(c =>
+    '<tr data-id="' + c.id + '"><td>' + esc(c.nome) + '</td><td class="n">' + fmt(c.qtd, Number.isInteger(c.qtd) ? 0 : 2) + '</td>' +
+    '<td class="n"><input type="number" min="0" step="0.01" inputmode="decimal" style="width:90px" id="fd_' + c.id + '" placeholder="—" oninput="atualizarDiferencaFechamento(\'' + c.id + '\')" aria-label="Contagem física de ' + esc(c.nome) + '"></td>' +
+    '<td class="n" id="fd_dif_' + c.id + '">—</td><td class="acoes" id="fd_acoes_' + c.id + '"></td></tr>'
+  ).join('') : '<tr><td colspan="5"><div class="vazio">Cadastre os componentes acima para poder conferir no fim do dia.</div></td></tr>';
+}
+function atualizarDiferencaFechamento(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  const el = $('fd_' + id); const difEl = $('fd_dif_' + id); const acEl = $('fd_acoes_' + id);
+  const v = el.value.trim();
+  if(v === ''){ difEl.textContent = '—'; acEl.innerHTML = ''; return; }
+  const contado = parseNum(v); const dif = arred6(c.qtd - contado);
+  if(Math.abs(dif) < 1e-9){ difEl.innerHTML = '<span class="ok">bateu ✅</span>'; acEl.innerHTML = '<button class="btn cinza pequeno" onclick="ajustarContagemFechamento(\'' + id + '\')">🔧 Confirmar</button>'; return; }
+  difEl.innerHTML = '<b class="' + (dif > 0 ? 'alerta' : 'erro') + '">' + (dif > 0 ? '−' : '+') + fmt(Math.abs(dif), 2) + '</b>';
+  acEl.innerHTML = '<button class="btn cinza pequeno" onclick="ajustarContagemFechamento(\'' + id + '\')" title="Corrige o número sem afetar o resultado do mês">🔧 Só ajustar</button>' +
+    (dif > 0 ? '<button class="btn laranja pequeno" onclick="perdaFechamento(\'' + id + '\')" title="Registra como perda no resultado do mês">🗑️ Registrar perda</button>' : '');
+}
+function ajustarContagemFechamento(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  const v = parseNum($('fd_' + id).value, NaN); if(!isFinite(v) || v < 0) return;
+  c.qtd = v; $('fd_' + id).value = ''; $('fd_dif_' + id).textContent = '—'; $('fd_acoes_' + id).innerHTML = '';
+  salvar('estoqueComponentes'); renderEstoque(); toast('Estoque de "' + c.nome + '" ajustado para ' + fmt(v, 2) + '. Nenhum valor entrou como perda.', 'ok');
+}
+function perdaFechamento(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  const contado = parseNum($('fd_' + id).value, NaN); if(!isFinite(contado) || contado < 0) return;
+  const dif = arred6(c.qtd - contado); if(!(dif > 0)) return;
+  const sugestao = custoEstimadoComponente(c.nome) * dif;
+  formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'O sistema esperava <b>' + fmt(c.qtd, 2) + '</b> e a contagem física deu <b>' + fmt(contado, 2) + '</b>. Faltaram <b>' + fmt(dif, 2) + '</b>.', campos: [
+    {id: 'motivo', rotulo: 'Motivo', tipo: 'select', valor: 'Fechamento do dia — não bateu a contagem', opcoes: MOTIVOS_PERDA.map(m => ({v: m, t: m}))},
+    {id: 'valor', rotulo: 'Valor estimado da perda (R$)', tipo: 'numero', valor: sugestao > 0 ? sugestao.toFixed(2) : ''}
+  ], textoSalvar: 'Registrar e ajustar estoque', salvar: v => {
+    c.qtd = contado;
+    BD.perdas.unshift({id: uid(), data: dataHoje(), nome: c.nome, qtd: dif, motivo: v.motivo, valor: v.valor > 0 ? v.valor : 0});
+    $('fd_' + id).value = ''; $('fd_dif_' + id).textContent = '—'; $('fd_acoes_' + id).innerHTML = '';
+    salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada e estoque ajustado para ' + fmt(contado, 2) + '.', 'ok');
+  }});
+}
+
 function renderEstoque(){
   atualizarDatalistComponentes();
   const lista = BD.estoqueComponentes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
@@ -2586,10 +2654,17 @@ function renderEstoque(){
   $('tabelaPerdas').innerHTML = BD.perdas.length ? BD.perdas.slice(0, 60).map(p =>
     '<tr><td>' + fmtData(p.data) + '</td><td>' + esc(p.nome) + '</td><td class="n">' + fmt(p.qtd, 2) + '</td><td>' + esc(p.motivo) + '</td><td class="n">' + (p.valor > 0 ? brl(p.valor) : '—') + '</td><td><button class="btn vermelho pequeno" onclick="removerPerda(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhuma perda registrada.</div></td></tr>';
+  renderFechamentoDia();
 }
 
 /* ---------- consumo por venda ---------- */
 function consumoUnitario(prod, tipoConsumo){
+  if(prod.tipo === 'meio'){
+    const merge = (a, b) => { const m = new Map(); [...a, ...b].forEach(c => { const k = norm(c.nome); if(m.has(k)) m.get(k).qtd = arred6(m.get(k).qtd + c.qtd); else m.set(k, {...c}); }); return Array.from(m.values()); };
+    const c1 = consumoUnitario({tipo: 'ficha', id: prod.metade1}, tipoConsumo).map(c => ({nome: c.nome, qtd: c.qtd * 0.5}));
+    const c2 = consumoUnitario({tipo: 'ficha', id: prod.metade2}, tipoConsumo).map(c => ({nome: c.nome, qtd: c.qtd * 0.5}));
+    return merge(c1, c2);
+  }
   if(prod.tipo === 'ficha'){
     const f = BD.fichas.find(x => x.id === prod.id); if(!f) return [];
     return [...f.componentes, ...(tipoConsumo === 'local' ? f.embalagemLocal : f.embalagemViagem)].map(c => ({nome: c.nome, qtd: c.qtd}));
@@ -2598,7 +2673,8 @@ function consumoUnitario(prod, tipoConsumo){
   return [{nome: p.nome, qtd: 1}];
 }
 function consumoDoItem(item){
-  return consumoUnitario({tipo: item.tipo, id: item.produtoId}, item.tipoConsumo).map(c => ({nome: c.nome, qtd: arred6(c.qtd * item.quantidade)}));
+  const prod = item.tipo === 'meio' ? {tipo: 'meio', metade1: item.metade1, metade2: item.metade2} : {tipo: item.tipo, id: item.produtoId};
+  return consumoUnitario(prod, item.tipoConsumo).map(c => ({nome: c.nome, qtd: arred6(c.qtd * item.quantidade)}));
 }
 function agregarConsumo(itens){
   const m = new Map();
@@ -2650,6 +2726,10 @@ function custoUnitDoProduto(tipo, id, consumo){
   const p = acharProduto(tipo, id); if(!p) return 0;
   if(tipo === 'ficha') return (p.custoUnitario || 0) + custoEmbalagemDe(p, consumo);
   return p.custo || 0;
+}
+function custoUnitItem(it){
+  if(it.tipo === 'meio') return 0.5 * custoUnitDoProduto('ficha', it.metade1, it.tipoConsumo) + 0.5 * custoUnitDoProduto('ficha', it.metade2, it.tipoConsumo);
+  return custoUnitDoProduto(it.tipo, it.produtoId, it.tipoConsumo);
 }
 function definirConsumo(c){
   consumoAtual = c; BD.config.consumoPadrao = c; salvar('config');
@@ -2714,6 +2794,48 @@ function adicionarPeloFormulario(){
   const fim = () => { if(verificarEAdicionar(novo)){ $('qtdVendida').value = 1; $('obsItemVenda').value = ''; } };
   if(preco > 0) return fim();
   formModal({titulo: 'Preço de "' + p.nome + '"', campos: [{id: 'preco', rotulo: 'Preço (R$)', tipo: 'numero', valor: ''}], textoSalvar: 'Adicionar', salvar: v => { if(!(v.preco > 0)){ toast('Informe o preço.', 'alerta'); return false; } novo.valorUnit = v.preco; fim(); }});
+}
+
+/* ---------- meio a meio (dois sabores, cobra o mais caro, consome metade do estoque de cada) ---------- */
+function opcoesFichasComPrecoHTML(selecionado){
+  const lista = BD.fichas.filter(f => f.precoPraticado > 0).slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  return '<option value="">-- Selecione --</option>' + lista.map(f => '<option value="' + f.id + '"' + (f.id === selecionado ? ' selected' : '') + '>' + esc(f.nome) + ' — ' + brl(f.precoPraticado) + '</option>').join('');
+}
+function abrirMeioAMeio(){
+  const fichas = BD.fichas.filter(f => f.precoPraticado > 0);
+  if(fichas.length < 2) return toast('É preciso ao menos 2 produtos com preço definido para montar um meio a meio.', 'alerta', {ms: 6000});
+  const html = '<div class="bloco-calc">' +
+    '<div><label for="mm_s1">Metade 1</label><select id="mm_s1" onchange="atualizarPrevisaoMeio()">' + opcoesFichasComPrecoHTML() + '</select></div>' +
+    '<div><label for="mm_s2">Metade 2</label><select id="mm_s2" onchange="atualizarPrevisaoMeio()">' + opcoesFichasComPrecoHTML() + '</select></div>' +
+    '<div><label for="mm_qtd">Quantidade</label><input type="number" id="mm_qtd" value="1" min="1" inputmode="numeric" onchange="atualizarPrevisaoMeio()"></div>' +
+    '<div><label for="mm_obs">Observação (opcional)</label><input type="text" id="mm_obs" placeholder="Ex: cortar em 8"></div></div>' +
+    '<div class="resultado" id="mm_previa"><p class="suave">Escolha os dois sabores.</p></div>' +
+    '<p class="dica">O preço cobrado é o do sabor mais caro. No estoque e no custo, cada sabor entra pela metade dos ingredientes, da embalagem e dos componentes.</p>';
+  abrirModal({titulo: '🍕➗ Meio a meio', largo: true, html, botoes: [
+    {rotulo: 'Cancelar', classe: 'cinza'},
+    {rotulo: 'Adicionar ao pedido', fn: ctl => {
+      const id1 = ctl.el.querySelector('#mm_s1').value, id2 = ctl.el.querySelector('#mm_s2').value;
+      const f1 = BD.fichas.find(f => f.id === id1), f2 = BD.fichas.find(f => f.id === id2);
+      if(!f1 || !f2){ toast('Escolha os dois sabores.', 'alerta'); return false; }
+      if(id1 === id2){ toast('Escolha dois sabores diferentes (senão é só o produto inteiro).', 'alerta'); return false; }
+      const qtd = Math.max(1, Math.round(parseNum(ctl.el.querySelector('#mm_qtd').value, 1)));
+      const obs = ctl.el.querySelector('#mm_obs').value.trim();
+      const preco = Math.max(f1.precoPraticado, f2.precoPraticado);
+      const novo = {uid: uid(), tipo: 'meio', metade1: id1, metade2: id2, produto: '½ ' + f1.nome + ' + ½ ' + f2.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, valorUnit: preco};
+      if(!verificarEAdicionar(novo)) return false;
+    }}
+  ]});
+  atualizarPrevisaoMeio();
+}
+function atualizarPrevisaoMeio(){
+  const box = document.querySelector('#mm_previa'); if(!box) return;
+  const id1 = document.getElementById('mm_s1').value, id2 = document.getElementById('mm_s2').value;
+  const f1 = BD.fichas.find(f => f.id === id1), f2 = BD.fichas.find(f => f.id === id2);
+  if(!f1 || !f2){ box.innerHTML = '<p class="suave">Escolha os dois sabores.</p>'; return; }
+  if(id1 === id2){ box.innerHTML = '<p class="alerta">Escolha dois sabores diferentes.</p>'; return; }
+  const preco = Math.max(f1.precoPraticado, f2.precoPraticado);
+  const custo = 0.5 * (f1.custoUnitario + custoEmbalagemDe(f1, consumoAtual)) + 0.5 * (f2.custoUnitario + custoEmbalagemDe(f2, consumoAtual));
+  box.innerHTML = '<div class="linha-kv"><span>Cobrado (preço do sabor mais caro)</span><b>' + brl(preco) + '</b></div><div class="linha-kv"><span>Custo estimado (metade de cada)</span><b>' + brl(custo) + '</b></div>';
 }
 function alterarQtdCarrinho(id, d){
   const c = carrinhoAtual.find(x => x.uid === id); if(!c) return;
@@ -2863,11 +2985,12 @@ function registrarPedido({itens, cliente, telefone, desconto = 0, pagamentos = n
   const dist = distribuirDesconto(itens, subtotal, desconto);
   const linhas = itens.map((it, i) => {
     const valorTotal = r2(dist[i].bruto - dist[i].parte);
-    const custoUnit = custoUnitDoProduto(it.tipo, it.produtoId, it.tipoConsumo);
+    const custoUnit = custoUnitItem(it);
     const l = {id: uid(), pedidoId, senha, data, horario, cliente: cliente || 'Cliente sem nome', telefone: telefone || '', produto: it.produto, produtoId: it.produtoId, tipoProduto: it.tipo,
       quantidade: it.quantidade, valorUnit: it.valorUnit, descontoValor: dist[i].parte, valorTotal, custoUnit, custoTotal: custoUnit * it.quantidade,
       tipoConsumo: it.tipoConsumo, observacao: it.obs || '', pago: false, formaPagamento: 'pendente', consumo: baixarConsumo(consumoDoItem(it)),
       origem, status, criadoEm: agora, viaSugestao: !!it.sug};
+    if(it.tipo === 'meio'){ l.metade1 = it.metade1; l.metade2 = it.metade2; }
     if(estimativaMin !== null) l.estimativaMin = estimativaMin;
     if(estimativaBase !== null) l.estimativaBase = estimativaBase;
     if(retirarEm) l.retirarEm = retirarEm;
@@ -2992,7 +3115,9 @@ function renderVendas(reset){
       '<td class="acoes">' + (p.pago ? '' : '<button class="btn pequeno" onclick="receberPedido(\'' + pid + '\')">💰 Receber</button>') +
       (p.linhas[0].retroativo ? '' : '<button class="btn cinza pequeno" onclick="imprimirComandaPedido(\'' + pid + '\')" aria-label="Imprimir comanda" title="Reimprimir">🖨️</button>') +
       (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + pid + '\')" aria-label="Avisar no WhatsApp" title="Avisar no WhatsApp">💬</button>' : '') +
-      '<button class="btn cinza pequeno" onclick="' + (p.linhas[0].retroativo ? 'editarRetro(\'' + p.linhas[0].id + '\')' : 'editarPedido(\'' + pid + '\')') + '" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirPedido(\'' + pid + '\')" aria-label="Excluir">✕</button></td></tr>');
+      '<button class="btn cinza pequeno" onclick="' + (p.linhas[0].retroativo ? 'editarRetro(\'' + p.linhas[0].id + '\')' : 'editarPedido(\'' + pid + '\')') + '" aria-label="Editar">✏️</button>' +
+      (!p.linhas[0].retroativo && ['preparo', 'pronto'].includes(statusPedido(p)) ? '<button class="btn laranja pequeno" onclick="perderPedido(\'' + pid + '\')" title="Cliente desistiu — já foi produzido">🗑️ Perda</button>' : '') +
+      '<button class="btn vermelho pequeno" onclick="excluirPedido(\'' + pid + '\')" aria-label="Excluir">✕</button></td></tr>');
   });
   $('tabelaVendas').innerHTML = html.length ? html.join('') : '<tr><td colspan="7"><div class="vazio">Nenhum pedido neste filtro.</div></td></tr>';
   $('paginacaoVendas').innerHTML = totalPag > 1 ? '<button class="btn cinza pequeno" ' + (PAG_VENDAS.pagina <= 1 ? 'disabled' : '') + ' onclick="PAG_VENDAS.pagina--;renderVendas()">← Anterior</button><span class="suave" style="align-self:center">Página ' + PAG_VENDAS.pagina + ' de ' + totalPag + ' (' + pedidos.length + ' pedidos)</span><button class="btn cinza pequeno" ' + (PAG_VENDAS.pagina >= totalPag ? 'disabled' : '') + ' onclick="PAG_VENDAS.pagina++;renderVendas()">Próxima →</button>' : '';
@@ -3068,12 +3193,32 @@ async function excluirPedido(pid){
     salvarAgora('vendas', 'estoqueComponentes'); renderVendas(); renderCaixa(); renderEstoque(); atualizarBadges(); toast('Pedido restaurado.', 'ok');
   }}});
 }
+// Pedido que já foi PRODUZIDO (massa/ingredientes usados) mas o cliente desistiu ou não voltou para retirar.
+// Diferente de excluir: o estoque NÃO volta (a comida já foi feita e não pode ser vendida a outra pessoa),
+// e o custo do que foi feito entra como perda no resultado do mês, em vez de contar como venda.
+async function perderPedido(pid){
+  const linhas = linhasDoPedido(pid); if(!linhas.length) return;
+  const p = agruparPedidos(linhas)[0];
+  const custoTotal = soma(linhas, l => l.custoTotal);
+  if(!await confirmar('Registrar como perda o pedido' + (p.senha ? ' nº ' + p.senha : '') + ' de ' + p.cliente + ' (' + brl(p.total) + ')?\n\nUse isto quando a comida já foi feita e o cliente desistiu ou não voltou. O estoque usado NÃO volta (foi consumido de verdade). O custo (' + brl(custoTotal) + ') entra como perda no resultado do mês, e o pedido some da lista de vendas.', {titulo: 'Registrar como perda', ok: 'Registrar perda', perigo: true})) return;
+  const novasPerdas = linhas.map(l => ({id: uid(), data: dataHoje(), nome: l.produto, qtd: l.quantidade, motivo: 'Cliente desistiu / não retirou', valor: l.custoTotal}));
+  const copia = clona(linhas);
+  novasPerdas.forEach(pe => BD.perdas.unshift(pe));
+  BD.vendas = BD.vendas.filter(v => String(v.pedidoId) !== String(pid));
+  salvarAgora('vendas', 'perdas'); renderVendas(); renderCaixa(); renderEstoque(); refreshFila(); atualizarBadges();
+  toast('Pedido registrado como perda (' + brl(custoTotal) + ' em custo). O estoque não foi devolvido.', 'alerta', {ms: 12000, acao: {rotulo: 'Desfazer', fn: () => {
+    const idsPerda = new Set(novasPerdas.map(pe => pe.id));
+    BD.perdas = BD.perdas.filter(pe => !idsPerda.has(pe.id));
+    copia.forEach(l => BD.vendas.push(l));
+    salvarAgora('vendas', 'perdas'); renderVendas(); renderCaixa(); renderEstoque(); refreshFila(); atualizarBadges(); toast('Pedido restaurado.', 'ok');
+  }}});
+}
 
 /* venda retroativa: ver 13_retro.js */
 function renderVendasPagina(){
   renderSelectsProdutos(); renderGradeProdutos(); renderCarrinho(); renderRetro();
   if(!$('retroData').value) $('retroData').value = dataHoje();
-  $('imprimirAuto').checked = BD.config.imprimirAuto !== false; $('enviarFila').checked = !!BD.config.pdvNaFila;
+  $('imprimirAuto').checked = BD.config.imprimirAuto !== false; if($('enviarFila')) $('enviarFila').checked = !!BD.config.pdvNaFila;
   definirConsumo(BD.config.consumoPadrao || consumoAtual);
   mudarPeriodoVendas();
 }
@@ -3560,7 +3705,11 @@ function tempoPreparoUnit(tipo, id){
   return tipo === 'ficha' ? Math.max(0, BD.config.tempoPadraoFicha || 0) : 0;
 }
 const tipoDoItem = it => it.tipo || it.tipoProduto;
-const trabalhoItens = itens => soma(itens, it => tempoPreparoUnit(tipoDoItem(it), it.produtoId) * it.quantidade);
+function tempoPreparoItem(it){
+  if(tipoDoItem(it) === 'meio') return Math.max(tempoPreparoUnit('ficha', it.metade1), tempoPreparoUnit('ficha', it.metade2));
+  return tempoPreparoUnit(tipoDoItem(it), it.produtoId);
+}
+const trabalhoItens = itens => soma(itens, it => tempoPreparoItem(it) * it.quantidade);
 const capacidade = () => Math.max(1, BD.config.capacidade || 1);
 function backlogMin(){
   const cap = capacidade(), agora = Date.now(); let tot = 0;
@@ -3649,8 +3798,8 @@ function acoesFila(p){
   const pixPrev = p.linhas[0].pagamentoPrevisto === 'pix';
   if(aguardandoPagamento(p)) return b('💰 Receber' + (pixPrev ? ' (PIX)' : ''), "receberPedido('" + pid + "','" + (pixPrev ? 'pix' : 'dinheiro') + "')") + b('✕ Cancelar', "excluirPedido('" + pid + "')", 'vermelho');
   if(st === 'novo') return b('🔥 Iniciar', "iniciarPedido('" + pid + "')") + b('✏️', "editarPedido('" + pid + "')", 'cinza') + b('✕', "excluirPedido('" + pid + "')", 'vermelho');
-  if(st === 'preparo') return b('✅ Pronto', "prontoPedido('" + pid + "')") + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('✏️', "editarPedido('" + pid + "')", 'cinza');
-  if(st === 'pronto') return b('📦 Entregar' + (p.pago ? '' : ' e receber'), "entregarPedido('" + pid + "')") + b('🔔', "chamarDeNovo('" + pid + "')", 'laranja') + (p.telefone ? b('💬', "abrirWhatsApp('" + pid + "')", 'cinza') : '') + b('↩', "voltarPedido('" + pid + "')", 'cinza');
+  if(st === 'preparo') return b('✅ Pronto', "prontoPedido('" + pid + "')") + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('✏️', "editarPedido('" + pid + "')", 'cinza') + b('🗑️ Perda', "perderPedido('" + pid + "')", 'vermelho');
+  if(st === 'pronto') return b('📦 Entregar' + (p.pago ? '' : ' e receber'), "entregarPedido('" + pid + "')") + b('🔔', "chamarDeNovo('" + pid + "')", 'laranja') + (p.telefone ? b('💬', "abrirWhatsApp('" + pid + "')", 'cinza') : '') + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('🗑️ Perda', "perderPedido('" + pid + "')", 'vermelho');
   return '';
 }
 function cardFilaHTML(p){
@@ -4377,6 +4526,58 @@ function assistenteConfiguracaoInicial(depois){
 
 
 /* =====================================================================
+   PLANO COMERCIAL — Base (entrega inicial) x Avançado (totem, fila,
+   indicadores). Um único arquivo para sempre: o upgrade é um código,
+   não uma reinstalação. Isto é uma trava HONESTA, não segurança de
+   verdade — um cliente que abrir o código-fonte encontra tudo. Para o
+   público deste sistema (pequenos negócios, sem conhecimento técnico),
+   isso é suficiente; não venda isto como "protegido contra pirataria".
+   ===================================================================== */
+// Troque esta palavra para o código que você vai entregar a quem pagar o upgrade.
+// Pode ser o mesmo para todo mundo, ou um diferente por cópia — é só editar aqui antes de entregar.
+const CODIGO_PLANO_AVANCADO = 'PROTOTEM2026';
+const PAGINAS_AVANCADAS = ['fila', 'atendimento'];
+const planoAvancado = () => !!BD.config.recursosAvancados;
+
+function ativarPlanoAvancado(){
+  formModal({titulo: '🔓 Ativar recursos avançados', aviso: 'Totem de autoatendimento, fila da cozinha, painel de chamada e indicadores de tempo de espera. Peça o código a quem instalou o sistema.', campos: [
+    {id: 'codigo', rotulo: 'Código de ativação', placeholder: 'Ex: PROTOTEM2026'}
+  ], textoSalvar: 'Ativar', salvar: v => {
+    if(norm(v.codigo) !== norm(CODIGO_PLANO_AVANCADO)){ toast('Código inválido.', 'erro'); return false; }
+    BD.config.recursosAvancados = true; salvarAgora('config');
+    aplicarVisibilidadePlano(); renderTudo();
+    toast('🎉 Recursos avançados liberados! Explore Fila e Atendimento no menu.', 'ok', {ms: 7000});
+  }});
+}
+// Painel de status do plano — mostrado no topo da aba Custos
+function renderPlanoResumo(){
+  const c = $('planoResumo'); if(!c) return;
+  c.innerHTML = planoAvancado()
+    ? '<div class="aviso ok-a">✅ <b>Plano avançado ativo</b> — totem, fila da cozinha e indicadores liberados.</div>'
+    : '<div class="aviso alerta-a">🔒 <b>Plano Base.</b> O totem de autoatendimento, a fila da cozinha e os indicadores de espera fazem parte do plano avançado. <button class="btn laranja pequeno" type="button" onclick="ativarPlanoAvancado()" style="margin-left:6px">Já tenho o código</button></div>';
+}
+// Painel "vitrine": some no lugar do painel real de Totem/PIX quando ainda não liberado
+function upsellTotemHTML(){
+  return '<div class="painel"><h2>🖥️ Totem de autoatendimento <span class="tag laranja">plano avançado</span></h2>' +
+    '<p>Uma tela para o cliente montar o próprio pedido no tablet, direto no balcão — menos fila, mais vendas por sugestão automática de complementos.</p>' +
+    '<div class="grade"><div class="card"><h3>Fila da cozinha</h3><div class="sub">Organize os pedidos por Novo → Preparo → Pronto, com chamada de senha por voz.</div></div>' +
+    '<div class="card"><h3>Painel de chamada</h3><div class="sub">Uma segunda tela mostrando quem já pode retirar o pedido.</div></div>' +
+    '<div class="card"><h3>Indicadores</h3><div class="sub">Tempo médio de espera, ticket do totem x balcão e sugestões automáticas de melhoria.</div></div>' +
+    '<div class="card"><h3>PIX no totem</h3><div class="sub">QR code gerado na hora, com o valor exato do pedido.</div></div></div>' +
+    '<button class="btn laranja" type="button" onclick="ativarPlanoAvancado()">🔓 Já tenho o código de ativação</button></div>';
+}
+function aplicarVisibilidadePlano(){
+  const on = planoAvancado();
+  document.querySelectorAll('.nav-btn').forEach(b => { if(PAGINAS_AVANCADAS.includes(b.dataset.p)) b.classList.toggle('oculto', !on); });
+  const ef = $('linhaEnviarFila'); if(ef) ef.classList.toggle('oculto', !on);
+  const tp = $('painelTotemPix'); const up = $('painelUpsellTotem');
+  if(tp) tp.classList.toggle('oculto', !on);
+  if(up){ up.classList.toggle('oculto', on); if(!on && !up.dataset.montado){ up.innerHTML = upsellTotemHTML(); up.dataset.montado = '1'; } }
+  renderPlanoResumo();
+}
+
+
+/* =====================================================================
    NAVEGAÇÃO e INICIALIZAÇÃO
    ===================================================================== */
 const PAGINAS = ['dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
@@ -4385,6 +4586,7 @@ const paginaAtual = () => _pagina;
 
 function irPara(id){
   if(!PAGINAS.includes(id)) id = 'dashboard';
+  if(PAGINAS_AVANCADAS.includes(id) && !planoAvancado()){ toast('Esse recurso faz parte do plano avançado. Peça o código de ativação em Custos.', 'alerta', {ms: 6000}); id = 'custos'; }
   _pagina = id;
   document.querySelectorAll('.pagina').forEach(p => p.classList.toggle('visivel', p.id === id));
   document.querySelectorAll('.nav-btn').forEach(b => {
@@ -4431,7 +4633,7 @@ function iniciar(){
     salvarTudo();
     try{ localStorage.setItem('schemaVersao', String(APP_VERSAO)); }catch(e){}
   }
-  aplicarTema(); aplicarMarca();
+  aplicarTema(); aplicarMarca(); aplicarVisibilidadePlano();
   consumoAtual = BD.config.consumoPadrao || 'viagem';
   atualizarDatalists(); atualizarDatalistComponentes();
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
@@ -4441,6 +4643,7 @@ function iniciar(){
     if(h === 'painel') iniciarPainel();
     else if(h === 'totem'){ if(BD.config.totemPin) iniciarTotem(); else toast('Defina um PIN em Custos → Totem para usar o modo totem.', 'alerta', {ms: 6000}); }
   };
+  if((h === 'totem' || h === 'painel') && !planoAvancado()){ toast('O totem faz parte do plano avançado. Peça o código de ativação em Custos.', 'alerta', {ms: 6000}); }
   if(ehInstalacaoNova() && h !== 'totem' && h !== 'painel') assistenteConfiguracaoInicial(entrarNoSistema); else entrarNoSistema();
   $('totemRoot').addEventListener('pointerdown', totemAtividade, true); $('totemRoot').addEventListener('touchstart', totemAtividade, true);
   atualizarFaixa();
@@ -4448,6 +4651,7 @@ function iniciar(){
 }
 window.addEventListener('hashchange', () => {
   const h = (location.hash || '').replace('#', '');
+  if((h === 'painel' || h === 'totem') && !planoAvancado()){ toast('Esse recurso faz parte do plano avançado.', 'alerta'); location.hash = '#custos'; return; }
   if(h === 'painel' && !PAINEL.ativo) return iniciarPainel();
   if(PAINEL.ativo && h !== 'painel'){ PAINEL.ativo = false; clearInterval(PAINEL.timer); document.body.classList.remove('modo-painel'); $('painelRoot').classList.add('oculto'); }
   if(PAGINAS.includes(h) && h !== _pagina && !TOTEM.ativo) irPara(h);
