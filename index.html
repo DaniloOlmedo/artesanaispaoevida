@@ -145,13 +145,15 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 
 /* PDV */
 .grade-prod{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}
-.prod-btn{width:100%;text-align:left;padding:10px;border:1px solid var(--campo-borda);border-radius:8px;background:var(--campo);cursor:pointer;min-height:64px;display:flex;flex-direction:column;justify-content:space-between;gap:4px}
+.prod-btn{position:relative;width:100%;text-align:left;padding:10px;border:1px solid var(--campo-borda);border-radius:8px;background:var(--campo);cursor:pointer;min-height:64px;display:flex;flex-direction:column;justify-content:space-between;gap:4px}
 .prod-btn:hover{border-color:var(--verde2);background:var(--realce)}
 .prod-btn:active{transform:scale(.98)}
-.prod-btn b{font-size:.9rem;line-height:1.2}
+.prod-btn b{font-size:.9rem;line-height:1.2;padding-right:26px}
 .prod-btn span{font-size:.85rem;color:var(--verde);font-weight:700}
 .prod-btn.sem-preco span{color:var(--alerta)}
 .prod-btn.sem-estoque{opacity:.5}
+.prod-btn span.prod-disp{position:absolute;top:6px;right:6px;background:var(--realce);color:var(--verde);font-size:.72rem;font-weight:700;padding:1px 7px;border-radius:10px;line-height:1.5}
+.prod-btn span.prod-disp.baixo{background:rgba(198,40,40,.14);color:var(--erro)}
 .qtd-ctl{display:inline-flex;align-items:center;gap:4px}
 .qtd-ctl button{width:32px;height:32px;padding:0;border:1px solid var(--campo-borda);border-radius:6px;background:var(--campo);cursor:pointer;font-weight:700}
 .qtd-ctl b{min-width:24px;text-align:center}
@@ -347,13 +349,14 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     </div>
   </div>
   <div class="cab-acoes">
-    <button id="btnTema" class="btn-icone" type="button" onclick="alternarTema()" aria-label="Alternar tema claro/escuro" title="Tema">🌓</button>
+    <button id="btnTema" class="btn-icone" type="button" onclick="abrirMenuTema()" aria-label="Aparência" title="Aparência">🎨</button>
   </div>
 </header>
 <div id="faixaAvisos" role="status"></div>
 <nav class="navegacao" id="nav" aria-label="Seções">
   <button class="nav-btn" data-p="dashboard" onclick="irPara('dashboard')">📊 Painel</button>
   <button class="nav-btn" data-p="vendas" onclick="irPara('vendas')">🛒 Vendas</button>
+  <button class="nav-btn" data-p="locais" onclick="irPara('locais')">📍 Locais</button>
   <button class="nav-btn" data-p="fila" onclick="irPara('fila')">👨‍🍳 Fila<span class="selo" id="seloFila">0</span></button>
   <button class="nav-btn" data-p="caixa" onclick="irPara('caixa')">💵 Caixa<span class="selo" id="seloCaixa">0</span></button>
   <button class="nav-btn" data-p="atendimento" onclick="irPara('atendimento')">⏱️ Atendimento</button>
@@ -400,6 +403,8 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <h2>🛒 Tirar pedido</h2>
       <div><span class="suave pequeno-txt">Senha do pedido</span> <span class="senha" id="senhaAtual">1</span></div>
     </div>
+    <div class="aviso" id="localAtualBadge" style="margin-bottom:10px">📍 Vendendo em: <b id="localAtualTxt">nenhum</b> — <button class="btn cinza pequeno" type="button" onclick="irPara('locais')" style="margin:0">trocar</button></div>
+    <button class="btn cinza pequeno" type="button" onclick="abrirEscolhaComanda()" style="margin:0 0 10px">🧾 Adicionar a um pedido pendente (em vez de criar um novo)</button>
     <div class="bloco-calc">
       <div><label for="clienteNome">Nome do cliente</label><input type="text" id="clienteNome" placeholder="Ex: Maria" autocomplete="off"></div>
       <div><label for="clienteTelefone">Telefone (opcional)</label><input type="tel" id="clienteTelefone" placeholder="(00) 00000-0000" autocomplete="off"></div>
@@ -433,8 +438,9 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <div><label for="descontoValor">Desconto</label>
         <div class="flex-linha" style="gap:6px;flex-wrap:nowrap"><input type="number" id="descontoValor" min="0" step="0.01" placeholder="0" inputmode="decimal" oninput="atualizarTotaisCarrinho()"><select id="descontoTipo" style="max-width:80px" onchange="atualizarTotaisCarrinho()"><option value="R">R$</option><option value="P">%</option></select></div>
       </div>
-      <div><label class="linha" style="margin-top:28px"><input type="checkbox" id="pedidoPago" checked onchange="alternarPagamento()"> 💰 Pagamento já recebido?</label></div>
+      <div id="linhaPedidoPago"><label class="linha" style="margin-top:28px"><input type="checkbox" id="pedidoPago" checked onchange="alternarPagamento()"> 💰 Pagamento já recebido?</label></div>
     </div>
+    <div id="bannerComanda" class="aviso alerta-a oculto"></div>
     <div id="blocoPagamento">
       <div class="bloco-calc">
         <div><label for="formaPagamento">Forma de pagamento</label>
@@ -491,6 +497,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <div><label for="retroValorUnit">Valor unitário R$</label><input type="number" step="0.01" id="retroValorUnit" placeholder="Automático ou digite"></div>
       <div><label for="retroConsumo">Consumo</label><select id="retroConsumo"><option value="viagem">🥡 Viagem</option><option value="local">🍽️ Local</option></select></div>
       <div><label for="retroForma">Forma de pagamento</label><select id="retroForma"><option value="dinheiro">💵 Dinheiro</option><option value="pix">⚡ PIX</option><option value="debito">💳 Débito</option><option value="credito">💳 Crédito</option></select></div>
+      <div><label for="retroLocal">Local</label><select id="retroLocal"><option value="">-- Não informado --</option></select></div>
     </div>
     <button class="btn laranja" type="button" onclick="lancarVendaRetroativa()">+ Lançar no histórico</button>
     <div id="retroSessao" class="dica" style="margin-top:10px;font-size:.95rem"></div>
@@ -509,6 +516,33 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div id="retroLote" class="grupo-botoes" style="align-items:center"></div>
     <div class="tabela-wrap"><table class="tabela" style="min-width:820px"><thead><tr><th><input type="checkbox" id="retroTodos" onchange="retroSelTodos(this.checked)" aria-label="Selecionar todos"></th><th>Data da venda</th><th>Produto</th><th class="n">Qtd</th><th class="n">Unit.</th><th class="n">Total</th><th>Pagamento</th><th></th><th>Lançado em</th><th>Ações</th></tr></thead><tbody id="tabelaRetro"></tbody></table></div>
   </div>
+</section>
+
+<!-- ============ LOCAIS ============ -->
+<section id="locais" class="pagina">
+  <div class="painel">
+    <h2>📍 Onde você está vendendo agora?</h2>
+    <div class="aviso">Escolha antes de começar a vender. Toda venda registrada a partir daqui fica marcada com esse local, para você comparar depois onde vende mais.</div>
+    <div class="bloco-calc">
+      <div><label for="localAtualSel">Local atual</label><select id="localAtualSel" onchange="definirLocalAtual()"></select></div>
+    </div>
+  </div>
+  <div class="painel">
+    <h2>➕ Cadastrar local</h2>
+    <div class="linha-form" style="grid-template-columns:2fr 1fr 2fr auto">
+      <div><label for="localNome">Nome</label><input type="text" id="localNome" placeholder="Ex: Condomínio Thermas Park" autocomplete="off" onkeydown="if(event.key==='Enter')adicionarLocal()"></div>
+      <div><label for="localTipo">Tipo</label><select id="localTipo"><option>Fixo</option><option>Trailer</option><option>Tenda</option><option>Feira</option><option>Outro</option></select></div>
+      <div><label for="localObs">Observação (opcional)</label><input type="text" id="localObs" placeholder="Ex: quintas-feiras, a cada 15 dias..."></div>
+      <button class="btn" type="button" onclick="adicionarLocal()">+</button>
+    </div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Local</th><th>Tipo</th><th>Observação</th><th>Ações</th></tr></thead><tbody id="tabelaLocais"></tbody></table></div>
+  </div>
+  <div class="painel">
+    <div class="cab-painel"><h2>📊 Comparativo entre locais</h2><select id="localPeriodo" style="width:auto" onchange="renderComparativoLocais()" aria-label="Período"><option value="mes">Este mês</option><option value="3m">Últimos 3 meses</option><option value="tudo">Tudo</option></select></div>
+    <div class="dica">"Visitas" conta dias diferentes com venda registrada naquele local — útil para locais que você atende periodicamente.</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Local</th><th class="n">Visitas</th><th class="n">Faturamento</th><th class="n">Lucro</th><th class="n">Ticket médio</th><th class="n">Média por visita</th><th></th></tr></thead><tbody id="tabelaComparativoLocais"></tbody></table></div>
+  </div>
+  <div id="painelDetalheLocal"></div>
 </section>
 
 <!-- ============ FILA ============ -->
@@ -1153,10 +1187,10 @@ function formModal({titulo, campos, salvar, textoSalvar = 'Salvar', aviso = '', 
 const CHAVES = {
   custos:'custosFixos', taxas:'taxas', insumos:'insumos', fichas:'fichas', formulasMassa:'formulasMassa',
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
-  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats'
+  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
   valoresComanda:false, imprimirAuto:true, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem',
@@ -1168,7 +1202,9 @@ const CONFIG_PADRAO = {
   // identidade / marca (para revenda a outros negócios)
   negocioNome:'', negocioTagline:'Gestão de vendas e produção', negocioEmoji:'🍞', negocioLogo:'', corPrimaria:'#006644',
   // plano comercial: 'base' (grátis/barato) ou destravado com código -> recursos avançados (totem, fila, indicadores)
-  recursosAvancados:false
+  recursosAvancados:false,
+  // local de venda (feira/condomínio/trailer): qual está selecionado agora
+  localAtual:''
 };
 const PRODUTOS_INICIAIS = [
   {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custo:0},
@@ -1178,7 +1214,7 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
@@ -1422,7 +1458,7 @@ function acharInsumo(ref){ // ref: {insumoId, nome}
   return acharInsumoPorNome(ref.nome);
 }
 function normalizarBD(){
-  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas'];
+  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais'];
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
@@ -1430,7 +1466,7 @@ function normalizarBD(){
   const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
-  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas'].forEach(k => {
+  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais'].forEach(k => {
     BD[k].forEach(x => { if(x && typeof x === 'object' && !x.id) x.id = uid(); });
   });
   BD.custos.forEach(c => { c.val = parseNum(c.val); });
@@ -1516,6 +1552,8 @@ function normalizarBD(){
   });
   BD.despesas.forEach(d => { d.valor = parseNum(d.valor); });
   BD.compras.forEach(c => { c.valor = parseNum(c.valor); c.cnpj = c.cnpj || ''; c.numero = c.numero || ''; c.mercado = c.mercado || ''; });
+  BD.locais.forEach(l => { if(!l.tipo) l.tipo = 'Fixo'; if(l.obs === undefined) l.obs = ''; });
+  if(BD.config.localAtual && !BD.locais.some(l => l.id === BD.config.localAtual)) BD.config.localAtual = '';
   BD.produtos.forEach(p => { p.preco = parseNum(p.preco); p.custo = parseNum(p.custo !== undefined ? p.custo : p.custoEstimado);
     if(p.sugerir === undefined) p.sugerir = true; if(p.totem === undefined) p.totem = true; });
   BD.fichas.forEach(f => { if(f.sugerir === undefined) f.sugerir = false; if(f.totem === undefined) f.totem = true;
@@ -1550,11 +1588,14 @@ function aplicarTema(){
   else if(t === 'escuro') document.documentElement.setAttribute('data-theme', 'dark');
   else document.documentElement.removeAttribute('data-theme');
 }
-function alternarTema(){
-  const ordem = ['auto', 'claro', 'escuro'];
-  BD.config.tema = ordem[(ordem.indexOf(BD.config.tema) + 1) % 3];
-  aplicarTema(); salvar('config');
-  toast('Tema: ' + {auto: 'automático', claro: 'claro', escuro: 'escuro'}[BD.config.tema]);
+function abrirMenuTema(){
+  const atual = BD.config.tema || 'auto';
+  const opc = [['auto', '🔁 Automático (segue o aparelho)'], ['claro', '🔆 Claro'], ['escuro', '🌙 Escuro']];
+  abrirModal({titulo: '🎨 Aparência', html: '<div class="grupo-botoes" style="flex-direction:column">' + opc.map(([v, t]) => '<button type="button" class="btn ' + (v === atual ? '' : 'cinza') + '" style="justify-content:flex-start" onclick="definirTema(\'' + v + '\')">' + t + (v === atual ? ' ✓' : '') + '</button>').join('') + '</div><p class="dica" style="margin-top:12px">Quer trocar a cor principal (o verde) e o logotipo? Vá em <b>Custos → 🏷️ Identidade do negócio</b>.</p>', botoes: [{rotulo: 'Fechar', classe: 'cinza'}]});
+}
+function definirTema(t){
+  BD.config.tema = t; aplicarTema(); salvar('config'); fecharTodosModais();
+  toast('Tema: ' + {auto: 'automático', claro: 'claro', escuro: 'escuro'}[t], 'ok');
 }
 
 
@@ -2523,6 +2564,38 @@ function nomesComponentesConhecidos(){
   BD.fichas.forEach(f => { f.componentes.forEach(c => add(c.nome)); f.embalagemViagem.forEach(c => add(c.nome)); f.embalagemLocal.forEach(c => add(c.nome)); });
   return Array.from(set.values()).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
+/* ---------- diagnóstico: onde um componente é usado, e nomes parecidos que podem estar causando estoque errado ---------- */
+const tokenSet = s => new Set(norm(s).split(/\s+/).filter(Boolean));
+function pareceSimilar(a, b){
+  if(norm(a) === norm(b)) return false;
+  const A = tokenSet(a), B = tokenSet(b); let inter = 0; A.forEach(x => { if(B.has(x)) inter++; });
+  const uniao = new Set([...A, ...B]).size;
+  return uniao > 0 && inter / uniao >= 0.5;
+}
+function usosDoComponente(nome){
+  const n = norm(nome); const usos = [];
+  BD.fichas.forEach(f => {
+    const c = f.componentes.find(x => norm(x.nome) === n); if(c) usos.push({ficha: f.nome, onde: 'componente', qtd: c.qtd});
+    const v = f.embalagemViagem.find(x => norm(x.nome) === n); if(v) usos.push({ficha: f.nome, onde: 'embalagem viagem', qtd: v.qtd});
+    const l = f.embalagemLocal.find(x => norm(x.nome) === n); if(l) usos.push({ficha: f.nome, onde: 'embalagem local', qtd: l.qtd});
+  });
+  return usos;
+}
+function nomesParecidosCom(nome){
+  const out = [];
+  BD.fichas.forEach(f => [...f.componentes, ...f.embalagemViagem, ...f.embalagemLocal].forEach(item => { if(pareceSimilar(item.nome, nome)) out.push(f.nome + ': "' + item.nome + '"'); }));
+  return Array.from(new Set(out));
+}
+function verUsosComponente(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  const usos = usosDoComponente(c.nome); const parecidos = nomesParecidosCom(c.nome);
+  abrirModal({titulo: '🔍 Onde "' + c.nome + '" é usado', botoes: [{rotulo: 'Fechar', classe: 'cinza'}], html:
+    (usos.length ? '<div class="tabela-wrap"><table class="tabela"><thead><tr><th>Ficha</th><th>Onde</th><th class="n">Qtd por unidade vendida</th></tr></thead><tbody>' +
+      usos.map(u => '<tr><td>' + esc(u.ficha) + '</td><td>' + esc(u.onde) + '</td><td class="n">' + fmt(u.qtd, 2) + '</td></tr>').join('') + '</tbody></table></div>'
+      : '<div class="vazio">Nenhuma ficha desconta este componente hoje — ele só muda quando você repõe ou registra perda manualmente.</div>') +
+    (parecidos.length ? '<div class="aviso erro-a" style="margin-top:12px">⚠️ <b>Nomes parecidos, mas diferentes</b>, achados em outras fichas — se algum destes deveria ser "' + esc(c.nome) + '", corrija o nome na ficha (aba Fichas), senão essas vendas não descontam este componente:<br>' + parecidos.map(esc).join('<br>') + '</div>' : '')
+  });
+}
 function atualizarDatalistComponentes(){
   $('listaComponentesSugeridos').innerHTML = nomesComponentesConhecidos().map(n => '<option value="' + esc(n) + '"></option>').join('');
 }
@@ -2647,7 +2720,7 @@ function renderEstoque(){
   $('tabelaComponentesEstoque').innerHTML = lista.length ? lista.map(c => {
     const st = c.qtd <= 0 ? '<span class="tag vermelho">esgotado</span>' : (c.qtd <= c.min ? '<span class="tag laranja">baixo</span>' : '');
     return '<tr' + (c.qtd <= 0 ? ' class="alerta-l"' : '') + '><td><b>' + esc(c.nome) + '</b> ' + st + '</td><td class="n ' + (c.qtd < 0 ? 'erro' : '') + '"><b>' + fmt(c.qtd, Number.isInteger(c.qtd) ? 0 : 2) + '</b></td><td class="n">' + fmt(c.min, 0) + '</td>' +
-      '<td class="acoes"><button class="btn pequeno" onclick="reporEstoque(\'' + c.id + '\')">+ Repor</button><button class="btn cinza pequeno" onclick="definirEstoque(\'' + c.id + '\')">Definir</button><button class="btn laranja pequeno" onclick="registrarPerda(\'' + c.id + '\')">Perda</button><button class="btn cinza pequeno" onclick="editarComponenteEstoque(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirComponenteEstoque(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+      '<td class="acoes"><button class="btn pequeno" onclick="reporEstoque(\'' + c.id + '\')">+ Repor</button><button class="btn cinza pequeno" onclick="definirEstoque(\'' + c.id + '\')">Definir</button><button class="btn laranja pequeno" onclick="registrarPerda(\'' + c.id + '\')">Perda</button><button class="btn cinza pequeno" onclick="verUsosComponente(\'' + c.id + '\')" aria-label="Onde é usado" title="Ver em quais fichas este componente é descontado">🔍</button><button class="btn cinza pequeno" onclick="editarComponenteEstoque(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirComponenteEstoque(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum componente cadastrado. Cadastre o que você leva para vender.</div></td></tr>';
   const pend = nomesComponentesConhecidos().filter(n => !componenteEstoque(n));
   $('sugestoesComponentes').innerHTML = pend.length ? '<div class="aviso alerta-a">💡 Vinculados nas fichas mas <b>sem estoque cadastrado</b> (não são controlados): ' + pend.map(n => '<button class="btn cinza pequeno" style="margin:2px" onclick="preencherComponente(this.dataset.n)" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>' : '';
@@ -2743,12 +2816,25 @@ function faltaEstoquePara1(tipo, id){
   const cons = consumoUnitario({tipo, id}, consumoAtual);
   return faltasDeEstoque(cons.map(c => ({nome: c.nome, qtd: c.qtd}))).length > 0;
 }
+// Quantas unidades ainda dá pra vender AGORA, olhando o componente mais escasso. null = não controlado (ilimitado).
+function disponivelProduto(tipo, id, tipoConsumo){
+  const prod = tipo === 'meio' ? {tipo: 'meio'} : {tipo, id};
+  const cons = consumoUnitario(prod, tipoConsumo);
+  let min = null;
+  cons.forEach(c => {
+    const comp = componenteEstoque(c.nome);
+    if(comp && c.qtd > 0){ const d = Math.floor((comp.qtd + 1e-9) / c.qtd); min = (min === null) ? d : Math.min(min, d); }
+  });
+  return min;
+}
 function renderGradeProdutos(){
   const q = norm($('buscaProdVenda').value);
   const cat = catalogoVenda().filter(p => !q || norm(p.nome).includes(q));
   $('gradeProdutos').innerHTML = cat.length ? cat.map(p => {
     const semEst = faltaEstoquePara1(p.tipo, p.id);
-    return '<button type="button" class="prod-btn' + (p.preco > 0 ? '' : ' sem-preco') + (semEst ? ' sem-estoque' : '') + '" onclick="adicionarProdutoRapido(\'' + p.tipo + '\',\'' + p.id + '\')"><b>' + esc(p.nome) + '</b><span>' + (p.preco > 0 ? brl(p.preco) : 'definir preço') + (semEst ? ' • sem estoque' : '') + '</span></button>';
+    const disp = disponivelProduto(p.tipo, p.id, consumoAtual);
+    const dispTxt = disp === null ? '' : '<span class="prod-disp' + (disp <= 3 ? ' baixo' : '') + '">' + Math.max(0, disp) + '</span>';
+    return '<button type="button" class="prod-btn' + (p.preco > 0 ? '' : ' sem-preco') + (semEst ? ' sem-estoque' : '') + '" onclick="adicionarProdutoRapido(\'' + p.tipo + '\',\'' + p.id + '\')">' + dispTxt + '<b>' + esc(p.nome) + '</b><span>' + (p.preco > 0 ? brl(p.preco) : 'definir preço') + (semEst ? ' • sem estoque' : '') + '</span></button>';
   }).join('') : '<div class="vazio" style="grid-column:1/-1">Nenhum produto. Crie fichas técnicas com preço ou cadastre produtos simples.</div>';
 }
 function opcoesProdutosHTML(){
@@ -2870,6 +2956,7 @@ async function limparCarrinho(pedirConfirmacao = true){
   if(pedirConfirmacao && carrinhoAtual.length && !await confirmar('Cancelar o pedido atual?', {ok: 'Cancelar pedido', cancelar: 'Voltar', perigo: true})) return;
   carrinhoAtual = []; ['clienteNome', 'clienteTelefone', 'descontoValor', 'valorRecebido', 'valorPrimeira'].forEach(i => $(i).value = '');
   $('dividirPagamento').checked = false; $('pedidoPago').checked = true; alternarPagamento(); alternarDivisao();
+  if(pedirConfirmacao && COMANDA_ABERTA){ COMANDA_ABERTA = null; atualizarBannerComanda(); }
   renderCarrinho(); renderGradeProdutos();
 }
 function totaisCarrinho(){
@@ -2978,19 +3065,23 @@ function distribuirDesconto(itens, subtotal, desconto){
   return out;
 }
 // Cria as linhas do pedido (usado pelo balcão e pelo totem), baixa estoque e grava.
-function registrarPedido({itens, cliente, telefone, desconto = 0, pagamentos = null, origem = 'balcao', status = 'entregue', retirarEm = null, estimativaMin = null, estimativaBase = null, pagamentoPrevisto = ''}){
+function registrarPedido({itens, cliente, telefone, desconto = 0, pagamentos = null, origem = 'balcao', status = 'entregue', retirarEm = null, estimativaMin = null, estimativaBase = null, pagamentoPrevisto = '', pedidoExistente = null}){
   const subtotal = r2(soma(itens, c => c.valorUnit * c.quantidade));
-  let pedidoId = Date.now(); while(linhasDoPedido(pedidoId).length) pedidoId++;
-  const agora = Date.now(); const senha = proximaSenha(); const data = dataHoje(); const horario = horaAgora();
+  let pedidoId, senha, data, horario, clienteFinal, telefoneFinal;
+  const base = pedidoExistente ? linhasDoPedido(pedidoExistente)[0] : null;
+  if(base){ pedidoId = base.pedidoId; senha = base.senha; data = base.data; horario = base.horario; clienteFinal = cliente || base.cliente; telefoneFinal = telefone || base.telefone; }
+  else{ pedidoId = Date.now(); while(linhasDoPedido(pedidoId).length) pedidoId++; senha = proximaSenha(); data = dataHoje(); horario = horaAgora(); clienteFinal = cliente || 'Cliente sem nome'; telefoneFinal = telefone || ''; }
+  const agora = Date.now();
   const dist = distribuirDesconto(itens, subtotal, desconto);
   const linhas = itens.map((it, i) => {
     const valorTotal = r2(dist[i].bruto - dist[i].parte);
     const custoUnit = custoUnitItem(it);
-    const l = {id: uid(), pedidoId, senha, data, horario, cliente: cliente || 'Cliente sem nome', telefone: telefone || '', produto: it.produto, produtoId: it.produtoId, tipoProduto: it.tipo,
+    const l = {id: uid(), pedidoId, senha, data, horario, cliente: clienteFinal, telefone: telefoneFinal, produto: it.produto, produtoId: it.produtoId, tipoProduto: it.tipo,
       quantidade: it.quantidade, valorUnit: it.valorUnit, descontoValor: dist[i].parte, valorTotal, custoUnit, custoTotal: custoUnit * it.quantidade,
       tipoConsumo: it.tipoConsumo, observacao: it.obs || '', pago: false, formaPagamento: 'pendente', consumo: baixarConsumo(consumoDoItem(it)),
       origem, status, criadoEm: agora, viaSugestao: !!it.sug};
     if(it.tipo === 'meio'){ l.metade1 = it.metade1; l.metade2 = it.metade2; }
+    if(BD.config.localAtual) l.local = nomeLocalAtual();
     if(estimativaMin !== null) l.estimativaMin = estimativaMin;
     if(estimativaBase !== null) l.estimativaBase = estimativaBase;
     if(retirarEm) l.retirarEm = retirarEm;
@@ -3013,7 +3104,8 @@ async function finalizarVenda(){
   }
   const tot = totaisCarrinho();
   if(!(tot.total > 0)) return toast('O total do pedido precisa ser maior que zero.', 'alerta');
-  const pago = $('pedidoPago').checked;
+  const naComanda = !!COMANDA_ABERTA;
+  const pago = naComanda ? false : $('pedidoPago').checked;
   let pagamentos = null;
   if(pago){ pagamentos = lerPagamentos(tot.total); if(!pagamentos) return; }
   const rec = parseNum($('valorRecebido').value);
@@ -3023,14 +3115,43 @@ async function finalizarVenda(){
   const naFila = !!($('enviarFila') && $('enviarFila').checked);
   const est = naFila ? estimar(carrinhoAtual) : null;
   const r = registrarPedido({itens: carrinhoAtual, cliente, telefone, desconto: tot.desconto, pagamentos, origem: 'balcao', status: naFila ? 'novo' : 'entregue',
-    estimativaMin: est ? est.max : null, estimativaBase: est ? est.base : null});
+    estimativaMin: est ? est.max : null, estimativaBase: est ? est.base : null, pedidoExistente: COMANDA_ABERTA});
   if(BD.config.pdvNaFila !== naFila){ BD.config.pdvNaFila = naFila; salvar('config'); }
   ultimoPedidoImpresso = r.pedidoId;
-  const imprimir = $('imprimirAuto').checked;
+  const imprimir = $('imprimirAuto').checked && !naComanda;
   const trocoMsg = (dinheiroDevido > 0 && rec > dinheiroDevido) ? ' Troco: ' + brl(r2(rec - dinheiroDevido)) : '';
+  const foiAComanda = naComanda;
+  COMANDA_ABERTA = null; atualizarBannerComanda();
   limparCarrinho(false); renderVendas(true); atualizarBadges(); renderEstoque();
-  toast('Pedido nº ' + r.senha + ' registrado (' + brl(tot.total) + ').' + (est ? ' Previsão: ' + est.texto + '.' : '') + trocoMsg, 'ok', {ms: trocoMsg ? 9000 : 4000});
+  toast(foiAComanda ? 'Adicionado à comanda nº ' + r.senha + ' (' + brl(r2(soma(linhasDoPedido(r.pedidoId), l => l.valorTotal))) + ' no total).' : 'Pedido nº ' + r.senha + ' registrado (' + brl(tot.total) + ').' + (est ? ' Previsão: ' + est.texto + '.' : '') + trocoMsg, 'ok', {ms: trocoMsg ? 9000 : 4000});
   if(imprimir) imprimirComandaPedido(r.pedidoId);
+}
+
+/* ---------- comanda aberta: acrescentar itens a um pedido já criado e ainda não pago ---------- */
+let COMANDA_ABERTA = null;
+function atualizarBannerComanda(){
+  const box = $('bannerComanda'); if(!box) return;
+  const lp = $('linhaPedidoPago'); const bp = $('blocoPagamento');
+  if(!COMANDA_ABERTA){ box.classList.add('oculto'); box.innerHTML = ''; if(lp) lp.classList.remove('oculto'); if(bp) bp.classList.toggle('oculto', !$('pedidoPago').checked); return; }
+  const linhas = linhasDoPedido(COMANDA_ABERTA);
+  if(!linhas.length){ COMANDA_ABERTA = null; return atualizarBannerComanda(); }
+  const p = agruparPedidos(linhas)[0];
+  box.classList.remove('oculto');
+  box.innerHTML = '🧾 Adicionando à comanda' + (p.senha ? ' nº ' + p.senha : '') + ' — <b>' + esc(p.cliente) + '</b> (já tem ' + brl(p.total) + ', ainda pendente de pagamento) <button type="button" class="btn cinza pequeno" onclick="cancelarComandaAberta()" style="margin-left:8px">Cancelar</button>';
+  if(lp) lp.classList.add('oculto'); if(bp) bp.classList.add('oculto');
+}
+function cancelarComandaAberta(){ COMANDA_ABERTA = null; atualizarBannerComanda(); toast('Voltando a criar um pedido novo.', 'ok'); }
+function abrirEscolhaComanda(){
+  const pend = pedidosPendentes();
+  if(!pend.length) return toast('Não há pedidos pendentes de pagamento no momento.', 'alerta');
+  const linhas = pend.map(p => '<button type="button" class="btn cinza bloco" style="text-align:left;margin-top:6px" onclick="escolherComandaAberta(\'' + p.pedidoId + '\')"><b>' + (p.senha ? 'Nº ' + p.senha + ' — ' : '') + esc(p.cliente) + '</b><br><small class="suave">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join(', ') + ' • ' + brl(p.total) + '</small></button>').join('');
+  abrirModal({titulo: '🧾 Adicionar a qual pedido pendente?', html: '<div>' + linhas + '</div>', botoes: [{rotulo: 'Cancelar', classe: 'cinza'}]});
+}
+function escolherComandaAberta(pid){
+  COMANDA_ABERTA = pid; atualizarBannerComanda(); fecharTodosModais();
+  const p = agruparPedidos(linhasDoPedido(pid))[0];
+  if(p){ $('clienteNome').value = p.cliente; $('clienteTelefone').value = p.telefone || ''; }
+  toast('Ok! Adicione os produtos e finalize — eles entram nessa mesma comanda.', 'ok', {ms: 6000});
 }
 
 /* ---------- comanda ---------- */
@@ -3042,7 +3163,7 @@ function comandaHTML(pid){
   const status = p.pago ? 'PAGO' + formaTxt : (l0.pagamentoPrevisto === 'pix' ? '*** AGUARDA PIX ' + brl(p.total) + ' ***' : '*** COBRAR ' + brl(p.total) + ' ***');
   const prev = l0.estimativaMin && l0.criadoEm ? '<div class="prev">PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000) + '</div>' : '';
   const retirar = l0.retirarEm ? '<div class="prev">RETIRAR ÀS ' + horaDeMs(l0.retirarEm) + '</div>' : '';
-  let h = '<div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div>' + (totem ? '<div class="telefone-comanda">PEDIDO PELO TOTEM</div>' : '') + (p.senha ? '<div class="senha-c">Nº ' + p.senha + '</div>' : '') +
+  let h = '<div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div>' + (l0.local ? '<div class="telefone-comanda">📍 ' + esc(l0.local.toUpperCase()) + '</div>' : '') + (totem ? '<div class="telefone-comanda">PEDIDO PELO TOTEM</div>' : '') + (p.senha ? '<div class="senha-c">Nº ' + p.senha + '</div>' : '') +
     '<div class="data-hora">' + fmtData(p.data) + ' - ' + esc(p.horario) + '</div>' + prev + retirar + '<div class="linha"></div>' +
     '<div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + (p.telefone ? '<div class="telefone-comanda">Tel: ' + esc(p.telefone) + '</div>' : '') + '<div class="linha"></div>' +
     p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.observacao ? '<div class="obs">OBS: ' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
@@ -3216,7 +3337,7 @@ async function perderPedido(pid){
 
 /* venda retroativa: ver 13_retro.js */
 function renderVendasPagina(){
-  renderSelectsProdutos(); renderGradeProdutos(); renderCarrinho(); renderRetro();
+  renderSelectsProdutos(); renderGradeProdutos(); renderCarrinho(); renderRetro(); atualizarBannerComanda(); renderLocalAtualNaTela();
   if(!$('retroData').value) $('retroData').value = dataHoje();
   $('imprimirAuto').checked = BD.config.imprimirAuto !== false; if($('enviarFila')) $('enviarFila').checked = !!BD.config.pdvNaFila;
   definirConsumo(BD.config.consumoPadrao || consumoAtual);
@@ -3662,6 +3783,11 @@ function diagnosticar(){
   if(semCusto.length) add('aviso', '<b>' + semCusto.length + ' produto(s) simples sem custo:</b> ' + semCusto.map(p => esc(p.nome)).join(', ') + '. O lucro deles aparece como 100%.', [{r: 'Informar custo', js: "irPara('fichas')"}]);
   const semEst = nomesComponentesConhecidos().filter(n => !componenteEstoque(n));
   if(semEst.length) add('info', 'Componentes vinculados sem estoque cadastrado (não são controlados): ' + semEst.map(esc).join(', ') + '.', [{r: 'Cadastrar no estoque', js: "irPara('estoque')"}]);
+  const nomesTodos = nomesComponentesConhecidos(); const paresVistos = new Set(); const paresSuspeitos = [];
+  for(let i = 0; i < nomesTodos.length; i++) for(let j = i + 1; j < nomesTodos.length; j++){
+    if(pareceSimilar(nomesTodos[i], nomesTodos[j])){ const k = [nomesTodos[i], nomesTodos[j]].sort().join('|'); if(!paresVistos.has(k)){ paresVistos.add(k); paresSuspeitos.push(nomesTodos[i] + ' / ' + nomesTodos[j]); } }
+  }
+  if(paresSuspeitos.length) add('erro', '<b>Nomes de componente parecidos, mas diferentes:</b> ' + paresSuspeitos.map(esc).join('; ') + '. Isso costuma fazer o estoque sobrar em fração (ex.: 23,5 em vez de um número inteiro), porque uma ficha desconta um nome e outra desconta outro. Use a lupa 🔍 na linha do componente (aba Estoque) para ver quem usa cada um.', [{r: 'Abrir estoque', js: "irPara('estoque')"}]);
   const antigas = pedidosPendentes().filter(p => p.data < dataHoje());
   if(antigas.length) add('aviso', '<b>' + antigas.length + ' pedido(s) pendente(s) de dias anteriores</b> somando ' + brl(soma(antigas, p => p.total)) + '.', [{r: 'Ver no caixa', js: "irPara('caixa')"}]);
   const nomes = {}; BD.insumos.forEach(i => { const k = norm(i.nome); (nomes[k] = nomes[k] || []).push(i.nome); });
@@ -4240,7 +4366,7 @@ const resumoLinhaRetro = v => fmtData(v.data) + ' — ' + v.quantidade + '× ' +
 /* ---------- lançar (com aviso de duplicado e desfazer) ---------- */
 async function lancarVendaRetroativa(){
   const data = $('retroData').value; const val = $('retroProduto').value; const qtd = Math.max(1, Math.round(parseNum($('retroQtd').value, 1)));
-  const forma = $('retroForma').value; const consumo = $('retroConsumo').value;
+  const forma = $('retroForma').value; const consumo = $('retroConsumo').value; const localId = $('retroLocal') ? $('retroLocal').value : '';
   if(!data) return toast('Escolha a data da venda.', 'alerta');
   if(!val) return toast('Escolha o produto.', 'alerta');
   const [tipo, id] = val.split(':'); const p = acharProduto(tipo, id); if(!p) return;
@@ -4252,6 +4378,7 @@ async function lancarVendaRetroativa(){
   const custoUnit = custoUnitDoProduto(tipo, id, consumo);
   const linha = {id: uid(), pedidoId: 'r' + uid(), senha: 0, data, horario: '', cliente: 'Venda histórica', telefone: '', produto: p.nome, produtoId: id, tipoProduto: tipo,
     quantidade: qtd, valorUnit: vu, descontoValor: 0, valorTotal: r2(vu * qtd), custoUnit, custoTotal: custoUnit * qtd, tipoConsumo: consumo, observacao: '', retroativo: true, consumo: [], lancadoEm: Date.now()};
+  const localObj = localId ? BD.locais.find(l => l.id === localId) : null; if(localObj) linha.local = localObj.nome;
   aplicarPagamento([linha], [{forma, valor: linha.valorTotal}], data);
   BD.vendas.push(linha); salvarAgora('vendas');
   RETRO_DESTAQUE = linha.id; $('retroQtd').value = 1; $('retroValorUnit').value = '';
@@ -4314,6 +4441,7 @@ function editarRetro(id){
     {id: 'valor', rotulo: 'Valor unitário (R$)', tipo: 'numero', valor: l.valorUnit},
     {id: 'consumo', rotulo: 'Consumo', tipo: 'select', valor: l.tipoConsumo || 'viagem', opcoes: [{v: 'viagem', t: '🥡 Viagem'}, {v: 'local', t: '🍽️ Local'}]},
     {id: 'forma', rotulo: 'Forma de pagamento', tipo: 'select', valor: formaLinha(l), opcoes: FORMAS.map(f => ({v: f, t: rotForma[f]}))},
+    {id: 'localId', rotulo: 'Local', tipo: 'select', valor: (BD.locais.find(x => x.nome === l.local) || {}).id || '', opcoes: [{v: '', t: '-- Não informado --'}].concat(BD.locais.map(x => ({v: x.id, t: x.nome})))},
     {id: 'custo', rotulo: 'Custo unitário (R$) — deixe como está para recalcular automaticamente', tipo: 'numero', valor: l.custoUnit}
   ], salvar: async v => {
     const qtd = Math.round(v.qtd);
@@ -4325,6 +4453,7 @@ function editarRetro(id){
     if(v.produto !== atualVal && p){ l.produto = p.nome; l.produtoId = pid; l.tipoProduto = tipo; }
     l.custoUnit = (mudouProd && Math.abs((v.custo ?? 0) - l.custoUnit) < 1e-9 && p) ? custoUnitDoProduto(tipo, pid, v.consumo) : (v.custo ?? l.custoUnit);
     l.data = v.data; l.quantidade = qtd; l.valorUnit = v.valor; l.valorTotal = r2(v.valor * qtd); l.descontoValor = 0; l.custoTotal = l.custoUnit * qtd; l.tipoConsumo = v.consumo;
+    const loc = BD.locais.find(x => x.id === v.localId); if(loc) l.local = loc.nome; else delete l.local;
     aplicarPagamento([l], [{forma: v.forma, valor: l.valorTotal}], l.data); l.editadoEm = Date.now();
     RETRO_DESTAQUE = l.id; salvarAgora('vendas'); renderRetro(); renderVendas(true); toast('✔ Corrigido: ' + resumoLinhaRetro(l), 'ok');
   }});
@@ -4578,9 +4707,110 @@ function aplicarVisibilidadePlano(){
 
 
 /* =====================================================================
+   LOCAIS DE VENDA — condomínio fixo, trailer, tenda, feira etc.
+   Cada venda registrada carrega o nome do local selecionado no momento
+   (como uma foto — renomear o local depois não muda o histórico).
+   ===================================================================== */
+const TIPOS_LOCAL = ['Fixo', 'Trailer', 'Tenda', 'Feira', 'Outro'];
+const nomeLocalAtual = () => { const l = BD.locais.find(x => x.id === BD.config.localAtual); return l ? l.nome : ''; };
+
+function adicionarLocal(){
+  const nome = $('localNome').value.trim(); const tipo = $('localTipo').value; const obs = $('localObs').value.trim();
+  if(!nome) return toast('Informe o nome do local.', 'alerta');
+  if(BD.locais.some(l => norm(l.nome) === norm(nome))) return toast('Já existe um local com esse nome.', 'alerta');
+  const l = {id: uid(), nome, tipo, obs};
+  BD.locais.push(l);
+  if(!BD.config.localAtual){ BD.config.localAtual = l.id; salvar('config'); }
+  ['localNome', 'localObs'].forEach(i => $(i).value = '');
+  salvar('locais'); renderLocais(); toast('Local cadastrado' + (BD.config.localAtual === l.id ? ' e já selecionado como atual.' : '.'), 'ok');
+}
+function editarLocal(id){
+  const l = BD.locais.find(x => x.id === id); if(!l) return;
+  formModal({titulo: 'Editar local', campos: [
+    {id: 'nome', rotulo: 'Nome', valor: l.nome},
+    {id: 'tipo', rotulo: 'Tipo', tipo: 'select', valor: l.tipo, opcoes: TIPOS_LOCAL.map(t => ({v: t, t}))},
+    {id: 'obs', rotulo: 'Observação', valor: l.obs}
+  ], salvar: v => {
+    if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
+    if(BD.locais.some(x => x.id !== l.id && norm(x.nome) === norm(v.nome))){ toast('Já existe outro local com esse nome.', 'alerta'); return false; }
+    l.nome = v.nome; l.tipo = v.tipo; l.obs = v.obs; salvar('locais'); renderLocais();
+    toast('Local atualizado. Vendas antigas mantêm o nome que o local tinha na época.', 'ok', {ms: 5000});
+  }});
+}
+async function excluirLocal(id){
+  const l = BD.locais.find(x => x.id === id); if(!l) return;
+  if(!await confirmar('Excluir "' + l.nome + '"? As vendas já registradas continuam mostrando esse local no histórico — só não vai mais aparecer para escolher em vendas novas.', {ok: 'Excluir', perigo: true})) return;
+  BD.locais = BD.locais.filter(x => x.id !== id);
+  if(BD.config.localAtual === id){ BD.config.localAtual = ''; salvar('config'); }
+  salvar('locais'); renderLocais();
+}
+function selecionarLocalDireto(id){
+  BD.config.localAtual = id; salvar('config'); renderLocais();
+  toast(id ? 'Vendendo agora em: ' + nomeLocalAtual() : 'Nenhum local selecionado.', 'ok');
+}
+function definirLocalAtual(){ selecionarLocalDireto($('localAtualSel').value); }
+function renderLocalAtualNaTela(){
+  const sel = $('localAtualSel');
+  if(sel){ const op = '<option value="">-- Nenhum selecionado --</option>' + BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(l => '<option value="' + l.id + '"' + (l.id === BD.config.localAtual ? ' selected' : '') + '>' + esc(l.nome) + '</option>').join(''); sel.innerHTML = op; }
+  const txt = $('localAtualTxt'); if(txt) txt.textContent = nomeLocalAtual() || 'nenhum (as vendas não vão ficar marcadas com local)';
+  const badge = $('localAtualBadge'); if(badge) badge.classList.toggle('oculto', !nomeLocalAtual());
+  const rsel = $('retroLocal');
+  if(rsel){ const atual = rsel.value; rsel.innerHTML = '<option value="">-- Não informado --</option>' + BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(l => '<option value="' + l.id + '">' + esc(l.nome) + '</option>').join(''); rsel.value = atual || BD.config.localAtual || ''; }
+}
+
+/* ---------- cadastro na aba Locais ---------- */
+function renderLocais(){
+  renderLocalAtualNaTela();
+  const lista = BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  $('tabelaLocais').innerHTML = lista.length ? lista.map(l =>
+    '<tr><td><b>' + esc(l.nome) + '</b>' + (l.id === BD.config.localAtual ? ' <span class="tag">vendendo agora</span>' : '') + '</td><td>' + esc(l.tipo) + '</td><td>' + esc(l.obs || '—') + '</td>' +
+    '<td class="acoes">' + (l.id === BD.config.localAtual ? '' : '<button class="btn pequeno" onclick="selecionarLocalDireto(\'' + l.id + '\')">Selecionar</button>') + '<button class="btn cinza pequeno" onclick="editarLocal(\'' + l.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirLocal(\'' + l.id + '\')" aria-label="Excluir">✕</button></td></tr>'
+  ).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum local cadastrado ainda. Cadastre os lugares onde você vende (feira, condomínios, etc.).</div></td></tr>';
+  renderComparativoLocais();
+}
+
+/* ---------- comparativo entre locais ---------- */
+let COMPARATIVO_LOCAIS = [];
+function vendasPeriodoLocal(per){
+  let de = '0000-00-00';
+  if(per === 'mes') de = mesAtual() + '-01';
+  else if(per === '3m'){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 2); de = dataLocal(d); }
+  return BD.vendas.filter(v => (v.data || '') >= de);
+}
+function renderComparativoLocais(){
+  if(!$('tabelaComparativoLocais')) return;
+  const per = $('localPeriodo') ? $('localPeriodo').value : 'mes';
+  const linhas = vendasPeriodoLocal(per);
+  const grupos = new Map();
+  linhas.forEach(v => { const k = v.local || 'Sem local definido'; if(!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(v); });
+  COMPARATIVO_LOCAIS = Array.from(grupos.entries()).map(([nome, ls]) => {
+    const pedidos = agruparPedidos(ls).length;
+    const fat = soma(ls, l => l.valorTotal), custo = soma(ls, l => l.custoTotal), taxas = soma(ls, taxaVenda);
+    const visitas = new Set(ls.map(l => l.data)).size;
+    return {nome, linhas: ls, fat, lucro: fat - custo - taxas, pedidos, ticket: pedidos ? fat / pedidos : 0, visitas, mediaVisita: visitas ? fat / visitas : 0};
+  }).sort((a, b) => b.fat - a.fat);
+  $('tabelaComparativoLocais').innerHTML = COMPARATIVO_LOCAIS.length ? COMPARATIVO_LOCAIS.map((x, i) =>
+    '<tr' + (x.nome === 'Sem local definido' ? ' class="alerta-l"' : '') + '><td><b>' + esc(x.nome) + '</b></td><td class="n">' + x.visitas + '</td><td class="n"><b>' + brl(x.fat) + '</b></td><td class="n ' + (x.lucro < 0 ? 'erro' : '') + '">' + brl(x.lucro) + '</td><td class="n">' + brl(x.ticket) + '</td><td class="n">' + brl(x.mediaVisita) + '</td><td><button class="btn cinza pequeno" onclick="verDetalheLocal(' + i + ')">Ver</button></td></tr>'
+  ).join('') : '<tr><td colspan="7"><div class="vazio">Nenhuma venda no período.</div></td></tr>';
+  if(!COMPARATIVO_LOCAIS.length) $('painelDetalheLocal').innerHTML = '';
+}
+function verDetalheLocal(i){
+  const x = COMPARATIVO_LOCAIS[i]; if(!x) return;
+  const porData = new Map(); x.linhas.forEach(l => porData.set(l.data, (porData.get(l.data) || 0) + l.valorTotal));
+  const datas = Array.from(porData.keys()).sort();
+  const porProduto = new Map(); x.linhas.forEach(l => porProduto.set(l.produto, (porProduto.get(l.produto) || 0) + l.quantidade));
+  const topProdutos = Array.from(porProduto.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  $('painelDetalheLocal').innerHTML = '<div class="painel"><h2>📍 ' + esc(x.nome) + '</h2>' +
+    '<div class="grade">' + cardHTML('Faturamento no período', brl(x.fat)) + cardHTML('Lucro', brl(x.lucro), '', x.lucro < 0 ? 'vermelho' : '') + cardHTML('Visitas (dias distintos)', x.visitas) + cardHTML('Faturamento médio por visita', brl(x.mediaVisita)) + '</div>' +
+    (datas.length > 1 ? '<h3>Evolução por visita</h3>' + graficoBarras('Faturamento por data — ' + x.nome, datas.map(d => ({rot: fmtData(d).slice(0, 5), v: porData.get(d)}))) : '') +
+    '<h3>Produtos mais vendidos aqui</h3>' + (topProdutos.length ? topProdutos.map(([n, q]) => '<div class="linha-kv"><span>' + esc(n) + '</span><b>' + fmt(q, 0) + ' un</b></div>').join('') : '<div class="vazio">Sem vendas.</div>') + '</div>';
+}
+
+
+/* =====================================================================
    NAVEGAÇÃO e INICIALIZAÇÃO
    ===================================================================== */
-const PAGINAS = ['dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
+const PAGINAS = ['dashboard', 'vendas', 'locais', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
 let _pagina = 'dashboard';
 const paginaAtual = () => _pagina;
 
@@ -4602,6 +4832,7 @@ function renderPagina(id){
     switch(id){
       case 'dashboard': renderDashboard(); break;
       case 'vendas': renderVendasPagina(); break;
+      case 'locais': renderLocais(); break;
       case 'fila': renderFila(); break;
       case 'atendimento': renderAtendimento(); break;
       case 'caixa': renderCaixa(); break;
