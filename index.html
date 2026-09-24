@@ -354,9 +354,9 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 </header>
 <div id="faixaAvisos" role="status"></div>
 <nav class="navegacao" id="nav" aria-label="Seções">
+  <button class="nav-btn" data-p="locais" onclick="irPara('locais')">📍 Locais</button>
   <button class="nav-btn" data-p="dashboard" onclick="irPara('dashboard')">📊 Painel</button>
   <button class="nav-btn" data-p="vendas" onclick="irPara('vendas')">🛒 Vendas</button>
-  <button class="nav-btn" data-p="locais" onclick="irPara('locais')">📍 Locais</button>
   <button class="nav-btn" data-p="fila" onclick="irPara('fila')">👨‍🍳 Fila<span class="selo" id="seloFila">0</span></button>
   <button class="nav-btn" data-p="caixa" onclick="irPara('caixa')">💵 Caixa<span class="selo" id="seloCaixa">0</span></button>
   <button class="nav-btn" data-p="atendimento" onclick="irPara('atendimento')">⏱️ Atendimento</button>
@@ -3818,10 +3818,22 @@ function renderDiagnostico(){
    ===================================================================== */
 const STATUS_ORDEM = ['novo', 'preparo', 'pronto', 'entregue'];
 const statusLinha = l => l.status || 'entregue';
-const statusPedido = p => statusLinha(p.linhas[0]);
+// O "status" do pedido inteiro é o da linha MENOS avançada (a que ainda precisa de atenção).
+// Isso importa quando se acrescenta um item novo a uma comanda que já tinha algo pronto/entregue:
+// o pedido volta a aparecer em "Novos" para a cozinha ver o item novo, sem mexer no que já foi feito.
+function statusPedido(p){
+  let melhor = STATUS_ORDEM.length - 1;
+  p.linhas.forEach(l => { const i = STATUS_ORDEM.indexOf(statusLinha(l)); if(i >= 0 && i < melhor) melhor = i; });
+  return STATUS_ORDEM[melhor];
+}
 const origemPedido = p => p.linhas[0].origem || 'balcao';
 const aguardandoPagamento = p => !p.pago && origemPedido(p) === 'totem' && !!BD.config.totemExigePagamento && statusPedido(p) === 'novo';
-const pedidosAtivos = () => agruparPedidos(BD.vendas.filter(v => v.status && v.status !== 'entregue' && !v.retroativo));
+// Agrupa por pedidoId inteiro (não corta linhas já entregues) sempre que pelo menos uma linha ainda estiver ativa,
+// para o cartão da fila mostrar a comanda completa (inclusive o que já foi entregue dela).
+const pedidosAtivos = () => {
+  const idsAtivos = new Set(BD.vendas.filter(v => v.status && v.status !== 'entregue' && !v.retroativo).map(v => v.pedidoId));
+  return agruparPedidos(BD.vendas.filter(v => v.status && !v.retroativo && idsAtivos.has(v.pedidoId)));
+};
 let FILA_MODAL = null;
 
 /* ---------- tempo de preparo e estimativa de espera ---------- */
@@ -3873,6 +3885,7 @@ function estimar(itens){
 function mudarStatus(pid, status){
   const agora = Date.now();
   linhasDoPedido(pid).forEach(l => {
+    if(statusLinha(l) === 'entregue' && status !== 'entregue') return; // já foi entregue: não desfaz ao avançar outro item da mesma comanda
     l.status = status;
     if(status === 'novo'){ delete l.iniciadoEm; delete l.prontoEm; delete l.entregueEm; }
     if(status === 'preparo'){ l.iniciadoEm = l.iniciadoEm || agora; delete l.prontoEm; delete l.entregueEm; }
@@ -3888,9 +3901,29 @@ function iniciarPedido(pid){
   mudarStatus(pid, 'preparo');
 }
 function prontoPedido(pid){ mudarStatus(pid, 'pronto'); const p = pedidoPorId(pid); if(p) chamarSenha(p); }
-function entregarPedido(pid){
+function escolherEntrega(p){
+  return new Promise(res => {
+    let feito = false;
+    abrirModal({
+      titulo: '📦 Entregar' + (p.senha ? ' — nº ' + p.senha : '') + ' — ' + esc(p.cliente),
+      html: '<p>Total do pedido: <b>' + brl(p.total) + '</b>. Ainda não foi pago.</p><p class="dica">Se o cliente vai continuar pedindo, entregue agora e receba tudo junto quando ele terminar.</p>',
+      botoes: [
+        {rotulo: 'Cancelar', classe: 'cinza', fn: () => { feito = true; res('cancelar'); }},
+        {rotulo: '📦 Entregar, cobrar depois', classe: 'laranja', fn: () => { feito = true; res('depois'); }},
+        {rotulo: '💰 Receber e entregar', fn: () => { feito = true; res('agora'); }}
+      ],
+      aoFechar: () => { if(!feito) res('cancelar'); }
+    });
+  });
+}
+async function entregarPedido(pid){
   const p = pedidoPorId(pid); if(!p) return;
-  if(!p.pago) return receberPedido(pid, 'dinheiro', () => { mudarStatus(pid, 'entregue'); toast('Pedido entregue.', 'ok'); });
+  if(!p.pago){
+    const acao = await escolherEntrega(p);
+    if(acao === 'agora') return receberPedido(pid, 'dinheiro', () => { mudarStatus(pid, 'entregue'); toast('Pedido entregue.', 'ok'); });
+    if(acao === 'depois'){ mudarStatus(pid, 'entregue'); toast('Pedido nº ' + (p.senha || '') + ' entregue. Pagamento continua pendente — não esqueça de receber depois.', 'alerta', {ms: 8000}); }
+    return;
+  }
   mudarStatus(pid, 'entregue'); toast('Pedido nº ' + (p.senha || '') + ' entregue.', 'ok');
 }
 function voltarPedido(pid){
@@ -3925,7 +3958,7 @@ function acoesFila(p){
   if(aguardandoPagamento(p)) return b('💰 Receber' + (pixPrev ? ' (PIX)' : ''), "receberPedido('" + pid + "','" + (pixPrev ? 'pix' : 'dinheiro') + "')") + b('✕ Cancelar', "excluirPedido('" + pid + "')", 'vermelho');
   if(st === 'novo') return b('🔥 Iniciar', "iniciarPedido('" + pid + "')") + b('✏️', "editarPedido('" + pid + "')", 'cinza') + b('✕', "excluirPedido('" + pid + "')", 'vermelho');
   if(st === 'preparo') return b('✅ Pronto', "prontoPedido('" + pid + "')") + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('✏️', "editarPedido('" + pid + "')", 'cinza') + b('🗑️ Perda', "perderPedido('" + pid + "')", 'vermelho');
-  if(st === 'pronto') return b('📦 Entregar' + (p.pago ? '' : ' e receber'), "entregarPedido('" + pid + "')") + b('🔔', "chamarDeNovo('" + pid + "')", 'laranja') + (p.telefone ? b('💬', "abrirWhatsApp('" + pid + "')", 'cinza') : '') + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('🗑️ Perda', "perderPedido('" + pid + "')", 'vermelho');
+  if(st === 'pronto') return b('📦 Entregar', "entregarPedido('" + pid + "')") + b('🔔', "chamarDeNovo('" + pid + "')", 'laranja') + (p.telefone ? b('💬', "abrirWhatsApp('" + pid + "')", 'cinza') : '') + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('🗑️ Perda', "perderPedido('" + pid + "')", 'vermelho');
   return '';
 }
 function cardFilaHTML(p){
@@ -4810,7 +4843,7 @@ function verDetalheLocal(i){
 /* =====================================================================
    NAVEGAÇÃO e INICIALIZAÇÃO
    ===================================================================== */
-const PAGINAS = ['dashboard', 'vendas', 'locais', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
+const PAGINAS = ['locais', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
 let _pagina = 'dashboard';
 const paginaAtual = () => _pagina;
 
