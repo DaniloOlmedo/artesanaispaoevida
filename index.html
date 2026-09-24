@@ -896,6 +896,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <label class="linha"><input type="checkbox" id="cfgSemEstoque" onchange="salvarConfig()"> Permitir vender mesmo com estoque insuficiente (apenas avisa)</label>
     <label class="linha"><input type="checkbox" id="cfgBackupFechar" onchange="salvarConfig()"> Baixar backup automaticamente ao fechar o dia</label>
     <label class="linha"><input type="checkbox" id="cfgValoresComanda" onchange="salvarConfig()"> Mostrar valores (total) na comanda impressa</label>
+    <div class="bloco-calc"><div><label for="cfgVias">Vias impressas em cada comanda</label><select id="cfgVias" onchange="salvarConfig()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente, para levar/pendurar)</option></select></div></div>
   </div>
 
   <div id="planoResumo"></div>
@@ -932,7 +933,6 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <label class="linha"><input type="checkbox" id="cfgTotemExige" onchange="salvarConfigTotem()"> Só iniciar o preparo depois de receber o pagamento (pedidos do totem)</label>
     <label class="linha"><input type="checkbox" id="cfgTotemImprimir" onchange="salvarConfigTotem()"> Imprimir a comanda automaticamente quando o cliente enviar</label>
     <label class="linha"><input type="checkbox" id="cfgPdvFila" onchange="salvarConfigTotem()"> Pedidos feitos no balcão também entram na fila da cozinha</label>
-    <div class="bloco-calc"><div><label for="cfgTotemVias">Vias impressas do pedido do totem</label><select id="cfgTotemVias" onchange="salvarConfigTotem()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente)</option></select></div></div>
     <h3>PIX no totem (opcional)</h3>
     <div class="aviso alerta-a">O totem mostra o QR do PIX com o valor, mas <b>o sistema não sabe se o cliente pagou</b>: você confirma o recebimento na Fila (botão "Receber (PIX)") olhando o app do banco. Teste antes com R$ 0,01.</div>
     <div class="bloco-calc">
@@ -1869,11 +1869,13 @@ function carregarConfigNaTela(){
   const c = BD.config;
   $('cfgArredondar').value = c.arredondar; $('cfgTaxaBase').value = c.taxaBase; $('cfgVolume').value = c.volumeMensal || '';
   $('cfgSemEstoque').checked = !!c.semEstoque; $('cfgBackupFechar').checked = !!c.backupFechar; $('cfgValoresComanda').checked = !!c.valoresComanda;
+  $('cfgVias').value = String(c.totemVias || 2);
 }
 function salvarConfig(){
   const c = BD.config;
   c.arredondar = $('cfgArredondar').value; c.taxaBase = $('cfgTaxaBase').value; c.volumeMensal = parseNum($('cfgVolume').value);
   c.semEstoque = $('cfgSemEstoque').checked; c.backupFechar = $('cfgBackupFechar').checked; c.valoresComanda = $('cfgValoresComanda').checked;
+  c.totemVias = $('cfgVias').value === '1' ? 1 : 2;
   recalcularTudo(); salvar('config', 'fichas');
 }
 
@@ -3168,7 +3170,7 @@ function comandaHTML(pid){
     '<div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + (p.telefone ? '<div class="telefone-comanda">Tel: ' + esc(p.telefone) + '</div>' : '') + '<div class="linha"></div>' +
     p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.observacao ? '<div class="obs">OBS: ' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
     '<div class="linha"></div><div class="total">' + status + (BD.config.valoresComanda ? '<br>TOTAL ' + brl(p.total) : '') + '</div>';
-  if(totem && BD.config.totemVias === 2){
+  if(BD.config.totemVias === 2){
     h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div><div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div><div class="senha-c">Nº ' + p.senha + '</div><div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + prev + retirar +
       '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
       '<div class="via-msg">' + esc(BD.config.totemMensagem || 'Aguarde ser chamado pela senha.') + '</div>';
@@ -4144,7 +4146,7 @@ function testarPix(){
 function carregarConfigTotemNaTela(){
   const c = BD.config; const v = (id, x) => { const el = $(id); if(el) el.value = x ?? ''; }; const k = (id, x) => { const el = $(id); if(el) el.checked = !!x; };
   v('cfgTotemNome', c.totemNome); v('cfgTotemMsg', c.totemMensagem); v('cfgTotemPin', c.totemPin); v('cfgCapacidade', c.capacidade); v('cfgTempoBase', c.tempoBase); v('cfgTempoFicha', c.tempoPadraoFicha);
-  k('cfgCalibrar', c.calibrar); k('cfgVoz', c.voz); k('cfgTotemExige', c.totemExigePagamento); k('cfgTotemImprimir', c.totemImprimir); v('cfgTotemVias', String(c.totemVias)); v('cfgTotemTimeout', c.totemTimeout); v('cfgTotemRetorno', c.totemRetorno);
+  k('cfgCalibrar', c.calibrar); k('cfgVoz', c.voz); k('cfgTotemExige', c.totemExigePagamento); k('cfgTotemImprimir', c.totemImprimir); v('cfgTotemTimeout', c.totemTimeout); v('cfgTotemRetorno', c.totemRetorno);
   v('cfgTotemChips', (c.totemChips || []).join(', ')); v('cfgPixChave', c.pixChave); v('cfgPixNome', c.pixNome); v('cfgPixCidade', c.pixCidade); k('cfgPdvFila', c.pdvNaFila);
 }
 function salvarConfigTotem(){
@@ -4152,7 +4154,7 @@ function salvarConfigTotem(){
   c.totemNome = g('cfgTotemNome'); c.totemMensagem = g('cfgTotemMsg'); const pin = g('cfgTotemPin'); if(pin === '' || /^\d{4,6}$/.test(pin)) c.totemPin = pin;
   c.capacidade = Math.max(1, parseNum($('cfgCapacidade').value, 2)); c.tempoBase = Math.max(0, parseNum($('cfgTempoBase').value, 2)); c.tempoPadraoFicha = Math.max(0, parseNum($('cfgTempoFicha').value, 8));
   c.calibrar = $('cfgCalibrar').checked; c.voz = $('cfgVoz').checked; c.totemExigePagamento = $('cfgTotemExige').checked; c.totemImprimir = $('cfgTotemImprimir').checked;
-  c.totemVias = $('cfgTotemVias').value === '1' ? 1 : 2; c.totemTimeout = Math.max(20, parseNum($('cfgTotemTimeout').value, 75)); c.totemRetorno = Math.max(8, parseNum($('cfgTotemRetorno').value, 30));
+  c.totemTimeout = Math.max(20, parseNum($('cfgTotemTimeout').value, 75)); c.totemRetorno = Math.max(8, parseNum($('cfgTotemRetorno').value, 30));
   c.totemChips = g('cfgTotemChips').split(',').map(x => x.trim()).filter(Boolean).slice(0, 8);
   c.pixChave = g('cfgPixChave'); c.pixNome = g('cfgPixNome'); c.pixCidade = g('cfgPixCidade'); c.pdvNaFila = $('cfgPdvFila').checked;
   salvar('config');
