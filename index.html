@@ -500,7 +500,11 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <div><label for="retroForma">Forma de pagamento</label><select id="retroForma"><option value="dinheiro">💵 Dinheiro</option><option value="pix">⚡ PIX</option><option value="debito">💳 Débito</option><option value="credito">💳 Crédito</option></select></div>
       <div><label for="retroLocal">Local</label><select id="retroLocal"><option value="">-- Não informado --</option></select></div>
     </div>
-    <button class="btn laranja" type="button" onclick="lancarVendaRetroativa()">+ Lançar no histórico</button>
+    <div class="grupo-botoes">
+      <button class="btn laranja" type="button" onclick="lancarVendaRetroativa()">+ Lançar no histórico</button>
+      <button class="btn" type="button" onclick="abrirComandaRetroativa()">🧾 Lançar comanda (vários itens, 1 pagamento)</button>
+    </div>
+    <div class="dica">Use a comanda quando o cliente levou mais de um produto no mesmo pedido (ex.: 1 pizza + 1 copa lombo) e pagou tudo de uma vez — assim fica fácil conferir com o voucher do cartão que o banco te dá, que soma o pedido inteiro, não item por item.</div>
     <div id="retroSessao" class="dica" style="margin-top:10px;font-size:.95rem"></div>
   </div>
 
@@ -515,7 +519,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     </div>
     <div class="resultado" id="retroResumo"></div>
     <div id="retroLote" class="grupo-botoes" style="align-items:center"></div>
-    <div class="tabela-wrap"><table class="tabela" style="min-width:820px"><thead><tr><th><input type="checkbox" id="retroTodos" onchange="retroSelTodos(this.checked)" aria-label="Selecionar todos"></th><th>Data da venda</th><th>Produto</th><th class="n">Qtd</th><th class="n">Unit.</th><th class="n">Total</th><th>Pagamento</th><th></th><th>Lançado em</th><th>Ações</th></tr></thead><tbody id="tabelaRetro"></tbody></table></div>
+    <div class="tabela-wrap"><table class="tabela" style="min-width:900px"><thead><tr><th><input type="checkbox" id="retroTodos" onchange="retroSelTodos(this.checked)" aria-label="Selecionar todos"></th><th>Data da venda</th><th>Cliente</th><th>Produto</th><th class="n">Qtd</th><th class="n">Unit.</th><th class="n">Total</th><th>Pagamento</th><th></th><th>Lançado em</th><th>Ações</th></tr></thead><tbody id="tabelaRetro"></tbody></table></div>
   </div>
 </section>
 
@@ -4577,6 +4581,84 @@ async function lancarVendaRetroativa(){
   const sel = $('retroProduto'); if(sel) sel.focus();
 }
 
+/* ---------- comanda retroativa: vários itens do mesmo pedido, um pagamento só (pra bater com o voucher do cartão) ---------- */
+let COMANDA_RETRO = [];
+function abrirComandaRetroativa(){
+  COMANDA_RETRO = [];
+  const opcoesLocais = '<option value="">-- Não informado --</option>' + BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(l => '<option value="' + l.id + '">' + esc(l.nome) + '</option>').join('');
+  const html = '<div class="bloco-calc">' +
+    '<div><label for="crc_cliente">Cliente</label><input type="text" id="crc_cliente" placeholder="Ex: Michele"></div>' +
+    '<div><label for="crc_data">Data da venda</label><input type="date" id="crc_data" value="' + ($('retroData').value || dataHoje()) + '"></div>' +
+    '<div><label for="crc_local">Local</label><select id="crc_local">' + opcoesLocais + '</select></div>' +
+    '<div><label for="crc_consumo">Consumo</label><select id="crc_consumo"><option value="viagem">🥡 Viagem</option><option value="local">🍽️ Local</option></select></div>' +
+    '</div><hr>' +
+    '<div class="linha-form" style="grid-template-columns:2.2fr 1fr 1fr auto">' +
+    '<div><label for="crc_produto">Produto</label><select id="crc_produto" onchange="retroComandaAutoValor()">' + opcoesProdutosHTML() + '</select></div>' +
+    '<div><label for="crc_qtd">Qtd</label><input type="number" id="crc_qtd" value="1" min="1" inputmode="numeric"></div>' +
+    '<div><label for="crc_valor">Valor unit. R$</label><input type="number" step="0.01" id="crc_valor" placeholder="Automático" inputmode="decimal"></div>' +
+    '<button class="btn" type="button" onclick="retroComandaAdicionarItem()">+ Item</button>' +
+    '</div>' +
+    '<div id="comandaRetroItens" style="margin-top:10px"></div>' +
+    '<div class="bloco-calc" style="margin-top:10px"><div><label for="crc_forma">Forma de pagamento (do pedido inteiro)</label><select id="crc_forma"><option value="dinheiro">💵 Dinheiro</option><option value="pix">⚡ PIX</option><option value="debito">💳 Débito</option><option value="credito">💳 Crédito</option></select></div></div>';
+  abrirModal({titulo: '🧾 Lançar comanda retroativa', largo: true, html, botoes: [
+    {rotulo: 'Cancelar', classe: 'cinza'},
+    {rotulo: 'Lançar comanda', fn: ctl => finalizarComandaRetroativa(ctl)}
+  ]});
+  renderComandaRetroItens();
+}
+function retroComandaAutoValor(){
+  const val = $('crc_produto').value; const campo = $('crc_valor'); if(!val || !campo) return;
+  const [tipo, id] = val.split(':'); const p = acharProduto(tipo, id); if(!p) return;
+  const preco = tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0);
+  campo.value = preco > 0 ? preco : '';
+}
+function retroComandaAdicionarItem(){
+  const val = $('crc_produto').value; if(!val) return toast('Escolha o produto.', 'alerta');
+  const [tipo, id] = val.split(':'); const p = acharProduto(tipo, id); if(!p) return;
+  const qtd = Math.max(1, Math.round(parseNum($('crc_qtd').value, 1)));
+  const vu = parseNum($('crc_valor').value) || (tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0));
+  if(!(vu > 0)) return toast('Informe o valor unitário deste item.', 'alerta');
+  const consumo = $('crc_consumo').value;
+  COMANDA_RETRO.push({tipo, id, nome: p.nome, qtd, valorUnit: vu, custoUnit: custoUnitDoProduto(tipo, id, consumo)});
+  renderComandaRetroItens();
+  $('crc_qtd').value = 1; $('crc_valor').value = ''; $('crc_produto').focus();
+}
+function retroComandaRemoverItem(i){ COMANDA_RETRO.splice(i, 1); renderComandaRetroItens(); }
+function renderComandaRetroItens(){
+  const el = $('comandaRetroItens'); if(!el) return;
+  if(!COMANDA_RETRO.length){ el.innerHTML = '<p class="suave">Nenhum item adicionado ainda.</p>'; return; }
+  const total = soma(COMANDA_RETRO, it => it.qtd * it.valorUnit);
+  el.innerHTML = '<div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Unit.</th><th class="n">Subtotal</th><th></th></tr></thead><tbody>' +
+    COMANDA_RETRO.map((it, i) => '<tr><td>' + esc(it.nome) + '</td><td class="n">' + it.qtd + '</td><td class="n">' + brl(it.valorUnit) + '</td><td class="n">' + brl(it.qtd * it.valorUnit) + '</td><td class="acoes"><button class="btn vermelho pequeno" onclick="retroComandaRemoverItem(' + i + ')" aria-label="Remover">✕</button></td></tr>').join('') +
+    '</tbody><tfoot><tr><th colspan="3">Total do pedido</th><th class="n">' + brl(total) + '</th><th></th></tr></tfoot></table></div>';
+}
+async function finalizarComandaRetroativa(ctl){
+  const cliente = ctl.el.querySelector('#crc_cliente').value.trim() || 'Venda histórica';
+  const data = ctl.el.querySelector('#crc_data').value;
+  if(!data) return void toast('Escolha a data da venda.', 'alerta') || false;
+  if(!COMANDA_RETRO.length) return void toast('Adicione ao menos um item à comanda.', 'alerta') || false;
+  if(data > dataHoje() && !await confirmar('A data ' + fmtData(data) + ' é no futuro. Lançar mesmo assim?', {ok: 'Lançar mesmo assim'})) return false;
+  const localId = ctl.el.querySelector('#crc_local').value; const localObj = localId ? BD.locais.find(l => l.id === localId) : null;
+  const consumo = ctl.el.querySelector('#crc_consumo').value; const forma = ctl.el.querySelector('#crc_forma').value;
+  const pid = 'r' + uid();
+  const linhas = COMANDA_RETRO.map(it => {
+    const l = {id: uid(), pedidoId: pid, senha: 0, data, horario: '', cliente, telefone: '', produto: it.nome, produtoId: it.id, tipoProduto: it.tipo,
+      quantidade: it.qtd, valorUnit: it.valorUnit, descontoValor: 0, valorTotal: r2(it.valorUnit * it.qtd), custoUnit: it.custoUnit, custoTotal: it.custoUnit * it.qtd,
+      tipoConsumo: consumo, observacao: '', retroativo: true, consumo: [], lancadoEm: Date.now()};
+    if(localObj) l.local = localObj.nome;
+    return l;
+  });
+  aplicarPagamento(linhas, [{forma, valor: r2(soma(linhas, l => l.valorTotal))}], data);
+  linhas.forEach(l => BD.vendas.push(l)); salvarAgora('vendas');
+  RETRO_DESTAQUE = linhas[linhas.length - 1].id;
+  renderRetro(true); renderVendas(true);
+  const totalTxt = brl(soma(linhas, l => l.valorTotal));
+  toast('✔ Comanda de ' + esc(cliente) + ' lançada: ' + linhas.length + ' item(ns) = ' + totalTxt + ' (' + rotForma[forma] + ').', 'ok', {ms: 12000, acao: {rotulo: 'Desfazer', fn: () => {
+    BD.vendas = BD.vendas.filter(v => v.pedidoId !== pid); salvarAgora('vendas'); renderRetro(); renderVendas(true); toast('Comanda desfeita.', 'ok');
+  }}});
+  COMANDA_RETRO = [];
+}
+
 /* ---------- lista ---------- */
 function retroFiltradas(){
   const modo = $('retroVer').value; const q = norm($('retroBusca').value); let l = linhasRetro();
@@ -4596,10 +4678,10 @@ function renderRetro(irParaTopo){
   const todas = retroFiltradas(); const lim = modo === 'ultimos' ? 30 : 200; const vis = todas.slice(0, lim); RETRO_VISIVEIS = vis.map(v => v.id);
   Array.from(RETRO_SEL).forEach(id => { if(!BD.vendas.some(v => v.id === id)) RETRO_SEL.delete(id); });
   $('tabelaRetro').innerHTML = vis.length ? vis.map(v => '<tr' + (v.id === RETRO_DESTAQUE ? ' style="background:rgba(0,136,85,.16)"' : '') + '><td><input type="checkbox" ' + (RETRO_SEL.has(v.id) ? 'checked ' : '') + 'onchange="retroSel(\'' + v.id + '\',this.checked)" aria-label="Selecionar"></td>' +
-    '<td><b>' + fmtData(v.data) + '</b>' + (v.id === RETRO_DESTAQUE ? ' <span class="tag">novo</span>' : '') + '</td><td>' + esc(v.produto) + '</td><td class="n">' + v.quantidade + '</td><td class="n">' + brl(v.valorUnit) + '</td><td class="n"><b>' + brl(v.valorTotal) + '</b></td>' +
+    '<td><b>' + fmtData(v.data) + '</b>' + (v.id === RETRO_DESTAQUE ? ' <span class="tag">novo</span>' : '') + '</td><td>' + esc(v.cliente && v.cliente !== 'Venda histórica' ? v.cliente : '—') + '</td><td>' + esc(v.produto) + '</td><td class="n">' + v.quantidade + '</td><td class="n">' + brl(v.valorUnit) + '</td><td class="n"><b>' + brl(v.valorTotal) + '</b></td>' +
     '<td><span class="tag cinza">' + esc((rotForma[formaLinha(v)] || '').replace(/^\S+\s/, '')) + '</span></td><td>' + (v.tipoConsumo === 'local' ? '🍽️' : '🥡') + '</td><td><small class="suave">' + fmtLanc(v) + (v.editadoEm ? ' ✏️' : '') + '</small></td>' +
     '<td class="acoes"><button class="btn cinza pequeno" onclick="editarRetro(\'' + v.id + '\')" aria-label="Corrigir" title="Corrigir">✏️</button><button class="btn cinza pequeno" onclick="repetirRetro(\'' + v.id + '\')" aria-label="Repetir com outra data" title="Repetir com outra data">⧉</button><button class="btn vermelho pequeno" onclick="excluirRetro(\'' + v.id + '\')" aria-label="Excluir">✕</button></td></tr>'
-  ).join('') : '<tr><td colspan="10"><div class="vazio">' + (linhasRetro().length ? 'Nenhum lançamento neste filtro.' : 'Nenhum lançamento histórico ainda. Use o formulário acima.') + '</div></td></tr>';
+  ).join('') : '<tr><td colspan="11"><div class="vazio">' + (linhasRetro().length ? 'Nenhum lançamento neste filtro.' : 'Nenhum lançamento histórico ainda. Use o formulário acima.') + '</div></td></tr>';
   const ano = anoAtual(); const totalAno = soma(linhasRetro().filter(v => (v.data || '').startsWith(ano)), v => v.valorTotal);
   let porMes = '';
   if(modo !== 'mes' && todas.length){ const m = {}; todas.forEach(v => { const k = (v.data || '').slice(0, 7); m[k] = m[k] || {n: 0, t: 0}; m[k].n++; m[k].t += v.valorTotal; });
@@ -4623,6 +4705,7 @@ function editarRetro(id){
   const cat = catalogoVenda(); const atualVal = l.tipoProduto + ':' + l.produtoId; const existe = cat.some(p => p.tipo + ':' + p.id === atualVal);
   const opcoes = (existe ? [] : [{v: atualVal, t: l.produto + ' (produto removido)'}]).concat(cat.map(p => ({v: p.tipo + ':' + p.id, t: p.nome})));
   formModal({titulo: '✏️ Corrigir lançamento histórico', aviso: 'Lançado em ' + fmtLanc(l) + '. Ao salvar, custo, taxas e o teto do MEI são recalculados.', campos: [
+    {id: 'cliente', rotulo: 'Cliente', valor: l.cliente && l.cliente !== 'Venda histórica' ? l.cliente : ''},
     {id: 'data', rotulo: 'Data da venda', tipo: 'data', valor: l.data},
     {id: 'produto', rotulo: 'Produto', tipo: 'select', valor: atualVal, opcoes},
     {id: 'qtd', rotulo: 'Quantidade', tipo: 'numero', valor: l.quantidade},
@@ -4640,7 +4723,7 @@ function editarRetro(id){
     const mudouProd = v.produto !== atualVal || v.consumo !== (l.tipoConsumo || 'viagem');
     if(v.produto !== atualVal && p){ l.produto = p.nome; l.produtoId = pid; l.tipoProduto = tipo; }
     l.custoUnit = (mudouProd && Math.abs((v.custo ?? 0) - l.custoUnit) < 1e-9 && p) ? custoUnitDoProduto(tipo, pid, v.consumo) : (v.custo ?? l.custoUnit);
-    l.data = v.data; l.quantidade = qtd; l.valorUnit = v.valor; l.valorTotal = r2(v.valor * qtd); l.descontoValor = 0; l.custoTotal = l.custoUnit * qtd; l.tipoConsumo = v.consumo;
+    l.cliente = v.cliente.trim() || 'Venda histórica'; l.data = v.data; l.quantidade = qtd; l.valorUnit = v.valor; l.valorTotal = r2(v.valor * qtd); l.descontoValor = 0; l.custoTotal = l.custoUnit * qtd; l.tipoConsumo = v.consumo;
     const loc = BD.locais.find(x => x.id === v.localId); if(loc) l.local = loc.nome; else delete l.local;
     aplicarPagamento([l], [{forma: v.forma, valor: l.valorTotal}], l.data); l.editadoEm = Date.now();
     RETRO_DESTAQUE = l.id; salvarAgora('vendas'); renderRetro(); renderVendas(true); toast('✔ Corrigido: ' + resumoLinhaRetro(l), 'ok');
