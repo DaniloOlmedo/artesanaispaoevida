@@ -466,7 +466,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <div><div class="suave pequeno-txt" id="resumoTotais">Subtotal R$ 0,00</div><div class="tot" id="totalCarrinho">R$ 0,00</div></div>
       <div class="flex-linha" style="gap:8px;flex:0 1 auto;align-items:center">
         <label class="linha oculto" id="linhaEnviarFila" style="margin:0"><input type="checkbox" id="enviarFila" onchange="salvarPrefFila()"> 👨‍🍳 Enviar p/ fila</label>
-        <label class="linha" style="margin:0"><input type="checkbox" id="imprimirAuto" checked onchange="salvarPrefImpressao()"> 🖨️ Imprimir</label>
+        <label class="linha" style="margin:0"><input type="checkbox" id="imprimirAuto" onchange="salvarPrefImpressao()"> 🖨️ Imprimir</label>
         <button class="btn grande" type="button" onclick="finalizarVenda()" style="margin:0">✅ Finalizar pedido</button>
       </div>
     </div>
@@ -1207,7 +1207,7 @@ const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','ven
 const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
-  valoresComanda:false, imprimirAuto:true, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem',
+  valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem',
   // atendimento / totem
   pdvNaFila:false, capacidade:2, tempoBase:2, tempoPadraoFicha:8, calibrar:true, voz:true,
   totemPin:'', totemNome:'', totemMensagem:'Retire seu pedido no balcão quando chamarem a sua senha.', totemExigePagamento:true, totemImprimir:true, totemVias:2,
@@ -3491,7 +3491,7 @@ async function perderPedido(pid){
 function renderVendasPagina(){
   renderSelectsProdutos(); renderGradeProdutos(); renderCarrinho(); renderRetro(); atualizarBannerComanda(); renderLocalAtualNaTela();
   if(!$('retroData').value) $('retroData').value = dataHoje();
-  $('imprimirAuto').checked = BD.config.imprimirAuto !== false; if($('enviarFila')) $('enviarFila').checked = !!BD.config.pdvNaFila;
+  $('imprimirAuto').checked = !!BD.config.imprimirAuto; if($('enviarFila')) $('enviarFila').checked = !!BD.config.pdvNaFila;
   definirConsumo(BD.config.consumoPadrao || consumoAtual);
   mudarPeriodoVendas();
 }
