@@ -442,10 +442,10 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <div><label for="descontoValor">Desconto</label>
         <div class="flex-linha" style="gap:6px;flex-wrap:nowrap"><input type="number" id="descontoValor" min="0" step="0.01" placeholder="0" inputmode="decimal" oninput="atualizarTotaisCarrinho()"><select id="descontoTipo" style="max-width:80px" onchange="atualizarTotaisCarrinho()"><option value="R">R$</option><option value="P">%</option></select></div>
       </div>
-      <div id="linhaPedidoPago"><label class="linha" style="margin-top:28px"><input type="checkbox" id="pedidoPago" checked onchange="alternarPagamento()"> 💰 Pagamento já recebido?</label></div>
+      <div id="linhaPedidoPago"><label class="linha" style="margin-top:28px"><input type="checkbox" id="pedidoPago" onchange="alternarPagamento()"> 💰 Pagamento já recebido?</label></div>
     </div>
     <div id="bannerComanda" class="aviso alerta-a oculto"></div>
-    <div id="blocoPagamento">
+    <div id="blocoPagamento" class="oculto">
       <div class="bloco-calc">
         <div><label for="formaPagamento">Forma de pagamento</label>
           <select id="formaPagamento" onchange="atualizarTotaisCarrinho()">
@@ -3101,7 +3101,7 @@ function editarPrecoLinha(id){
 async function limparCarrinho(pedirConfirmacao = true){
   if(pedirConfirmacao && carrinhoAtual.length && !await confirmar('Cancelar o pedido atual?', {ok: 'Cancelar pedido', cancelar: 'Voltar', perigo: true})) return;
   carrinhoAtual = []; ['clienteNome', 'clienteTelefone', 'descontoValor', 'valorRecebido', 'valorPrimeira'].forEach(i => $(i).value = '');
-  $('dividirPagamento').checked = false; $('pedidoPago').checked = true; alternarPagamento(); alternarDivisao();
+  $('dividirPagamento').checked = false; $('pedidoPago').checked = false; alternarPagamento(); alternarDivisao();
   if(pedirConfirmacao && COMANDA_ABERTA){ COMANDA_ABERTA = null; atualizarBannerComanda(); }
   renderCarrinho(); renderGradeProdutos();
 }
