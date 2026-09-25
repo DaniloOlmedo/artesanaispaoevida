@@ -422,7 +422,10 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     </div>
     <div class="seg" id="filtroCategoriaVenda" style="flex-wrap:wrap;margin-bottom:8px"></div>
     <div class="grade-prod" id="gradeProdutos"></div>
-    <button class="btn laranja" type="button" onclick="abrirMeioAMeio()" style="margin-top:8px">🍕➗ Meio a meio (dois sabores)</button>
+    <div class="grupo-botoes" style="margin-top:8px">
+      <button class="btn laranja" type="button" onclick="abrirMeioAMeio()">🍕➗ Meio a meio (dois sabores)</button>
+      <button class="btn cinza" type="button" onclick="abrirCortesia()">🎁 Cortesia / degustação</button>
+    </div>
     <details style="margin-top:8px">
       <summary style="cursor:pointer;font-weight:600">➕ Adicionar com observação / quantidade</summary>
       <div class="linha-form" style="grid-template-columns:2fr .7fr 2fr auto;margin-top:8px">
@@ -2675,6 +2678,42 @@ function registrarPerda(id){
     salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada.', 'ok');
   }});
 }
+// Cortesia/degustação: um produto pronto (pizza, empanada...) dado de graça. Desconta o estoque de verdade
+// (receita inteira: ingredientes + embalagem) e registra o custo como perda, sem contar como venda/faturamento.
+function abrirCortesia(){
+  const catalogo = catalogoVenda(); if(!catalogo.length) return toast('Cadastre uma ficha ou produto com preço antes.', 'alerta');
+  const html = '<div class="bloco-calc">' +
+    '<div><label for="cort_produto">Produto</label><select id="cort_produto">' + opcoesProdutosHTML() + '</select></div>' +
+    '<div><label for="cort_qtd">Quantidade</label><input type="number" id="cort_qtd" value="1" min="1" inputmode="numeric"></div>' +
+    '<div><label for="cort_consumo">Consumo</label><select id="cort_consumo"><option value="viagem">🥡 Viagem</option><option value="local">🍽️ Local</option></select></div>' +
+    '<div><label for="cort_data">Data</label><input type="date" id="cort_data" value="' + dataHoje() + '"></div></div>' +
+    '<div class="aviso">Desconta do estoque a receita inteira (ingredientes + embalagem) e lança o custo como perda — motivo "Brinde / degustação" — no resultado do mês. Não entra como venda nem conta no teto do MEI.</div>';
+  abrirModal({titulo: '🎁 Cortesia / degustação', largo: true, html, botoes: [
+    {rotulo: 'Cancelar', classe: 'cinza'},
+    {rotulo: 'Registrar cortesia', fn: async ctl => {
+      const val = ctl.el.querySelector('#cort_produto').value; if(!val){ toast('Escolha o produto.', 'alerta'); return false; }
+      const [tipo, id] = val.split(':'); const p = acharProduto(tipo, id); if(!p) return false;
+      const qtd = Math.max(1, Math.round(parseNum(ctl.el.querySelector('#cort_qtd').value, 1)));
+      const tipoConsumo = ctl.el.querySelector('#cort_consumo').value;
+      const data = ctl.el.querySelector('#cort_data').value || dataHoje();
+      const consTotal = consumoDoItem({tipo, produtoId: id, tipoConsumo, quantidade: qtd});
+      const faltas = faltasDeEstoque(consTotal);
+      if(faltas.length){
+        const txt = faltas.map(f => f.nome + ' (precisa ' + fmt(f.precisa, 0) + ', disponível ' + fmt(f.disponivel, 0) + ')').join('\n');
+        if(!BD.config.semEstoque && !await confirmar('Estoque insuficiente:\n' + txt + '\n\nRegistrar mesmo assim?', {ok: 'Registrar mesmo assim'})) return false;
+      }
+      baixarConsumo(consTotal);
+      const custoTotal = r2(custoUnitDoProduto(tipo, id, tipoConsumo) * qtd);
+      const pe = {id: uid(), data, nome: p.nome, qtd, motivo: 'Brinde / degustação', valor: custoTotal};
+      BD.perdas.unshift(pe);
+      salvarAgora('perdas', 'estoqueComponentes'); renderEstoque(); atualizarBadges();
+      toast('🎁 Cortesia registrada: ' + qtd + 'x ' + p.nome + ' (custo ' + brl(custoTotal) + ').', 'ok', {ms: 10000, acao: {rotulo: 'Desfazer', fn: () => {
+        BD.perdas = BD.perdas.filter(x => x.id !== pe.id); devolverConsumo(consTotal);
+        salvarAgora('perdas', 'estoqueComponentes'); renderEstoque(); atualizarBadges(); toast('Cortesia desfeita, estoque devolvido.', 'ok');
+      }}});
+    }}
+  ]});
+}
 async function removerPerda(id){
   const p = BD.perdas.find(x => x.id === id); if(!p) return;
   if(!await confirmar('Excluir este registro de perda? A quantidade volta para o estoque.', {ok: 'Excluir', perigo: true})) return;
@@ -4598,6 +4637,7 @@ function abrirComandaRetroativa(){
     '<div><label for="crc_valor">Valor unit. R$</label><input type="number" step="0.01" id="crc_valor" placeholder="Automático" inputmode="decimal"></div>' +
     '<button class="btn" type="button" onclick="retroComandaAdicionarItem()">+ Item</button>' +
     '</div>' +
+    '<button class="btn laranja pequeno" type="button" onclick="abrirComandaRetroMeioAMeio()" style="margin-top:6px">🍕➗ Meio a meio (dois sabores)</button>' +
     '<div id="comandaRetroItens" style="margin-top:10px"></div>' +
     '<div class="bloco-calc" style="margin-top:10px"><div><label for="crc_forma">Forma de pagamento (do pedido inteiro)</label><select id="crc_forma"><option value="dinheiro">💵 Dinheiro</option><option value="pix">⚡ PIX</option><option value="debito">💳 Débito</option><option value="credito">💳 Crédito</option></select></div></div>';
   abrirModal({titulo: '🧾 Lançar comanda retroativa', largo: true, html, botoes: [
@@ -4623,6 +4663,44 @@ function retroComandaAdicionarItem(){
   renderComandaRetroItens();
   $('crc_qtd').value = 1; $('crc_valor').value = ''; $('crc_produto').focus();
 }
+/* meio a meio dentro da comanda retroativa (dois sabores, cobra o mais caro) */
+function abrirComandaRetroMeioAMeio(){
+  const fichas = BD.fichas.filter(f => f.precoPraticado > 0);
+  if(fichas.length < 2) return toast('É preciso ao menos 2 produtos com preço definido para montar um meio a meio.', 'alerta', {ms: 6000});
+  const html = '<div class="bloco-calc">' +
+    '<div><label for="crcmm_s1">Metade 1</label><select id="crcmm_s1" onchange="atualizarPrevisaoComandaRetroMeio()">' + opcoesFichasComPrecoHTML() + '</select></div>' +
+    '<div><label for="crcmm_s2">Metade 2</label><select id="crcmm_s2" onchange="atualizarPrevisaoComandaRetroMeio()">' + opcoesFichasComPrecoHTML() + '</select></div>' +
+    '<div><label for="crcmm_qtd">Quantidade</label><input type="number" id="crcmm_qtd" value="1" min="1" inputmode="numeric" onchange="atualizarPrevisaoComandaRetroMeio()"></div></div>' +
+    '<div class="resultado" id="crcmm_previa"><p class="suave">Escolha os dois sabores.</p></div>' +
+    '<p class="dica">O valor cobrado é o do sabor mais caro, igual na venda normal.</p>';
+  abrirModal({titulo: '🍕➗ Meio a meio — comanda retroativa', largo: true, html, botoes: [
+    {rotulo: 'Cancelar', classe: 'cinza'},
+    {rotulo: 'Adicionar à comanda', fn: ctl => {
+      const id1 = ctl.el.querySelector('#crcmm_s1').value, id2 = ctl.el.querySelector('#crcmm_s2').value;
+      const f1 = BD.fichas.find(f => f.id === id1), f2 = BD.fichas.find(f => f.id === id2);
+      if(!f1 || !f2){ toast('Escolha os dois sabores.', 'alerta'); return false; }
+      if(id1 === id2){ toast('Escolha dois sabores diferentes (senão é só o produto inteiro).', 'alerta'); return false; }
+      const qtd = Math.max(1, Math.round(parseNum(ctl.el.querySelector('#crcmm_qtd').value, 1)));
+      const consumo = $('crc_consumo') ? $('crc_consumo').value : 'viagem';
+      const preco = Math.max(f1.precoPraticado, f2.precoPraticado);
+      const custoUnit = custoUnitItem({tipo: 'meio', metade1: id1, metade2: id2, tipoConsumo: consumo});
+      COMANDA_RETRO.push({tipo: 'meio', id: null, metade1: id1, metade2: id2, nome: '½ ' + f1.nome + ' + ½ ' + f2.nome, qtd, valorUnit: preco, custoUnit});
+      renderComandaRetroItens();
+    }}
+  ]});
+  atualizarPrevisaoComandaRetroMeio();
+}
+function atualizarPrevisaoComandaRetroMeio(){
+  const box = document.getElementById('crcmm_previa'); if(!box) return;
+  const id1 = document.getElementById('crcmm_s1').value, id2 = document.getElementById('crcmm_s2').value;
+  const f1 = BD.fichas.find(f => f.id === id1), f2 = BD.fichas.find(f => f.id === id2);
+  if(!f1 || !f2){ box.innerHTML = '<p class="suave">Escolha os dois sabores.</p>'; return; }
+  if(id1 === id2){ box.innerHTML = '<p class="alerta">Escolha dois sabores diferentes.</p>'; return; }
+  const preco = Math.max(f1.precoPraticado, f2.precoPraticado);
+  const consumo = $('crc_consumo') ? $('crc_consumo').value : 'viagem';
+  const custo = custoUnitItem({tipo: 'meio', metade1: id1, metade2: id2, tipoConsumo: consumo});
+  box.innerHTML = '<div class="linha-kv"><span>Cobrado (sabor mais caro)</span><b>' + brl(preco) + '</b></div><div class="linha-kv"><span>Custo estimado</span><b>' + brl(custo) + '</b></div>';
+}
 function retroComandaRemoverItem(i){ COMANDA_RETRO.splice(i, 1); renderComandaRetroItens(); }
 function renderComandaRetroItens(){
   const el = $('comandaRetroItens'); if(!el) return;
@@ -4645,6 +4723,7 @@ async function finalizarComandaRetroativa(ctl){
     const l = {id: uid(), pedidoId: pid, senha: 0, data, horario: '', cliente, telefone: '', produto: it.nome, produtoId: it.id, tipoProduto: it.tipo,
       quantidade: it.qtd, valorUnit: it.valorUnit, descontoValor: 0, valorTotal: r2(it.valorUnit * it.qtd), custoUnit: it.custoUnit, custoTotal: it.custoUnit * it.qtd,
       tipoConsumo: consumo, observacao: '', retroativo: true, consumo: [], lancadoEm: Date.now()};
+    if(it.tipo === 'meio'){ l.metade1 = it.metade1; l.metade2 = it.metade2; }
     if(localObj) l.local = localObj.nome;
     return l;
   });
