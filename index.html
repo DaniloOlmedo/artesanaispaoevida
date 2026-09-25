@@ -420,6 +420,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="flex-linha">
       <div style="flex:2"><label for="buscaProdVenda">Toque no produto para adicionar</label><input type="search" id="buscaProdVenda" placeholder="🔍 Filtrar produtos..." oninput="renderGradeProdutos()"></div>
     </div>
+    <div class="seg" id="filtroCategoriaVenda" style="flex-wrap:wrap;margin-bottom:8px"></div>
     <div class="grade-prod" id="gradeProdutos"></div>
     <button class="btn laranja" type="button" onclick="abrirMeioAMeio()" style="margin-top:8px">🍕➗ Meio a meio (dois sabores)</button>
     <details style="margin-top:8px">
@@ -679,6 +680,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
         <div><label for="perdaPerc">Perda / quebra (%)</label><input type="number" id="perdaPerc" step="0.1" min="0" max="90" value="0" inputmode="decimal" oninput="recalcularFichaAtual()"><div class="dica">Aumenta o custo dos ingredientes (ex.: massa que descarta).</div></div>
         <div><label for="markupDesejado">Margem de lucro desejada (%)</label><input type="number" id="markupDesejado" step="0.1" inputmode="decimal" oninput="recalcularFichaAtual()"><div class="dica">Sobre o preço de venda, depois de taxas. Vazio = usa a margem padrão.</div></div>
         <div><label for="rendimentoG">Rendimento total (g) — para usar como insumo</label><input type="number" id="rendimentoG" step="1" min="0" inputmode="decimal" oninput="recalcularFichaAtual()"></div>
+        <div><label for="fichaCategoria">Categoria (para organizar a venda)</label><input type="text" id="fichaCategoria" list="listaCategoriasDL" placeholder="Ex: Pizza, Empanadas, Pão Rústico..." onchange="salvarCategoriaFicha()"></div>
         <div><label class="linha" style="margin-top:26px"><input type="checkbox" id="fichaAtivo" onchange="recalcularFichaAtual()"> Mostrar nos botões de venda</label></div>
         <div><label for="tempoPreparo">⏱ Tempo de preparo (min por unidade)</label><input type="number" id="tempoPreparo" step="0.5" min="0" inputmode="decimal" oninput="recalcularFichaAtual()"><div class="dica">Vazio = usa o padrão (Custos → Totem). Alimenta a previsão de espera.</div></div>
         <div><label class="linha" style="margin-top:26px"><input type="checkbox" id="fichaTotem" onchange="recalcularFichaAtual()"> Mostrar no totem</label><label class="linha"><input type="checkbox" id="fichaSugerir" onchange="recalcularFichaAtual()"> Sugerir como complemento no totem</label></div>
@@ -1023,6 +1025,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 
 <datalist id="listaInsumosDL"></datalist>
 <datalist id="listaComponentesSugeridos"></datalist>
+<datalist id="listaCategoriasDL"></datalist>
 
 <div id="totemRoot" class="oculto"><div id="totemTela"></div><div id="ttIdle" class="tt-idle oculto"><div><h2>Ainda está aí?</h2><p>Seu pedido será cancelado em <b id="ttIdleSeg">10</b> segundos.</p><button class="tt-btn grande" onclick="totemAtividade()">👍 Continuar pedindo</button></div></div></div>
 <div id="painelRoot" class="oculto"></div>
@@ -2042,7 +2045,7 @@ async function criarFicha(){
   let f = BD.fichas.find(x => norm(x.nome) === norm(nome));
   if(!f){
     f = {id: uid(), nome, itens: [], qtdPorcao: 1, custoFixo: 0, perdaPerc: 0, markupDesejado: null, precoPraticado: 0,
-      componentes: [], embalagemViagem: [], embalagemLocal: [], ativo: true, custoUnitario: 0, precoSugerido: 0, margemReal: 0};
+      componentes: [], embalagemViagem: [], embalagemLocal: [], ativo: true, custoUnitario: 0, precoSugerido: 0, margemReal: 0, categoria: inferirCategoria(nome)};
     BD.fichas.push(f); salvar('fichas');
     toast('Ficha criada. Adicione os ingredientes.', 'ok');
   }
@@ -2069,7 +2072,12 @@ function renderFichas(){
   $('tempoPreparo').value = (f.tempoPreparo === undefined || f.tempoPreparo === null) ? '' : f.tempoPreparo; $('tempoPreparo').placeholder = 'Padrão: ' + (BD.config.tempoPadraoFicha || 0);
   $('fichaTotem').checked = f.totem !== false; $('fichaSugerir').checked = !!f.sugerir;
   $('precoPraticado').value = f.precoPraticado || '';
+  atualizarDatalistCategorias(); $('fichaCategoria').value = f.categoria || '';
   renderSeletoresEmbalagem(); renderCorpoFicha(f);
+}
+function salvarCategoriaFicha(){
+  const f = fichaObj(); if(!f) return;
+  f.categoria = $('fichaCategoria').value.trim(); salvar('fichas'); atualizarDatalistCategorias();
 }
 function renderCorpoFicha(f){
   renderIngredientes(f); renderComponentesFicha(f); renderEmbalagens(f);
@@ -2788,12 +2796,35 @@ const PAG_VENDAS = {pagina: 1, porPagina: 25};
 const FORMAS = ['dinheiro', 'pix', 'debito', 'credito'];
 
 /* ---------- catálogo ---------- */
+const CATEGORIAS_SUGERIDAS = ['Pizza', 'Empanadas', 'Pão Rústico', 'Pão Ciabata', 'Bebidas'];
+let categoriaFiltroAtual = '';
+// Quando o produto não tem categoria definida manualmente, tenta adivinhar pelo nome (pizza/empanada/pão...).
+function inferirCategoria(nome){
+  const n = norm(nome || '');
+  if(n.includes('pizza')) return 'Pizza';
+  if(n.includes('empanada')) return 'Empanadas';
+  if(n.includes('rustico')) return 'Pão Rústico';
+  if(n.includes('ciabat')) return 'Pão Ciabata';
+  if(n.includes('pao ') || n.startsWith('pao') || n.includes(' pao')) return 'Pães';
+  return 'Outros';
+}
+const categoriaDoItem = it => (it.categoria && it.categoria.trim()) || inferirCategoria(it.nome);
+function categoriasExistentes(){
+  const set = new Set();
+  catalogoVenda().forEach(it => set.add(categoriaDoItem(it)));
+  CATEGORIAS_SUGERIDAS.forEach(c => set.add(c));
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+function atualizarDatalistCategorias(){
+  const el = $('listaCategoriasDL'); if(!el) return;
+  el.innerHTML = categoriasExistentes().map(c => '<option value="' + esc(c) + '"></option>').join('');
+}
 function catalogoVenda(){
   const itens = [];
   BD.fichas.filter(f => f.ativo !== false).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
-    .forEach(f => itens.push({tipo: 'ficha', id: f.id, nome: f.nome, preco: f.precoPraticado || 0}));
+    .forEach(f => itens.push({tipo: 'ficha', id: f.id, nome: f.nome, preco: f.precoPraticado || 0, categoria: f.categoria || ''}));
   BD.produtos.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
-    .forEach(p => itens.push({tipo: 'produto', id: p.id, nome: p.nome, preco: p.preco || 0}));
+    .forEach(p => itens.push({tipo: 'produto', id: p.id, nome: p.nome, preco: p.preco || 0, categoria: p.categoria || ''}));
   return itens;
 }
 const acharProduto = (tipo, id) => tipo === 'ficha' ? BD.fichas.find(f => f.id === id) : BD.produtos.find(p => p.id === id);
@@ -2829,9 +2860,22 @@ function disponivelProduto(tipo, id, tipoConsumo){
   });
   return min;
 }
+function definirCategoriaFiltro(c){
+  categoriaFiltroAtual = c; renderGradeProdutos();
+}
+function renderFiltroCategoriaVenda(cats){
+  const el = $('filtroCategoriaVenda'); if(!el) return;
+  if(cats.length < 2){ el.innerHTML = ''; return; }
+  el.innerHTML = '<button type="button" class="' + (categoriaFiltroAtual ? '' : 'on') + '" onclick="definirCategoriaFiltro(\'\')">Todos</button>' +
+    cats.map(c => '<button type="button" class="' + (categoriaFiltroAtual === c ? 'on' : '') + '" onclick="definirCategoriaFiltro(\'' + esc(c).replace(/'/g, "\\'") + '\')">' + esc(c) + '</button>').join('');
+}
 function renderGradeProdutos(){
   const q = norm($('buscaProdVenda').value);
-  const cat = catalogoVenda().filter(p => !q || norm(p.nome).includes(q));
+  const todos = catalogoVenda();
+  const catsPresentes = Array.from(new Set(todos.map(categoriaDoItem))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  if(categoriaFiltroAtual && !catsPresentes.includes(categoriaFiltroAtual)) categoriaFiltroAtual = '';
+  renderFiltroCategoriaVenda(catsPresentes);
+  const cat = todos.filter(p => (!q || norm(p.nome).includes(q)) && (!categoriaFiltroAtual || categoriaDoItem(p) === categoriaFiltroAtual));
   $('gradeProdutos').innerHTML = cat.length ? cat.map(p => {
     const semEst = faltaEstoquePara1(p.tipo, p.id);
     const disp = disponivelProduto(p.tipo, p.id, consumoAtual);
@@ -3146,7 +3190,12 @@ function cancelarComandaAberta(){ COMANDA_ABERTA = null; atualizarBannerComanda(
 function abrirEscolhaComanda(){
   const pend = pedidosPendentes();
   if(!pend.length) return toast('Não há pedidos pendentes de pagamento no momento.', 'alerta');
-  const linhas = pend.map(p => '<button type="button" class="btn cinza bloco" style="text-align:left;margin-top:6px" onclick="escolherComandaAberta(\'' + p.pedidoId + '\')"><b>' + (p.senha ? 'Nº ' + p.senha + ' — ' : '') + esc(p.cliente) + '</b><br><small class="suave">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join(', ') + ' • ' + brl(p.total) + '</small></button>').join('');
+  const maisRecenteId = pend[pend.length - 1].pedidoId;
+  // Mostra o mais recente primeiro e destacado, pra não confundir com um pedido antigo já entregue.
+  const linhas = pend.slice().reverse().map(p => {
+    const destaque = p.pedidoId === maisRecenteId;
+    return '<button type="button" class="btn ' + (destaque ? '' : 'cinza') + ' bloco" style="text-align:left;margin-top:6px' + (destaque ? ';border:2px solid var(--laranja);background:var(--realce2)' : '') + '" onclick="escolherComandaAberta(\'' + p.pedidoId + '\')"><b>' + (destaque ? '🆕 MAIS RECENTE — ' : '') + (p.senha ? 'Nº ' + p.senha + ' — ' : '') + esc(p.cliente) + '</b><br><small class="suave">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join(', ') + ' • ' + brl(p.total) + '</small></button>';
+  }).join('');
   abrirModal({titulo: '🧾 Adicionar a qual pedido pendente?', html: '<div>' + linhas + '</div>', botoes: [{rotulo: 'Cancelar', classe: 'cinza'}]});
 }
 function escolherComandaAberta(pid){
@@ -3603,15 +3652,17 @@ function adicionarProdutoSimples(){
   const nome = $('prodNome').value.trim(); const preco = parseNum($('prodPreco').value); const custo = parseNum($('prodCusto').value);
   if(!nome || preco <= 0) return toast('Informe o nome e o preço de venda.', 'alerta');
   if(BD.produtos.some(p => norm(p.nome) === norm(nome))) return toast('Já existe um produto com esse nome.', 'alerta');
-  BD.produtos.push({id: uid(), nome, preco, custo, sugerir: true, totem: true}); ['prodNome', 'prodPreco', 'prodCusto'].forEach(i => $(i).value = '');
+  BD.produtos.push({id: uid(), nome, preco, custo, sugerir: true, totem: true, categoria: inferirCategoria(nome)}); ['prodNome', 'prodPreco', 'prodCusto'].forEach(i => $(i).value = '');
   salvar('produtos'); renderProdutosSimples(); toast('Produto cadastrado.', 'ok');
 }
 function editarProdutoSimples(id){
   const p = BD.produtos.find(x => x.id === id); if(!p) return;
+  atualizarDatalistCategorias();
   formModal({titulo: 'Editar produto', campos: [{id: 'nome', rotulo: 'Nome', valor: p.nome}, {id: 'preco', rotulo: 'Preço de venda (R$)', tipo: 'numero', valor: p.preco}, {id: 'custo', rotulo: 'Custo unitário (R$)', tipo: 'numero', valor: p.custo},
+    {id: 'categoria', rotulo: 'Categoria (para organizar a venda)', valor: p.categoria || '', lista: 'listaCategoriasDL'},
     {id: 'tempo', rotulo: 'Tempo de preparo (min, 0 = pronta entrega)', tipo: 'numero', valor: p.tempoPreparo ?? ''}, {id: 'totem', rotulo: 'Mostrar no totem', tipo: 'checkbox', valor: p.totem !== false}, {id: 'sugerir', rotulo: 'Sugerir como complemento no totem', tipo: 'checkbox', valor: p.sugerir !== false}],
     salvar: v => { if(!v.nome || !(v.preco > 0)){ toast('Nome e preço válidos, por favor.', 'alerta'); return false; }
-      const antigo = p.nome; p.nome = v.nome; p.preco = v.preco; p.custo = v.custo || 0; p.totem = v.totem; p.sugerir = v.sugerir; if(v.tempo === null) delete p.tempoPreparo; else p.tempoPreparo = Math.max(0, v.tempo);
+      const antigo = p.nome; p.nome = v.nome; p.preco = v.preco; p.custo = v.custo || 0; p.categoria = (v.categoria || '').trim(); p.totem = v.totem; p.sugerir = v.sugerir; if(v.tempo === null) delete p.tempoPreparo; else p.tempoPreparo = Math.max(0, v.tempo);
       const c = componenteEstoque(antigo); if(c && norm(antigo) !== norm(v.nome) && !componenteEstoque(v.nome)) c.nome = v.nome;
       salvar('produtos', 'estoqueComponentes'); renderProdutosSimples(); }});
 }
@@ -3829,11 +3880,13 @@ function statusPedido(p){
   return STATUS_ORDEM[melhor];
 }
 const origemPedido = p => p.linhas[0].origem || 'balcao';
-const aguardandoPagamento = p => !p.pago && origemPedido(p) === 'totem' && !!BD.config.totemExigePagamento && statusPedido(p) === 'novo';
-// Agrupa por pedidoId inteiro (não corta linhas já entregues) sempre que pelo menos uma linha ainda estiver ativa,
-// para o cartão da fila mostrar a comanda completa (inclusive o que já foi entregue dela).
+// "Aguardando pagamento" cobre dois casos: (1) totem com pagamento antecipado obrigatório, pedido ainda nem começou;
+// (2) QUALQUER pedido (balcão ou totem) que já foi entregue mas o pagamento ficou pra depois ("entregar e cobrar depois").
+const aguardandoPagamento = p => !p.pago && (statusPedido(p) === 'entregue' || (origemPedido(p) === 'totem' && !!BD.config.totemExigePagamento && statusPedido(p) === 'novo'));
+// Agrupa por pedidoId inteiro (não corta linhas já entregues) sempre que pelo menos uma linha ainda estiver ativa
+// OU o pedido inteiro já foi entregue mas ainda não foi pago — pra não sumir da fila enquanto ninguém recebe o pagamento.
 const pedidosAtivos = () => {
-  const idsAtivos = new Set(BD.vendas.filter(v => v.status && v.status !== 'entregue' && !v.retroativo).map(v => v.pedidoId));
+  const idsAtivos = new Set(BD.vendas.filter(v => v.status && !v.retroativo && (v.status !== 'entregue' || v.pago === false)).map(v => v.pedidoId));
   return agruparPedidos(BD.vendas.filter(v => v.status && !v.retroativo && idsAtivos.has(v.pedidoId)));
 };
 let FILA_MODAL = null;
@@ -3957,7 +4010,12 @@ function acoesFila(p){
   const pid = String(p.pedidoId); const st = statusPedido(p);
   const b = (rot, fn, cls = '') => '<button type="button" class="btn ' + cls + '" onclick="' + fn + '">' + rot + '</button>';
   const pixPrev = p.linhas[0].pagamentoPrevisto === 'pix';
-  if(aguardandoPagamento(p)) return b('💰 Receber' + (pixPrev ? ' (PIX)' : ''), "receberPedido('" + pid + "','" + (pixPrev ? 'pix' : 'dinheiro') + "')") + b('✕ Cancelar', "excluirPedido('" + pid + "')", 'vermelho');
+  if(aguardandoPagamento(p)){
+    const receber = b('💰 Receber' + (pixPrev ? ' (PIX)' : ''), "receberPedido('" + pid + "','" + (pixPrev ? 'pix' : 'dinheiro') + "')");
+    // Já entregue: o estoque já foi consumido de verdade, então NÃO pode voltar — "Perda" em vez de "Cancelar".
+    if(st === 'entregue') return receber + b('🗑️ Perda (não recebeu)', "perderPedido('" + pid + "')", 'vermelho');
+    return receber + b('✕ Cancelar', "excluirPedido('" + pid + "')", 'vermelho');
+  }
   if(st === 'novo') return b('🔥 Iniciar', "iniciarPedido('" + pid + "')") + b('✏️', "editarPedido('" + pid + "')", 'cinza') + b('✕', "excluirPedido('" + pid + "')", 'vermelho');
   if(st === 'preparo') return b('✅ Pronto', "prontoPedido('" + pid + "')") + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('✏️', "editarPedido('" + pid + "')", 'cinza') + b('🗑️ Perda', "perderPedido('" + pid + "')", 'vermelho');
   if(st === 'pronto') return b('📦 Entregar', "entregarPedido('" + pid + "')") + b('🔔', "chamarDeNovo('" + pid + "')", 'laranja') + (p.telefone ? b('💬', "abrirWhatsApp('" + pid + "')", 'cinza') : '') + b('↩', "voltarPedido('" + pid + "')", 'cinza') + b('🗑️ Perda', "perderPedido('" + pid + "')", 'vermelho');
@@ -3989,7 +4047,7 @@ function filaHTML(){
   let h = '<div class="fila-resumo"><span>⏱ Espera para um novo pedido: <b>' + (backlogMin() < 0.5 ? 'sem fila' : '≈ ' + Math.ceil(backlogMin() + BD.config.tempoBase) + ' min') + '</b></span><span>Na fila: <b>' + (novos.length + prep.length) + '</b></span><span>Prontos aguardando: <b>' + prontos.length + '</b></span>' + (aguard.length ? '<span class="alerta">💰 Aguardando pagamento: <b>' + aguard.length + '</b></span>' : '') + '</div>';
   if(antigos.length) h += '<div class="aviso alerta-a">⚠️ ' + antigos.length + ' pedido(s) de dias anteriores ainda abertos (' + antigos.map(p => 'nº ' + (p.senha || '?') + ' ' + esc(p.cliente)).join(', ') + '). <button class="btn cinza pequeno" onclick="encerrarPedidosAntigos()">Marcar como entregues</button></div>';
   h += '<div class="fila-colunas">' + (BD.config.totemExigePagamento || aguard.length ? colunaFilaHTML('💰 Aguardando pagamento', aguard, 'Nenhum.') : '') + colunaFilaHTML('🆕 Novos', novos, 'Sem pedidos novos.') + colunaFilaHTML('🔥 Em preparo', prep, 'Nada no forno.') + colunaFilaHTML('✅ Prontos', prontos, 'Nenhum aguardando retirada.') + '</div>';
-  h += '<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">📦 Entregues hoje (' + entregues.length + ')</summary>' + (entregues.length ? entregues.map(p => { const l = p.linhas[0]; return '<div class="linha-kv"><span>Nº ' + (p.senha || '?') + ' ' + esc(p.cliente) + ' — ' + p.linhas.map(x => x.quantidade + '× ' + esc(x.produto)).join(', ') + '</span><span>' + horaDeMs(l.entregueEm) + (l.criadoEm ? ' • esperou ' + Math.max(0, Math.round((l.prontoEm - l.criadoEm) / 60000)) + ' min' : '') + '</span></div>'; }).join('') : '<div class="vazio">Nenhum ainda.</div>') + '</details>';
+  h += '<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">📦 Entregues hoje (' + entregues.length + ')</summary>' + (entregues.length ? entregues.map(p => { const l = p.linhas[0]; return '<div class="linha-kv"><span>Nº ' + (p.senha || '?') + ' ' + esc(p.cliente) + ' — ' + p.linhas.map(x => x.quantidade + '× ' + esc(x.produto)).join(', ') + (p.pago ? '' : ' <span class="tag laranja">💰 aguardando pagamento</span>') + '</span><span>' + horaDeMs(l.entregueEm) + (l.criadoEm ? ' • esperou ' + Math.max(0, Math.round((l.prontoEm - l.criadoEm) / 60000)) + ' min' : '') + '</span></div>'; }).join('') : '<div class="vazio">Nenhum ainda.</div>') + '</details>';
   return h;
 }
 async function encerrarPedidosAntigos(){
