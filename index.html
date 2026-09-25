@@ -3324,6 +3324,7 @@ function comandaHTML(pid){
       '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
       '<div class="via-msg">' + esc(BD.config.totemMensagem || 'Aguarde ser chamado pela senha.') + '</div>';
   }
+  h += '<div class="via-msg">☕ Em breve: CAFÉ &amp; PROSA, nossa loja fixa!</div>';
   return h;
 }
 function imprimirComandaPedido(pid){
