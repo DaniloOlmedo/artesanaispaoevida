@@ -579,6 +579,9 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="grade" id="caixaCards"></div>
     <h3>Recebido por forma de pagamento</h3>
     <div class="grade" id="caixaForma"></div>
+    <h3>📦 Produtos vendidos no dia</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Faturamento</th><th class="n">Lucro</th></tr></thead><tbody id="tabelaProdutosDia"></tbody></table></div>
+    <div class="grupo-botoes"><button class="btn cinza" type="button" onclick="imprimirRelatorioDia()">🖨️ Imprimir relatório do dia</button></div>
     <h3>🧮 Conferência do dinheiro</h3>
     <div class="bloco-calc">
       <div><label for="caixaFundo">Fundo de troco inicial (R$)</label><input type="number" step="0.01" id="caixaFundo" inputmode="decimal" oninput="salvarConferencia()"></div>
@@ -601,6 +604,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="resultado" id="resumoMensal"></div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Faturamento</th><th class="n">Lucro (após custos e taxas)</th></tr></thead><tbody id="tabelaResumoMensal"></tbody></table></div>
     <div class="grupo-botoes">
+      <button class="btn" type="button" onclick="imprimirRelatorioMensal()">🖨️ Imprimir relatório mensal completo</button>
       <button class="btn cinza" type="button" onclick="exportarCSV('vendas')">⬇️ Vendas do mês (CSV)</button>
       <button class="btn cinza" type="button" onclick="imprimirRelatorioMEI()">🖨️ Relatório de receitas brutas (MEI)</button>
     </div>
@@ -1210,12 +1214,12 @@ const CONFIG_PADRAO = {
   localAtual:''
 };
 const PRODUTOS_INICIAIS = [
-  {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custo:0},
-  {nome:'🥤 Coca-Cola Zero Açúcar', preco:8.00, custo:0},
-  {nome:'🥤 Fanta Laranja', preco:8.00, custo:0},
-  {nome:'🥤 Sprite', preco:8.00, custo:0},
-  {nome:'💧 Água com Gás', preco:5.00, custo:0},
-  {nome:'💧 Água sem Gás', preco:4.00, custo:0}
+  {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custo:0, categoria:'Bebidas'},
+  {nome:'🥤 Coca-Cola Zero Açúcar', preco:8.00, custo:0, categoria:'Bebidas'},
+  {nome:'🥤 Fanta Laranja', preco:8.00, custo:0, categoria:'Bebidas'},
+  {nome:'🥤 Sprite', preco:8.00, custo:0, categoria:'Bebidas'},
+  {nome:'💧 Água com Gás', preco:5.00, custo:0, categoria:'Bebidas'},
+  {nome:'💧 Água sem Gás', preco:4.00, custo:0, categoria:'Bebidas'}
 ];
 const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
@@ -2796,24 +2800,39 @@ const PAG_VENDAS = {pagina: 1, porPagina: 25};
 const FORMAS = ['dinheiro', 'pix', 'debito', 'credito'];
 
 /* ---------- catálogo ---------- */
-const CATEGORIAS_SUGERIDAS = ['Pizza', 'Empanadas', 'Pão Rústico', 'Pão Ciabata', 'Bebidas'];
+const CATEGORIAS_SUGERIDAS = ['Empanadas', 'Pizza', 'Pães', 'Bebidas'];
+// Ordem fixa de exibição das categorias (o que não estiver aqui vai depois, em ordem alfabética).
+const ORDEM_CATEGORIAS = ['Empanadas', 'Pizza', 'Pães', 'Bebidas'];
 let categoriaFiltroAtual = '';
 // Quando o produto não tem categoria definida manualmente, tenta adivinhar pelo nome (pizza/empanada/pão...).
+// Pão Rústico, Pão Ciabata e outros tipos de pão entram todos na categoria única "Pães".
+// Qualquer coisa que não seja pizza/empanada/pão cai em "Bebidas" (refrigerantes, água etc. — o resto do catálogo).
 function inferirCategoria(nome){
   const n = norm(nome || '');
   if(n.includes('pizza')) return 'Pizza';
   if(n.includes('empanada')) return 'Empanadas';
-  if(n.includes('rustico')) return 'Pão Rústico';
-  if(n.includes('ciabat')) return 'Pão Ciabata';
-  if(n.includes('pao ') || n.startsWith('pao') || n.includes(' pao')) return 'Pães';
-  return 'Outros';
+  if(n.includes('pao') || n.includes('rustico') || n.includes('ciabat')) return 'Pães';
+  return 'Bebidas';
+}
+// Subtipo do pão (só pra exibir um rótulo dentro da categoria "Pães"; não vira um filtro separado).
+function subcategoriaPao(nome){
+  const n = norm(nome || '');
+  if(n.includes('rustico')) return 'Rústico';
+  if(n.includes('ciabat')) return 'Ciabata';
+  return '';
 }
 const categoriaDoItem = it => (it.categoria && it.categoria.trim()) || inferirCategoria(it.nome);
+function ordenarCategorias(cats){
+  const set = new Set(cats);
+  const fixas = ORDEM_CATEGORIAS.filter(c => set.has(c));
+  const extras = cats.filter(c => !ORDEM_CATEGORIAS.includes(c)).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  return fixas.concat(extras);
+}
 function categoriasExistentes(){
   const set = new Set();
   catalogoVenda().forEach(it => set.add(categoriaDoItem(it)));
   CATEGORIAS_SUGERIDAS.forEach(c => set.add(c));
-  return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  return ordenarCategorias(Array.from(set));
 }
 function atualizarDatalistCategorias(){
   const el = $('listaCategoriasDL'); if(!el) return;
@@ -2872,7 +2891,7 @@ function renderFiltroCategoriaVenda(cats){
 function renderGradeProdutos(){
   const q = norm($('buscaProdVenda').value);
   const todos = catalogoVenda();
-  const catsPresentes = Array.from(new Set(todos.map(categoriaDoItem))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const catsPresentes = ordenarCategorias(Array.from(new Set(todos.map(categoriaDoItem))));
   if(categoriaFiltroAtual && !catsPresentes.includes(categoriaFiltroAtual)) categoriaFiltroAtual = '';
   renderFiltroCategoriaVenda(catsPresentes);
   const cat = todos.filter(p => (!q || norm(p.nome).includes(q)) && (!categoriaFiltroAtual || categoriaDoItem(p) === categoriaFiltroAtual));
@@ -2880,7 +2899,8 @@ function renderGradeProdutos(){
     const semEst = faltaEstoquePara1(p.tipo, p.id);
     const disp = disponivelProduto(p.tipo, p.id, consumoAtual);
     const dispTxt = disp === null ? '' : '<span class="prod-disp' + (disp <= 3 ? ' baixo' : '') + '">' + Math.max(0, disp) + '</span>';
-    return '<button type="button" class="prod-btn' + (p.preco > 0 ? '' : ' sem-preco') + (semEst ? ' sem-estoque' : '') + '" onclick="adicionarProdutoRapido(\'' + p.tipo + '\',\'' + p.id + '\')">' + dispTxt + '<b>' + esc(p.nome) + '</b><span>' + (p.preco > 0 ? brl(p.preco) : 'definir preço') + (semEst ? ' • sem estoque' : '') + '</span></button>';
+    const sub = categoriaDoItem(p) === 'Pães' ? subcategoriaPao(p.nome) : '';
+    return '<button type="button" class="prod-btn' + (p.preco > 0 ? '' : ' sem-preco') + (semEst ? ' sem-estoque' : '') + '" onclick="adicionarProdutoRapido(\'' + p.tipo + '\',\'' + p.id + '\')">' + dispTxt + '<b>' + esc(p.nome) + '</b>' + (sub ? '<small class="suave" style="display:block">' + esc(sub) + '</small>' : '') + '<span>' + (p.preco > 0 ? brl(p.preco) : 'definir preço') + (semEst ? ' • sem estoque' : '') + '</span></button>';
   }).join('') : '<div class="vazio" style="grid-column:1/-1">Nenhum produto. Crie fichas técnicas com preço ou cadastre produtos simples.</div>';
 }
 function opcoesProdutosHTML(){
@@ -3432,7 +3452,7 @@ function renderCaixa(){
   $('tabelaCaixaPendentes').innerHTML = pend.length ? pend.map(p =>
     '<tr><td>' + fmtData(p.data) + '<br><small class="suave">' + esc(p.horario) + '</small></td><td>' + (p.senha ? '<span class="senha">' + p.senha + '</span>' : '—') + '</td><td>' + esc(p.cliente) + '</td><td>' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</td><td class="n"><b>' + brl(p.total) + '</b></td><td class="acoes"><button class="btn pequeno" onclick="receberPedido(\'' + p.pedidoId + '\')">💰 Receber</button>' + (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + p.pedidoId + '\')" aria-label="Avisar no WhatsApp">💬</button>' : '') + '</td></tr>'
   ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum pedido pendente. 👍</div></td></tr>';
-  renderResumoMensal(); renderMei(); atualizarBadges();
+  renderProdutosDoDia(); renderResumoMensal(); renderMei(); atualizarBadges();
 }
 function cardHTML(titulo, valor, sub, cls){ return '<div class="card ' + (cls || '') + '"><h3>' + esc(titulo) + '</h3><div class="valor">' + valor + '</div>' + (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') + '</div>'; }
 function salvarConferencia(){
@@ -3493,10 +3513,24 @@ function renderResumoMensal(){
     linha('Margem líquida', m.fat > 0 ? fmt(m.liquido / m.fat * 100, 1) + '%' : '—') +
     linha('A receber (pendente)', brl(m.pendente), m.pendente > 0 ? 'alerta' : '') +
     (semTaxas && m.fat > 0 ? '<div class="aviso alerta-a">Taxas de pagamento não cadastradas: o lucro acima está sem descontar taxas de cartão/PIX e impostos.</div>' : '');
-  const porProd = new Map();
-  m.linhas.forEach(l => { const k = l.produto; if(!porProd.has(k)) porProd.set(k, {qtd: 0, fat: 0, lucro: 0}); const x = porProd.get(k); x.qtd += l.quantidade; x.fat += l.valorTotal; x.lucro += lucroVenda(l); });
-  const arr = Array.from(porProd.entries()).sort((a, b) => b[1].fat - a[1].fat);
+  const arr = produtosResumo(m.linhas);
   $('tabelaResumoMensal').innerHTML = arr.length ? arr.map(([n, x]) => '<tr><td>' + esc(n) + '</td><td class="n">' + x.qtd + '</td><td class="n">' + brl(x.fat) + '</td><td class="n ' + (x.lucro < 0 ? 'erro' : '') + '">' + brl(x.lucro) + '</td></tr>').join('') : '<tr><td colspan="4"><div class="vazio">Sem vendas neste mês.</div></td></tr>';
+}
+// Agrupa linhas de venda por produto: quantidade, faturamento e lucro — usado no resumo do dia, resumo mensal e nos relatórios impressos.
+function produtosResumo(linhas){
+  const porProd = new Map();
+  linhas.forEach(l => { const k = l.produto; if(!porProd.has(k)) porProd.set(k, {qtd: 0, fat: 0, lucro: 0}); const x = porProd.get(k); x.qtd += l.quantidade; x.fat += l.valorTotal; x.lucro += lucroVenda(l); });
+  return Array.from(porProd.entries()).sort((a, b) => b[1].qtd - a[1].qtd);
+}
+function linhaProdutoResumoHTML(n, x){
+  return '<tr><td>' + esc(n) + '</td><td class="n"><b>' + x.qtd + '</b></td><td class="n">' + brl(x.fat) + '</td><td class="n ' + (x.lucro < 0 ? 'erro' : '') + '">' + brl(x.lucro) + '</td></tr>';
+}
+function renderProdutosDoDia(){
+  const d = $('caixaData').value || dataHoje();
+  const linhas = BD.vendas.filter(v => v.data === d);
+  const arr = produtosResumo(linhas);
+  const el = $('tabelaProdutosDia'); if(!el) return;
+  el.innerHTML = arr.length ? arr.map(([n, x]) => linhaProdutoResumoHTML(n, x)).join('') : '<tr><td colspan="4"><div class="vazio">Sem vendas neste dia.</div></td></tr>';
 }
 
 /* ---------- MEI ---------- */
@@ -3568,6 +3602,67 @@ function imprimirRelatorioMEI(){
   window.addEventListener('afterprint', fim);
   try{ window.print(); }catch(e){ toast('Não foi possível abrir a impressão.', 'erro'); }
   setTimeout(fim, 1500);
+}
+function abrirAreaRelatorioEImprimir(html){
+  $('areaRelatorio').innerHTML = html;
+  document.body.classList.add('print-relatorio');
+  const fim = () => { document.body.classList.remove('print-relatorio'); window.removeEventListener('afterprint', fim); };
+  window.addEventListener('afterprint', fim);
+  try{ window.print(); }catch(e){ toast('Não foi possível abrir a impressão.', 'erro'); }
+  setTimeout(fim, 1500);
+}
+function cabecalhoRelatorio(titulo, subtitulo){
+  return '<h2>' + (BD.config.negocioNome ? esc(BD.config.negocioNome) + ' — ' : '') + esc(titulo) + '</h2>' + (subtitulo ? '<p>' + esc(subtitulo) + '</p>' : '');
+}
+function tabelaProdutosRelatorioHTML(linhas){
+  const arr = produtosResumo(linhas);
+  if(!arr.length) return '<p>Sem vendas no período.</p>';
+  const totQtd = soma(arr, ([, x]) => x.qtd), totFat = soma(arr, ([, x]) => x.fat), totLucro = soma(arr, ([, x]) => x.lucro);
+  return '<table><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Faturamento</th><th class="n">Lucro</th></tr></thead><tbody>' +
+    arr.map(([n, x]) => linhaProdutoResumoHTML(n, x)).join('') +
+    '</tbody><tfoot><tr><th>Total</th><th class="n">' + totQtd + '</th><th class="n">' + brl(totFat) + '</th><th class="n">' + brl(totLucro) + '</th></tr></tfoot></table>';
+}
+// Relatório do dia: fecha a venda (feira/condomínio) e mostra, de cabeça, quanto vendeu de cada produto.
+function imprimirRelatorioDia(){
+  const d = $('caixaData').value || dataHoje();
+  const linhas = BD.vendas.filter(v => v.data === d);
+  if(!linhas.length) return toast('Sem vendas neste dia para gerar o relatório.', 'alerta');
+  const r = resumoLinhas(linhas); const rec = recebidoPorForma(d);
+  const local = (typeof nomeLocalAtual === 'function' && nomeLocalAtual()) || '';
+  const html = cabecalhoRelatorio('Relatório do dia', fmtData(d) + (local ? ' — ' + local : '')) +
+    '<table><tbody>' +
+    '<tr><td>Faturamento (vendido)</td><td class="n"><b>' + brl(r.fat) + '</b></td></tr>' +
+    '<tr><td>Custo dos produtos</td><td class="n">' + brl(r.custo) + '</td></tr>' +
+    '<tr><td>Taxas e impostos</td><td class="n">' + brl(r.taxas) + '</td></tr>' +
+    '<tr><td><b>Lucro estimado do dia</b></td><td class="n"><b>' + brl(r.lucro) + '</b></td></tr>' +
+    '<tr><td>A receber (pendente)</td><td class="n">' + brl(r.pendente) + '</td></tr>' +
+    '</tbody></table>' +
+    '<h3>Recebido por forma de pagamento</h3><table><tbody>' + FORMAS.map(f => '<tr><td>' + esc(rotForma[f]) + '</td><td class="n">' + brl(rec[f]) + '</td></tr>').join('') + '</tbody></table>' +
+    '<h3>Produtos vendidos</h3>' + tabelaProdutosRelatorioHTML(linhas);
+  abrirAreaRelatorioEImprimir(html);
+}
+// Relatório mensal completo: resultado financeiro do mês + todos os produtos vendidos, pronto pra imprimir ou salvar em PDF.
+function imprimirRelatorioMensal(){
+  const mes = $('mesResumo').value || mesAtual();
+  const m = resultadoMes(mes);
+  if(!m.linhas.length) return toast('Sem vendas neste mês para gerar o relatório.', 'alerta');
+  const rec = {dinheiro: 0, pix: 0, debito: 0, credito: 0};
+  Array.from(new Set(m.linhas.map(recebidoData))).forEach(d => { const r = recebidoPorForma(d); FORMAS.forEach(f => rec[f] += r[f]); });
+  const html = cabecalhoRelatorio('Relatório mensal', fmtMes(mes)) +
+    '<table><tbody>' +
+    '<tr><td>Faturamento (vendido)</td><td class="n"><b>' + brl(m.fat) + '</b></td></tr>' +
+    '<tr><td>(−) Custo dos produtos vendidos</td><td class="n">' + brl(m.custo) + '</td></tr>' +
+    '<tr><td>(−) Impostos e taxas de pagamento</td><td class="n">' + brl(m.taxas) + '</td></tr>' +
+    '<tr><td>= Lucro após custos e taxas</td><td class="n">' + brl(m.fat - m.custo - m.taxas) + '</td></tr>' +
+    '<tr><td>(−) Despesas reais do mês</td><td class="n">' + brl(m.despesas) + '</td></tr>' +
+    '<tr><td>(−) Perdas registradas</td><td class="n">' + brl(m.perdas) + '</td></tr>' +
+    '<tr><td><b>= LUCRO LÍQUIDO</b></td><td class="n"><b>' + brl(m.liquido) + '</b></td></tr>' +
+    '<tr><td>Margem líquida</td><td class="n">' + (m.fat > 0 ? fmt(m.liquido / m.fat * 100, 1) + '%' : '—') + '</td></tr>' +
+    '<tr><td>A receber (pendente)</td><td class="n">' + brl(m.pendente) + '</td></tr>' +
+    '</tbody></table>' +
+    '<h3>Recebido por forma de pagamento</h3><table><tbody>' + FORMAS.map(f => '<tr><td>' + esc(rotForma[f]) + '</td><td class="n">' + brl(rec[f]) + '</td></tr>').join('') + '</tbody></table>' +
+    '<h3>Produtos vendidos no mês</h3>' + tabelaProdutosRelatorioHTML(m.linhas);
+  abrirAreaRelatorioEImprimir(html);
 }
 
 
