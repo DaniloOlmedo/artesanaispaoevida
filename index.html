@@ -827,18 +827,18 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 <section id="estoque" class="pagina">
   <div class="painel">
     <h2>📦 Estoque de produção (o que você leva para vender)</h2>
-    <div class="aviso">Cadastre em unidades de produção: "Massa de Pizza" 50, "Caixa Pizza 25cm" 40... Vincule as fichas aos componentes (aba Fichas). O sistema desconta a cada venda e devolve quando você exclui ou cancela um pedido. Componentes <b>não cadastrados aqui não são controlados</b> (não bloqueiam a venda).</div>
+    <div class="aviso">Cadastre em unidades de produção: "Massa de Pizza" 50, "Caixa Pizza 25cm" 40... Vincule as fichas aos componentes (aba Fichas). O sistema desconta a cada venda e devolve quando você exclui ou cancela um pedido. Componentes <b>não cadastrados aqui não são controlados</b> (não bloqueiam a venda).<br><b>Estoque do dia</b> é o que está liberado pra vender agora (some a cada venda). <b>Depósito</b> é o estoque geral guardado em casa. Use "🚚 Levar" antes de sair pra feira/condomínio e "↩️ Devolver" quando voltar com sobra.</div>
     <div class="bloco-calc">
       <div><label for="compNome">Componente</label><input type="text" id="compNome" list="listaComponentesSugeridos" placeholder="Ex: Massa de Pizza" autocomplete="off"></div>
       <div><label for="compQtd">Quantidade</label><input type="number" id="compQtd" step="0.01" placeholder="0" inputmode="decimal"></div>
       <div><label for="compMin">Avisar quando restar até</label><input type="number" id="compMin" step="1" min="0" value="3" inputmode="numeric"></div>
     </div>
     <div class="grupo-botoes">
-      <button class="btn" type="button" onclick="adicionarComponenteEstoque('somar')">➕ Somar ao estoque (reposição)</button>
-      <button class="btn laranja" type="button" onclick="adicionarComponenteEstoque('definir')">✏️ Definir quantidade exata</button>
+      <button class="btn" type="button" onclick="adicionarComponenteEstoque('somar')">➕ Somar ao estoque do dia (reposição)</button>
+      <button class="btn laranja" type="button" onclick="adicionarComponenteEstoque('definir')">✏️ Definir quantidade exata (dia)</button>
     </div>
     <div id="sugestoesComponentes"></div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Disponível</th><th class="n">Mínimo</th><th>Ações</th></tr></thead><tbody id="tabelaComponentesEstoque"></tbody></table></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Depósito</th><th class="n">Estoque do dia</th><th class="n">Mínimo</th><th>Ações</th></tr></thead><tbody id="tabelaComponentesEstoque"></tbody></table></div>
   </div>
   <div class="painel">
     <h2>🧮 Fechamento do dia — bateu a contagem?</h2>
@@ -1551,6 +1551,7 @@ function normalizarBD(){
   BD.estoqueComponentes.forEach(c => {
     c.qtd = parseNum(c.qtd);
     c.min = (c.min === undefined || c.min === null || c.min === '') ? 3 : parseNum(c.min, 3);
+    c.deposito = (c.deposito === undefined || c.deposito === null || c.deposito === '') ? 0 : parseNum(c.deposito, 0);
   });
 
   // vendas (preserva registro; só garante tipos)
@@ -2647,6 +2648,42 @@ function definirEstoque(id){
     c.qtd = v.qtd; salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
   }});
 }
+function ajustarDeposito(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  formModal({titulo: 'Depósito — ' + c.nome, aviso: 'No depósito agora: <b>' + fmt(c.deposito || 0, 2) + '</b>. Isso é separado do estoque do dia (' + fmt(c.qtd, 2) + '), que é o que está liberado pra vender.', campos: [
+    {id: 'modo', rotulo: 'O que fazer', tipo: 'select', opcoes: [{v: 'somar', t: 'Somar ao depósito'}, {v: 'definir', t: 'Definir quantidade exata do depósito'}], valor: 'somar'},
+    {id: 'qtd', rotulo: 'Quantidade', tipo: 'numero', valor: ''}
+  ], textoSalvar: 'Salvar', salvar: v => {
+    if(v.qtd === null || !isFinite(v.qtd) || v.qtd < 0 || (v.modo === 'somar' && v.qtd <= 0)){ toast('Informe uma quantidade válida.', 'alerta'); return false; }
+    c.deposito = arred6(v.modo === 'somar' ? (c.deposito || 0) + v.qtd : v.qtd);
+    salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
+    toast('Depósito de "' + c.nome + '" atualizado: ' + fmt(c.deposito, 2) + '.', 'ok');
+  }});
+}
+function levarParaDia(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  formModal({titulo: '🚚 Levar para o dia — ' + c.nome, aviso: 'Disponível no depósito: <b>' + fmt(c.deposito || 0, 2) + '</b>. Estoque do dia atual: ' + fmt(c.qtd, 2) + '.', campos: [
+    {id: 'qtd', rotulo: 'Quantidade a levar', tipo: 'numero', valor: ''}
+  ], textoSalvar: 'Levar', salvar: v => {
+    if(!(v.qtd > 0)){ toast('Informe uma quantidade maior que zero.', 'alerta'); return false; }
+    if(v.qtd > (c.deposito || 0) + 1e-9){ toast('Não tem essa quantidade no depósito (disponível: ' + fmt(c.deposito || 0, 2) + ').', 'alerta'); return false; }
+    c.deposito = arred6((c.deposito || 0) - v.qtd); c.qtd = arred6(c.qtd + v.qtd);
+    salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
+    toast('🚚 ' + fmt(v.qtd, 2) + ' de "' + c.nome + '" levado pro estoque do dia.', 'ok');
+  }});
+}
+function devolverAoDeposito(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  formModal({titulo: '↩️ Devolver ao depósito — ' + c.nome, aviso: 'Estoque do dia (sobra) atual: <b>' + fmt(c.qtd, 2) + '</b>.', campos: [
+    {id: 'qtd', rotulo: 'Quantidade a devolver', tipo: 'numero', valor: c.qtd}
+  ], textoSalvar: 'Devolver', salvar: v => {
+    if(v.qtd === null || !isFinite(v.qtd) || v.qtd <= 0){ toast('Informe uma quantidade maior que zero.', 'alerta'); return false; }
+    if(v.qtd > c.qtd + 1e-9){ toast('Não tem essa sobra no estoque do dia (disponível: ' + fmt(c.qtd, 2) + ').', 'alerta'); return false; }
+    c.qtd = arred6(c.qtd - v.qtd); c.deposito = arred6((c.deposito || 0) + v.qtd);
+    salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
+    toast('↩️ ' + fmt(v.qtd, 2) + ' de "' + c.nome + '" devolvido ao depósito.', 'ok');
+  }});
+}
 function editarComponenteEstoque(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
   formModal({titulo: 'Editar componente', campos: [
@@ -2776,9 +2813,9 @@ function renderEstoque(){
   const lista = BD.estoqueComponentes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   $('tabelaComponentesEstoque').innerHTML = lista.length ? lista.map(c => {
     const st = c.qtd <= 0 ? '<span class="tag vermelho">esgotado</span>' : (c.qtd <= c.min ? '<span class="tag laranja">baixo</span>' : '');
-    return '<tr' + (c.qtd <= 0 ? ' class="alerta-l"' : '') + '><td><b>' + esc(c.nome) + '</b> ' + st + '</td><td class="n ' + (c.qtd < 0 ? 'erro' : '') + '"><b>' + fmt(c.qtd, Number.isInteger(c.qtd) ? 0 : 2) + '</b></td><td class="n">' + fmt(c.min, 0) + '</td>' +
-      '<td class="acoes"><button class="btn pequeno" onclick="reporEstoque(\'' + c.id + '\')">+ Repor</button><button class="btn cinza pequeno" onclick="definirEstoque(\'' + c.id + '\')">Definir</button><button class="btn laranja pequeno" onclick="registrarPerda(\'' + c.id + '\')">Perda</button><button class="btn cinza pequeno" onclick="verUsosComponente(\'' + c.id + '\')" aria-label="Onde é usado" title="Ver em quais fichas este componente é descontado">🔍</button><button class="btn cinza pequeno" onclick="editarComponenteEstoque(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirComponenteEstoque(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
-  }).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum componente cadastrado. Cadastre o que você leva para vender.</div></td></tr>';
+    return '<tr' + (c.qtd <= 0 ? ' class="alerta-l"' : '') + '><td><b>' + esc(c.nome) + '</b> ' + st + '</td><td class="n">' + fmt(c.deposito || 0, Number.isInteger(c.deposito) ? 0 : 2) + '</td><td class="n ' + (c.qtd < 0 ? 'erro' : '') + '"><b>' + fmt(c.qtd, Number.isInteger(c.qtd) ? 0 : 2) + '</b></td><td class="n">' + fmt(c.min, 0) + '</td>' +
+      '<td class="acoes"><button class="btn pequeno" onclick="reporEstoque(\'' + c.id + '\')">+ Repor</button><button class="btn cinza pequeno" onclick="definirEstoque(\'' + c.id + '\')">Definir</button><button class="btn cinza pequeno" onclick="ajustarDeposito(\'' + c.id + '\')" title="Somar ou definir a quantidade guardada no depósito">📦 Depósito</button><button class="btn laranja pequeno" onclick="levarParaDia(\'' + c.id + '\')" title="Mover do depósito para o estoque do dia">🚚 Levar</button><button class="btn laranja pequeno" onclick="devolverAoDeposito(\'' + c.id + '\')" title="Mover do estoque do dia de volta pro depósito">↩️ Devolver</button><button class="btn laranja pequeno" onclick="registrarPerda(\'' + c.id + '\')">Perda</button><button class="btn cinza pequeno" onclick="verUsosComponente(\'' + c.id + '\')" aria-label="Onde é usado" title="Ver em quais fichas este componente é descontado">🔍</button><button class="btn cinza pequeno" onclick="editarComponenteEstoque(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirComponenteEstoque(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+  }).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum componente cadastrado. Cadastre o que você leva para vender.</div></td></tr>';
   const pend = nomesComponentesConhecidos().filter(n => !componenteEstoque(n));
   $('sugestoesComponentes').innerHTML = pend.length ? '<div class="aviso alerta-a">💡 Vinculados nas fichas mas <b>sem estoque cadastrado</b> (não são controlados): ' + pend.map(n => '<button class="btn cinza pequeno" style="margin:2px" onclick="preencherComponente(this.dataset.n)" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>' : '';
   $('tabelaPerdas').innerHTML = BD.perdas.length ? BD.perdas.slice(0, 60).map(p =>
