@@ -1022,6 +1022,18 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div id="dadosResumo" class="grade" style="margin-top:12px"></div>
   </div>
   <div class="painel">
+    <h2>🗄️ Arquivar dados antigos</h2>
+    <div class="aviso">Libera espaço no navegador sem perder nada: os registros mais antigos que a data escolhida são salvos num arquivo separado (guarde junto dos seus backups) e removidos daqui. Só mexe em <b>vendas, compras, despesas e perdas</b> — fichas, insumos, estoque, fornecedores e locais nunca são apagados.</div>
+    <div class="bloco-calc">
+      <div><label for="arqCorte">Arquivar tudo antes de</label><input type="date" id="arqCorte" onchange="atualizarPreviaArquivamento()"></div>
+    </div>
+    <div class="resultado" id="arqPrevia"><p class="suave">Escolha uma data para ver quanto seria arquivado.</p></div>
+    <div class="grupo-botoes">
+      <button class="btn laranja" type="button" onclick="arquivarDadosAntigos()">📦 Baixar arquivo e remover do sistema</button>
+    </div>
+    <div class="dica">Pra recuperar depois, use "🔀 Mesclar vendas de outro aparelho" acima com esse mesmo arquivo — os registros voltam certinho, sem duplicar.</div>
+  </div>
+  <div class="painel">
     <h2>↩️ Pontos de restauração</h2>
     <div class="aviso">Antes de importar, limpar ou restaurar, o sistema guarda automaticamente o estado atual. Também existe uma cópia do que você tinha antes desta atualização.</div>
     <div id="listaRestauracao"></div>
@@ -3919,6 +3931,7 @@ function usoArmazenamentoKB(){
   return total / 1024;
 }
 function renderDados(){
+  atualizarPreviaArquivamento();
   const r = resumoDados(BD);
   const kb = usoArmazenamentoKB();
   let ult = ''; try{ ult = localStorage.getItem('ultimoDownloadBackup') || ''; }catch(e){}
@@ -3932,6 +3945,59 @@ function renderDados(){
     '<div class="card" style="margin-bottom:8px"><h3>' + esc(p.rotulo) + '</h3><div class="sub">' + (p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : 'data desconhecida') + (p.motivo ? ' — ' + esc(p.motivo) : '') + '</div><div class="sub">' + p.resumo.insumos + ' insumos • ' + p.resumo.fichas + ' fichas • ' + p.resumo.formulasMassa + ' massas • ' + p.resumo.vendas + ' vendas • ' + p.resumo.despesas + ' despesas</div><button class="btn laranja pequeno" style="margin-top:6px" onclick="restaurarPonto(\'' + p.chave + '\')">↩️ Restaurar este ponto</button></div>'
   ).join('') : '<div class="vazio">Ainda não há pontos de restauração.</div>';
   renderDiagnostico();
+}
+
+/* ---------- arquivar dados antigos (libera espaço, sem perder nada) ---------- */
+function contarArquivamento(corte){
+  if(!corte) return {vendas: 0, pedidos: 0, compras: 0, despesas: 0, perdas: 0};
+  const antes = x => x && x.data && x.data < corte;
+  const vendasAntigas = BD.vendas.filter(antes);
+  return {
+    vendas: vendasAntigas.length,
+    pedidos: new Set(vendasAntigas.map(v => String(v.pedidoId))).size,
+    compras: BD.compras.filter(antes).length,
+    despesas: BD.despesas.filter(antes).length,
+    perdas: BD.perdas.filter(antes).length
+  };
+}
+function atualizarPreviaArquivamento(){
+  const box = $('arqPrevia'); if(!box) return;
+  const corte = $('arqCorte').value;
+  if(!corte){ box.innerHTML = '<p class="suave">Escolha uma data para ver quanto seria arquivado.</p>'; return; }
+  const c = contarArquivamento(corte);
+  const total = c.vendas + c.compras + c.despesas + c.perdas;
+  box.innerHTML = !total ? '<p class="suave">Nada antes de ' + fmtData(corte) + ' pra arquivar.</p>' :
+    '<div class="linha-kv"><span>Pedidos de venda</span><b>' + c.pedidos + ' (' + c.vendas + ' item(ns))</b></div>' +
+    '<div class="linha-kv"><span>Compras</span><b>' + c.compras + '</b></div>' +
+    '<div class="linha-kv"><span>Despesas</span><b>' + c.despesas + '</b></div>' +
+    '<div class="linha-kv"><span>Perdas</span><b>' + c.perdas + '</b></div>';
+}
+async function arquivarDadosAntigos(){
+  const corte = $('arqCorte').value;
+  if(!corte) return toast('Escolha a data de corte.', 'alerta');
+  const c = contarArquivamento(corte);
+  const total = c.vendas + c.compras + c.despesas + c.perdas;
+  if(!total) return toast('Nada antes de ' + fmtData(corte) + ' pra arquivar.', 'alerta');
+  if(!await confirmar(
+    'Isso vai baixar um arquivo com ' + c.pedidos + ' pedido(s) de venda (' + c.vendas + ' itens), ' + c.compras + ' compra(s), ' + c.despesas + ' despesa(s) e ' + c.perdas + ' perda(s) — tudo de antes de ' + fmtData(corte) + ' — e remover esses registros daqui pra liberar espaço.\n\nOs relatórios e o teto do MEI passam a contar só o que ficou. Nada de cadastro (fichas, insumos, estoque, fornecedores) é mexido, e você pode trazer tudo de volta depois mesclando esse mesmo arquivo.',
+    {titulo: 'Arquivar dados antigos', ok: 'Baixar e remover'}
+  )) return;
+
+  const antes = x => x && x.data && x.data < corte;
+  const arquivo = {
+    versao: APP_VERSAO, app: 'pao-e-vida', criadoEm: new Date().toISOString(), tipo: 'arquivo-historico', corte,
+    dados: {
+      vendas: BD.vendas.filter(antes), compras: BD.compras.filter(antes),
+      despesas: BD.despesas.filter(antes), perdas: BD.perdas.filter(antes)
+    }
+  };
+  baixarArquivo(JSON.stringify(arquivo, null, 2), 'arquivo-historico-' + slug(nomeNegocio()) + '-ate-' + corte + '.json', 'application/json;charset=utf-8');
+
+  guardarBackupAnterior('antes de arquivar dados de antes de ' + corte);
+  BD.vendas = BD.vendas.filter(x => !antes(x)); BD.compras = BD.compras.filter(x => !antes(x));
+  BD.despesas = BD.despesas.filter(x => !antes(x)); BD.perdas = BD.perdas.filter(x => !antes(x));
+  salvarTudo(); renderTudo();
+  toast('Arquivado: ' + c.pedidos + ' pedido(s), ' + c.compras + ' compra(s), ' + c.despesas + ' despesa(s) e ' + c.perdas + ' perda(s) removidos daqui (e salvos no arquivo baixado).', 'ok', {ms: 8000});
 }
 
 /* ---------- mesclar vendas de outro aparelho ---------- */
