@@ -572,6 +572,11 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     </div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Nome</th><th>WhatsApp</th><th>Endereço</th><th>Ações</th></tr></thead><tbody id="tabelaClientes"></tbody></table></div>
   </div>
+  <div class="painel">
+    <div class="cab-painel"><h2>💛 Clientes fiéis (para surpreender)</h2><select id="fielPeriodo" style="width:auto" onchange="renderClientesFieis()" aria-label="Período"><option value="mes">Este mês</option><option value="30d">Últimos 30 dias</option><option value="3m">Últimos 3 meses</option></select></div>
+    <div class="dica">Uso só seu, não é anunciado pro cliente: mostra quem mais te prestigiou no período, pra você decidir na hora — sem regra fixa — quem e quando surpreender com um brinde.</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Cliente</th><th class="n">Visitas</th><th class="n">Itens</th><th class="n">Faturamento</th><th></th></tr></thead><tbody id="tabelaClientesFieis"></tbody></table></div>
+  </div>
 </section>
 
 <!-- ============ FILA ============ -->
@@ -3896,11 +3901,42 @@ function renderClientes(){
     '<tr><td><b>' + esc(c.nome) + '</b></td><td>' + (c.whats ? esc(c.whats) + ' <button class="btn azul pequeno" onclick="abrirWhatsAppCliente(\'' + c.id + '\')" aria-label="Abrir WhatsApp">💬</button>' : '—') + '</td><td>' + esc(c.endereco || '—') + '</td>' +
     '<td class="acoes"><button class="btn cinza pequeno" onclick="editarCliente(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirCliente(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum cliente cadastrado ainda.</div></td></tr>';
+  renderClientesFieis();
 }
 function autoPreencherCliente(){
   const nome = $('clienteNome').value.trim(); if(!nome) return;
   const c = BD.clientes.find(x => norm(x.nome) === norm(nome)); if(!c) return;
   if(c.whats && !$('clienteTelefone').value) $('clienteTelefone').value = c.whats;
+}
+/* ---------- clientes fiéis (uso interno, pra surpreender sem anunciar) ---------- */
+function inicioPeriodoFidelidade(per){
+  if(per === '30d'){ const d = new Date(); d.setDate(d.getDate() - 30); return dataLocal(d); }
+  if(per === '3m'){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 2); return dataLocal(d); }
+  return mesAtual() + '-01';
+}
+function clientesFieisNoPeriodo(de, ate){
+  const mapa = new Map();
+  BD.vendas.forEach(v => {
+    if(!v.data || v.data < de || v.data > ate) return;
+    const nome = (v.cliente || '').trim();
+    if(!nome || NOMES_GENERICOS_VENDA.has(norm(nome))) return;
+    const chave = norm(nome);
+    if(!mapa.has(chave)) mapa.set(chave, {nome, pedidos: new Set(), itens: 0, valor: 0});
+    const c = mapa.get(chave);
+    c.pedidos.add(v.pedidoId || (v.data + '|' + chave));
+    c.itens += v.quantidade || 0;
+    c.valor += v.valorTotal || 0;
+  });
+  return Array.from(mapa.values()).map(c => ({nome: c.nome, pedidos: c.pedidos.size, itens: c.itens, valor: r2(c.valor)}))
+    .sort((a, b) => b.pedidos - a.pedidos || b.valor - a.valor);
+}
+function renderClientesFieis(){
+  const tbl = $('tabelaClientesFieis'); if(!tbl) return;
+  const per = $('fielPeriodo') ? $('fielPeriodo').value : 'mes';
+  const lista = clientesFieisNoPeriodo(inicioPeriodoFidelidade(per), dataHoje());
+  tbl.innerHTML = lista.length ? lista.map(c =>
+    '<tr><td><b>' + esc(c.nome) + '</b>' + (c.pedidos >= 4 ? ' <span class="tag">⭐ fiel</span>' : '') + '</td><td class="n">' + c.pedidos + '</td><td class="n">' + c.itens + '</td><td class="n"><b>' + brl(c.valor) + '</b></td><td><button class="btn laranja pequeno" onclick="abrirCortesia()">🎁 Presentear</button></td></tr>'
+  ).join('') : '<tr><td colspan="5"><div class="vazio">Nenhuma venda com nome de cliente nesse período.</div></td></tr>';
 }
 /* ---------- importar clientes a partir das vendas já lançadas ---------- */
 const NOMES_GENERICOS_VENDA = new Set(['venda historica', 'cliente sem nome', 'cliente']);
