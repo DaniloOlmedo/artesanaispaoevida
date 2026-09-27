@@ -355,6 +355,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 <div id="faixaAvisos" role="status"></div>
 <nav class="navegacao" id="nav" aria-label="Seções">
   <button class="nav-btn" data-p="locais" onclick="irPara('locais')">📍 Locais</button>
+  <button class="nav-btn" data-p="clientes" onclick="irPara('clientes')">👤 Clientes</button>
   <button class="nav-btn" data-p="dashboard" onclick="irPara('dashboard')">📊 Painel</button>
   <button class="nav-btn" data-p="vendas" onclick="irPara('vendas')">🛒 Vendas</button>
   <button class="nav-btn" data-p="fila" onclick="irPara('fila')">👨‍🍳 Fila<span class="selo" id="seloFila">0</span></button>
@@ -406,7 +407,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="aviso" id="localAtualBadge" style="margin-bottom:10px">📍 Vendendo em: <b id="localAtualTxt">nenhum</b> — <button class="btn cinza pequeno" type="button" onclick="irPara('locais')" style="margin:0">trocar</button></div>
     <button class="btn cinza pequeno" type="button" onclick="abrirEscolhaComanda()" style="margin:0 0 10px">🧾 Adicionar a um pedido pendente (em vez de criar um novo)</button>
     <div class="bloco-calc">
-      <div><label for="clienteNome">Nome do cliente</label><input type="text" id="clienteNome" placeholder="Ex: Maria" autocomplete="off"></div>
+      <div><label for="clienteNome">Nome do cliente</label><input type="text" id="clienteNome" list="listaClientesDL" placeholder="Ex: Maria" autocomplete="off" onchange="autoPreencherCliente()"></div>
       <div><label for="clienteTelefone">Telefone (opcional)</label><input type="tel" id="clienteTelefone" placeholder="(00) 00000-0000" autocomplete="off"></div>
       <div>
         <label>Consumo dos próximos itens</label>
@@ -551,6 +552,21 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Local</th><th class="n">Visitas</th><th class="n">Faturamento</th><th class="n">Lucro</th><th class="n">Ticket médio</th><th class="n">Média por visita</th><th></th></tr></thead><tbody id="tabelaComparativoLocais"></tbody></table></div>
   </div>
   <div id="painelDetalheLocal"></div>
+</section>
+
+<!-- ============ CLIENTES ============ -->
+<section id="clientes" class="pagina">
+  <div class="painel">
+    <h2>➕ Cadastrar cliente</h2>
+    <div class="aviso">Pequeno cadastro para agilizar o atendimento e, no futuro, apoiar um serviço de entrega (delivery).</div>
+    <div class="linha-form" style="grid-template-columns:1.6fr 1.2fr 2fr auto">
+      <div><label for="clNome">Nome</label><input type="text" id="clNome" placeholder="Ex: Michele" autocomplete="off" onkeydown="if(event.key==='Enter')adicionarCliente()"></div>
+      <div><label for="clWhats">WhatsApp</label><input type="tel" id="clWhats" placeholder="(00) 00000-0000" autocomplete="off" onkeydown="if(event.key==='Enter')adicionarCliente()"></div>
+      <div><label for="clEndereco">Endereço (para entrega)</label><input type="text" id="clEndereco" placeholder="Rua, número, bairro, ponto de referência" autocomplete="off" onkeydown="if(event.key==='Enter')adicionarCliente()"></div>
+      <button class="btn" type="button" onclick="adicionarCliente()">+</button>
+    </div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Nome</th><th>WhatsApp</th><th>Endereço</th><th>Ações</th></tr></thead><tbody id="tabelaClientes"></tbody></table></div>
+  </div>
 </section>
 
 <!-- ============ FILA ============ -->
@@ -1060,6 +1076,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 </section>
 
 <datalist id="listaInsumosDL"></datalist>
+<datalist id="listaClientesDL"></datalist>
 <datalist id="listaComponentesSugeridos"></datalist>
 <datalist id="listaCategoriasDL"></datalist>
 
@@ -1226,10 +1243,10 @@ function formModal({titulo, campos, salvar, textoSalvar = 'Salvar', aviso = '', 
 const CHAVES = {
   custos:'custosFixos', taxas:'taxas', insumos:'insumos', fichas:'fichas', formulasMassa:'formulasMassa',
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
-  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores'
+  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores', clientes:'clientes'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[]};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
   valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem',
@@ -1253,7 +1270,7 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0, categoria:'Bebidas'},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0, categoria:'Bebidas'}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[]};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
@@ -1963,6 +1980,8 @@ function atualizarCampoPesoUn(){ $('wrapPesoUn').classList.toggle('oculto', $('i
 function atualizarDatalists(){
   const nomes = BD.insumos.map(i => i.nome).sort((a, b) => a.localeCompare(b, 'pt-BR'));
   $('listaInsumosDL').innerHTML = nomes.map(n => '<option value="' + esc(n) + '"></option>').join('');
+  const dlCli = $('listaClientesDL');
+  if(dlCli) dlCli.innerHTML = BD.clientes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(c => '<option value="' + esc(c.nome) + '"></option>').join('');
 }
 async function adicionarInsumo(){
   const nome = $('insumoNome').value.trim(); const unid = $('insumoUnid').value;
@@ -3832,6 +3851,52 @@ function renderFornecedores(){
   const dl = $('listaFornecedoresSugeridos');
   if(dl) dl.innerHTML = lista.map(f => '<option value="' + esc(f.nome) + '"></option>').join('');
 }
+/* ---------- cadastro de clientes (aba Clientes) ---------- */
+function adicionarCliente(){
+  const nome = $('clNome').value.trim(); const whats = $('clWhats').value.trim(); const endereco = $('clEndereco').value.trim();
+  if(!nome) return toast('Informe o nome do cliente.', 'alerta');
+  if(BD.clientes.some(c => norm(c.nome) === norm(nome))) return toast('Já existe um cliente com esse nome.', 'alerta');
+  BD.clientes.push({id: uid(), nome, whats, endereco});
+  ['clNome', 'clWhats', 'clEndereco'].forEach(i => $(i).value = '');
+  salvar('clientes'); renderClientes(); atualizarDatalists(); toast('Cliente cadastrado.', 'ok');
+}
+function editarCliente(id){
+  const c = BD.clientes.find(x => x.id === id); if(!c) return;
+  formModal({titulo: 'Editar cliente', campos: [
+    {id: 'nome', rotulo: 'Nome', valor: c.nome},
+    {id: 'whats', rotulo: 'WhatsApp', valor: c.whats},
+    {id: 'endereco', rotulo: 'Endereço (para entrega)', valor: c.endereco}
+  ], salvar: v => {
+    if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
+    if(BD.clientes.some(x => x.id !== c.id && norm(x.nome) === norm(v.nome))){ toast('Já existe outro cliente com esse nome.', 'alerta'); return false; }
+    c.nome = v.nome; c.whats = v.whats; c.endereco = v.endereco;
+    salvar('clientes'); renderClientes(); atualizarDatalists();
+  }});
+}
+async function excluirCliente(id){
+  const c = BD.clientes.find(x => x.id === id); if(!c) return;
+  if(!await confirmar('Excluir "' + c.nome + '"? As vendas já registradas continuam mostrando o nome no histórico.', {ok: 'Excluir', perigo: true})) return;
+  BD.clientes = BD.clientes.filter(x => x.id !== id);
+  salvar('clientes'); renderClientes(); atualizarDatalists();
+}
+function abrirWhatsAppCliente(id){
+  const c = BD.clientes.find(x => x.id === id); if(!c || !c.whats) return;
+  let d = c.whats.replace(/\D/g, ''); if(d.length <= 11) d = '55' + d;
+  window.open('https://wa.me/' + d, '_blank', 'noopener');
+}
+function renderClientes(){
+  const lista = BD.clientes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  const tbl = $('tabelaClientes');
+  if(tbl) tbl.innerHTML = lista.length ? lista.map(c =>
+    '<tr><td><b>' + esc(c.nome) + '</b></td><td>' + (c.whats ? esc(c.whats) + ' <button class="btn azul pequeno" onclick="abrirWhatsAppCliente(\'' + c.id + '\')" aria-label="Abrir WhatsApp">💬</button>' : '—') + '</td><td>' + esc(c.endereco || '—') + '</td>' +
+    '<td class="acoes"><button class="btn cinza pequeno" onclick="editarCliente(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirCliente(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>'
+  ).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum cliente cadastrado ainda.</div></td></tr>';
+}
+function autoPreencherCliente(){
+  const nome = $('clienteNome').value.trim(); if(!nome) return;
+  const c = BD.clientes.find(x => norm(x.nome) === norm(nome)); if(!c) return;
+  if(c.whats && !$('clienteTelefone').value) $('clienteTelefone').value = c.whats;
+}
 function cadastrarCupom(){
   lerLinhasCupom();
   const numero = $('cupomNum').value.trim(); const cnpj = $('cupomCNPJ').value.trim(); const mercado = $('cupomMercado').value.trim();
@@ -4786,7 +4851,7 @@ function abrirComandaRetroativa(){
   COMANDA_RETRO = [];
   const opcoesLocais = '<option value="">-- Não informado --</option>' + BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(l => '<option value="' + l.id + '">' + esc(l.nome) + '</option>').join('');
   const html = '<div class="bloco-calc">' +
-    '<div><label for="crc_cliente">Cliente</label><input type="text" id="crc_cliente" placeholder="Ex: Michele"></div>' +
+    '<div><label for="crc_cliente">Cliente</label><input type="text" id="crc_cliente" list="listaClientesDL" placeholder="Ex: Michele"></div>' +
     '<div><label for="crc_data">Data da venda</label><input type="date" id="crc_data" value="' + ($('retroData').value || dataHoje()) + '"></div>' +
     '<div><label for="crc_local">Local</label><select id="crc_local">' + opcoesLocais + '</select></div>' +
     '<div><label for="crc_consumo">Consumo</label><select id="crc_consumo"><option value="viagem">🥡 Viagem</option><option value="local">🍽️ Local</option></select></div>' +
@@ -4876,6 +4941,7 @@ async function finalizarComandaRetroativa(ctl){
   if(!data) return void toast('Escolha a data da venda.', 'alerta') || false;
   if(!COMANDA_RETRO.length) return void toast('Adicione ao menos um item à comanda.', 'alerta') || false;
   if(data > dataHoje() && !await confirmar('A data ' + fmtData(data) + ' é no futuro. Lançar mesmo assim?', {ok: 'Lançar mesmo assim'})) return false;
+  if($('retroData')) $('retroData').value = data;
   const localId = ctl.el.querySelector('#crc_local').value; const localObj = localId ? BD.locais.find(l => l.id === localId) : null;
   const consumo = ctl.el.querySelector('#crc_consumo').value; const forma = ctl.el.querySelector('#crc_forma').value;
   const pid = 'r' + uid();
@@ -4944,7 +5010,7 @@ function editarRetro(id){
   const cat = catalogoVenda(); const atualVal = l.tipoProduto + ':' + l.produtoId; const existe = cat.some(p => p.tipo + ':' + p.id === atualVal);
   const opcoes = (existe ? [] : [{v: atualVal, t: l.produto + ' (produto removido)'}]).concat(cat.map(p => ({v: p.tipo + ':' + p.id, t: p.nome})));
   formModal({titulo: '✏️ Corrigir lançamento histórico', aviso: 'Lançado em ' + fmtLanc(l) + '. Ao salvar, custo, taxas e o teto do MEI são recalculados.', campos: [
-    {id: 'cliente', rotulo: 'Cliente', valor: l.cliente && l.cliente !== 'Venda histórica' ? l.cliente : ''},
+    {id: 'cliente', rotulo: 'Cliente', valor: l.cliente && l.cliente !== 'Venda histórica' ? l.cliente : '', lista: 'listaClientesDL'},
     {id: 'data', rotulo: 'Data da venda', tipo: 'data', valor: l.data},
     {id: 'produto', rotulo: 'Produto', tipo: 'select', valor: atualVal, opcoes},
     {id: 'qtd', rotulo: 'Quantidade', tipo: 'numero', valor: l.quantidade},
@@ -5320,7 +5386,7 @@ function verDetalheLocal(i){
 /* =====================================================================
    NAVEGAÇÃO e INICIALIZAÇÃO
    ===================================================================== */
-const PAGINAS = ['locais', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
+const PAGINAS = ['locais', 'clientes', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
 let _pagina = 'dashboard';
 const paginaAtual = () => _pagina;
 
@@ -5343,6 +5409,7 @@ function renderPagina(id){
       case 'dashboard': renderDashboard(); break;
       case 'vendas': renderVendasPagina(); break;
       case 'locais': renderLocais(); break;
+      case 'clientes': renderClientes(); break;
       case 'fila': renderFila(); break;
       case 'atendimento': renderAtendimento(); break;
       case 'caixa': renderCaixa(); break;
