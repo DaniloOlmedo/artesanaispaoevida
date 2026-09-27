@@ -855,12 +855,25 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 <!-- ============ COMPRAS ============ -->
 <section id="compras" class="pagina">
   <div class="painel">
+    <h2>🚚 Fornecedores</h2>
+    <div class="aviso">Cadastre seus fornecedores para escolher rápido na hora de lançar um cupom, e ter o contato sempre à mão.</div>
+    <div class="linha-form" style="grid-template-columns:1.6fr 1.2fr 1.6fr 1.6fr auto">
+      <div><label for="fornNome">Nome / razão social</label><input type="text" id="fornNome" placeholder="Ex: Distribuidora Queijos Serra" autocomplete="off" onkeydown="if(event.key==='Enter')adicionarFornecedor()"></div>
+      <div><label for="fornContato">Telefone / WhatsApp</label><input type="text" id="fornContato" placeholder="(00) 00000-0000" inputmode="tel"></div>
+      <div><label for="fornFornece">O que fornece</label><input type="text" id="fornFornece" placeholder="Ex: queijo, presunto, embalagens"></div>
+      <div><label for="fornObs">Observação (opcional)</label><input type="text" id="fornObs" placeholder="Ex: entrega às terças, pedido mínimo..."></div>
+      <button class="btn" type="button" onclick="adicionarFornecedor()">+</button>
+    </div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Fornecedor</th><th>Contato</th><th>Fornece</th><th>Observação</th><th>Ações</th></tr></thead><tbody id="tabelaFornecedores"></tbody></table></div>
+    <datalist id="listaFornecedoresSugeridos"></datalist>
+  </div>
+  <div class="painel">
     <h2>🧾 Compras e cupons fiscais</h2>
     <div class="aviso">Cadastre seus cupons. Você pode lançar a compra como despesa e atualizar o preço dos insumos automaticamente.</div>
     <div class="bloco-calc">
       <div><label for="cupomNum">Nº cupom / NF</label><input type="text" id="cupomNum" placeholder="Número"></div>
       <div><label for="cupomCNPJ">CNPJ do fornecedor</label><input type="text" id="cupomCNPJ" placeholder="Deixe vazio se não tiver" inputmode="numeric"></div>
-      <div><label for="cupomMercado">Mercado / loja</label><input type="text" id="cupomMercado" placeholder="Nome do estabelecimento"></div>
+      <div><label for="cupomMercado">Mercado / loja / fornecedor</label><input type="text" id="cupomMercado" list="listaFornecedoresSugeridos" placeholder="Nome do estabelecimento" autocomplete="off"></div>
       <div><label for="cupomData">Data da compra</label><input type="date" id="cupomData"></div>
       <div><label for="cupomValor">Valor total R$</label><input type="number" step="0.01" id="cupomValor" placeholder="0,00" inputmode="decimal"></div>
     </div>
@@ -1201,10 +1214,10 @@ function formModal({titulo, campos, salvar, textoSalvar = 'Salvar', aviso = '', 
 const CHAVES = {
   custos:'custosFixos', taxas:'taxas', insumos:'insumos', fichas:'fichas', formulasMassa:'formulasMassa',
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
-  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais'
+  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[]};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
   valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem',
@@ -1228,7 +1241,7 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0, categoria:'Bebidas'},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0, categoria:'Bebidas'}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[]};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
@@ -1472,7 +1485,7 @@ function acharInsumo(ref){ // ref: {insumoId, nome}
   return acharInsumoPorNome(ref.nome);
 }
 function normalizarBD(){
-  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais'];
+  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores'];
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
@@ -1480,7 +1493,7 @@ function normalizarBD(){
   const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
-  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais'].forEach(k => {
+  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores'].forEach(k => {
     BD[k].forEach(x => { if(x && typeof x === 'object' && !x.id) x.id = uid(); });
   });
   BD.custos.forEach(c => { c.val = parseNum(c.val); });
@@ -3765,6 +3778,48 @@ function renderLinhasCupom(){
     '<div class="linha-form" style="grid-template-columns:2.2fr 1fr 1fr 1fr auto"><div><input id="cl_n' + i + '" list="listaInsumosDL" placeholder="Insumo" value="' + esc(l.nome) + '" aria-label="Insumo"></div><div><input id="cl_q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade"></div>' +
     '<div><select id="cl_u' + i + '" aria-label="Unidade">' + UNIDADES.map(u => '<option' + (u === l.unid ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div><div><input id="cl_v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total"></div><button class="btn vermelho pequeno" type="button" onclick="removerLinhaCupom(' + i + ')" aria-label="Remover">✕</button></div>').join('');
 }
+/* ---------- fornecedores ---------- */
+function adicionarFornecedor(){
+  const nome = $('fornNome').value.trim(); const contato = $('fornContato').value.trim();
+  const fornece = $('fornFornece').value.trim(); const obs = $('fornObs').value.trim();
+  if(!nome) return toast('Informe o nome do fornecedor.', 'alerta');
+  if(BD.fornecedores.some(f => norm(f.nome) === norm(nome))) return toast('Já existe um fornecedor com esse nome.', 'alerta');
+  BD.fornecedores.push({id: uid(), nome, contato, fornece, obs});
+  ['fornNome', 'fornContato', 'fornFornece', 'fornObs'].forEach(i => $(i).value = '');
+  salvar('fornecedores'); renderFornecedores(); toast('Fornecedor cadastrado.', 'ok');
+}
+function editarFornecedor(id){
+  const f = BD.fornecedores.find(x => x.id === id); if(!f) return;
+  formModal({titulo: 'Editar fornecedor', campos: [
+    {id: 'nome', rotulo: 'Nome / razão social', valor: f.nome},
+    {id: 'contato', rotulo: 'Telefone / WhatsApp', valor: f.contato},
+    {id: 'fornece', rotulo: 'O que fornece', valor: f.fornece},
+    {id: 'obs', rotulo: 'Observação', valor: f.obs}
+  ], salvar: v => {
+    if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
+    if(BD.fornecedores.some(x => x.id !== f.id && norm(x.nome) === norm(v.nome))){ toast('Já existe outro fornecedor com esse nome.', 'alerta'); return false; }
+    const antigo = f.nome;
+    f.nome = v.nome; f.contato = v.contato; f.fornece = v.fornece; f.obs = v.obs;
+    if(norm(antigo) !== norm(v.nome)) BD.compras.forEach(c => { if(norm(c.mercado) === norm(antigo)) c.mercado = v.nome; });
+    salvar('fornecedores', 'compras'); renderFornecedores(); renderCompras();
+  }});
+}
+async function excluirFornecedor(id){
+  const f = BD.fornecedores.find(x => x.id === id); if(!f) return;
+  if(!await confirmar('Excluir "' + f.nome + '"? Os cupons já lançados continuam mostrando o nome no histórico.', {ok: 'Excluir', perigo: true})) return;
+  BD.fornecedores = BD.fornecedores.filter(x => x.id !== id);
+  salvar('fornecedores'); renderFornecedores();
+}
+function renderFornecedores(){
+  const lista = BD.fornecedores.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  const tbl = $('tabelaFornecedores');
+  if(tbl) tbl.innerHTML = lista.length ? lista.map(f =>
+    '<tr><td><b>' + esc(f.nome) + '</b></td><td>' + esc(f.contato || '—') + '</td><td>' + esc(f.fornece || '—') + '</td><td>' + esc(f.obs || '—') + '</td>' +
+    '<td class="acoes"><button class="btn cinza pequeno" onclick="editarFornecedor(\'' + f.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirFornecedor(\'' + f.id + '\')" aria-label="Excluir">✕</button></td></tr>'
+  ).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum fornecedor cadastrado.</div></td></tr>';
+  const dl = $('listaFornecedoresSugeridos');
+  if(dl) dl.innerHTML = lista.map(f => '<option value="' + esc(f.nome) + '"></option>').join('');
+}
 function cadastrarCupom(){
   lerLinhasCupom();
   const numero = $('cupomNum').value.trim(); const cnpj = $('cupomCNPJ').value.trim(); const mercado = $('cupomMercado').value.trim();
@@ -3813,6 +3868,7 @@ async function excluirCompra(id){
   salvar('compras', 'despesas'); renderCompras();
 }
 function renderCompras(){
+  renderFornecedores();
   if(!$('cupomData').value) $('cupomData').value = dataHoje();
   if(!$('cupomItensLista').children.length && !LINHAS_CUPOM.length) renderLinhasCupom();
   const q = norm($('pesquisaCupom').value);
