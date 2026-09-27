@@ -572,6 +572,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <button class="btn" type="button" onclick="adicionarCliente()">+</button>
     </div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Nome</th><th>WhatsApp</th><th>Endereço</th><th>Ações</th></tr></thead><tbody id="tabelaClientes"></tbody></table></div>
+    <button class="btn cinza pequeno" type="button" onclick="abrirMesclarClientes()" style="margin-top:10px">🔗 Mesclar clientes duplicados</button>
   </div>
   <div class="painel">
     <div class="cab-painel"><h2>💛 Clientes fiéis (para surpreender)</h2><select id="fielPeriodo" style="width:auto" onchange="renderClientesFieis()" aria-label="Período"><option value="mes">Este mês</option><option value="30d">Últimos 30 dias</option><option value="3m">Últimos 3 meses</option></select></div>
@@ -3977,6 +3978,30 @@ function abrirAtualizarCadastroCliente(){
       salvar('clientes'); renderClientes(); atualizarDatalists();
       $('clienteNome').value = v.nome; if(v.whats) $('clienteTelefone').value = v.whats;
       toast('✔ Cadastro do cliente atualizado.', 'ok');
+    }});
+}
+/* ---------- mesclar clientes duplicados ---------- */
+function abrirMesclarClientes(){
+  if(BD.clientes.length < 2) return toast('Cadastre pelo menos dois clientes para poder mesclar.', 'alerta');
+  const opcoes = [{v: '', t: '-- Selecione --'}].concat(BD.clientes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(c => ({v: c.id, t: c.nome + (c.whats ? ' — ' + c.whats : '')})));
+  formModal({titulo: '🔗 Mesclar clientes duplicados', largo: true,
+    aviso: 'Escolha qual cadastro é o certo (vai continuar existindo) e qual é o duplicado (vai ser removido). As vendas já lançadas em nome do duplicado passam a aparecer com o nome do cadastro correto — o histórico não se perde, só fica organizado num nome só. Telefone e endereço do duplicado preenchem o que estiver vazio no cadastro correto.',
+    campos: [
+      {id: 'manter', rotulo: 'Cadastro correto (vai ficar)', tipo: 'select', valor: '', opcoes},
+      {id: 'remover', rotulo: 'Cadastro duplicado (vai ser removido)', tipo: 'select', valor: '', opcoes}
+    ], textoSalvar: 'Mesclar', salvar: async v => {
+      if(!v.manter || !v.remover){ toast('Escolha os dois cadastros.', 'alerta'); return false; }
+      if(v.manter === v.remover){ toast('Escolha dois cadastros diferentes.', 'alerta'); return false; }
+      const manter = BD.clientes.find(x => x.id === v.manter); const remover = BD.clientes.find(x => x.id === v.remover);
+      if(!manter || !remover) return false;
+      if(!await confirmar('Mesclar "' + remover.nome + '" dentro de "' + manter.nome + '"? As vendas de "' + remover.nome + '" passam a ficar em nome de "' + manter.nome + '", e o cadastro de "' + remover.nome + '" será removido.', {ok: 'Mesclar', perigo: true})) return false;
+      if(!manter.whats && remover.whats) manter.whats = remover.whats;
+      if(!manter.endereco && remover.endereco) manter.endereco = remover.endereco;
+      let qtd = 0;
+      BD.vendas.forEach(vd => { if(norm(vd.cliente || '') === norm(remover.nome)){ vd.cliente = manter.nome; qtd++; } });
+      BD.clientes = BD.clientes.filter(x => x.id !== remover.id);
+      salvarAgora('clientes', 'vendas'); renderClientes(); renderRetro(); renderVendas(true); atualizarDatalists();
+      toast('✔ Mesclado: ' + qtd + ' venda(s) passaram a ficar em nome de "' + manter.nome + '".', 'ok', {ms: 8000});
     }});
 }
 /* ---------- importar clientes a partir das vendas já lançadas ---------- */
