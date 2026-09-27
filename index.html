@@ -417,6 +417,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
         </div>
       </div>
     </div>
+    <button class="btn cinza pequeno" type="button" onclick="abrirAtualizarCadastroCliente()" style="margin:0 0 10px">📇 Completar/corrigir cadastro deste cliente (nome, telefone, endereço)</button>
     <hr>
     <div class="flex-linha">
       <div style="flex:2"><label for="buscaProdVenda">Toque no produto para adicionar</label><input type="search" id="buscaProdVenda" placeholder="🔍 Filtrar produtos..." oninput="renderGradeProdutos()"></div>
@@ -3937,6 +3938,46 @@ function renderClientesFieis(){
   tbl.innerHTML = lista.length ? lista.map(c =>
     '<tr><td><b>' + esc(c.nome) + '</b>' + (c.pedidos >= 4 ? ' <span class="tag">⭐ fiel</span>' : '') + '</td><td class="n">' + c.pedidos + '</td><td class="n">' + c.itens + '</td><td class="n"><b>' + brl(c.valor) + '</b></td><td><button class="btn laranja pequeno" onclick="abrirCortesia()">🎁 Presentear</button></td></tr>'
   ).join('') : '<tr><td colspan="5"><div class="vazio">Nenhuma venda com nome de cliente nesse período.</div></td></tr>';
+}
+/* ---------- atualizar/completar cadastro do cliente direto na tela de vendas ---------- */
+function candidatosClienteParecidos(nomeDigitado){
+  const alvo = norm(nomeDigitado); if(!alvo) return [];
+  const primeiroAlvo = alvo.split(' ')[0];
+  return BD.clientes.filter(c => {
+    const n = norm(c.nome);
+    return n === alvo || n.startsWith(alvo) || alvo.startsWith(n) || n.split(' ')[0] === primeiroAlvo;
+  });
+}
+function abrirAtualizarCadastroCliente(){
+  const nomeDigitado = $('clienteNome').value.trim();
+  const telDigitado = $('clienteTelefone').value.trim();
+  if(!nomeDigitado) return toast('Digite o nome do cliente ali em cima primeiro.', 'alerta');
+  const candidatos = candidatosClienteParecidos(nomeDigitado);
+  const unico = candidatos.length === 1 ? candidatos[0] : null;
+  const opcoes = [{v: '', t: '➕ Cadastrar como novo cliente'}].concat(candidatos.map(c => ({v: c.id, t: c.nome + (c.whats ? ' — ' + c.whats : '')})));
+  formModal({titulo: '📇 Atualizar cadastro do cliente', largo: true,
+    aviso: candidatos.length
+      ? (candidatos.length === 1 ? 'Encontramos um cadastro parecido — deve ser este.' : 'Encontramos mais de um cadastro parecido. Escolha quem é.') + ' Confira e corrija nome, telefone e endereço abaixo antes de salvar.'
+      : 'Nenhum cadastro parecido encontrado — isso vai criar um cliente novo.',
+    campos: [
+      {id: 'alvo', rotulo: 'Cliente', tipo: 'select', valor: unico ? unico.id : '', opcoes},
+      {id: 'nome', rotulo: 'Nome completo', valor: nomeDigitado},
+      {id: 'whats', rotulo: 'WhatsApp', valor: telDigitado || (unico ? unico.whats : '')},
+      {id: 'endereco', rotulo: 'Endereço (para entrega)', valor: unico ? unico.endereco : ''}
+    ], salvar: v => {
+      if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
+      if(v.alvo){
+        const c = BD.clientes.find(x => x.id === v.alvo); if(!c) return false;
+        if(BD.clientes.some(x => x.id !== c.id && norm(x.nome) === norm(v.nome))){ toast('Já existe outro cliente com esse nome.', 'alerta'); return false; }
+        c.nome = v.nome; c.whats = v.whats; c.endereco = v.endereco;
+      }else{
+        if(BD.clientes.some(x => norm(x.nome) === norm(v.nome))){ toast('Já existe um cliente com esse nome — selecione ele na lista "Cliente" acima.', 'alerta'); return false; }
+        BD.clientes.push({id: uid(), nome: v.nome, whats: v.whats, endereco: v.endereco});
+      }
+      salvar('clientes'); renderClientes(); atualizarDatalists();
+      $('clienteNome').value = v.nome; if(v.whats) $('clienteTelefone').value = v.whats;
+      toast('✔ Cadastro do cliente atualizado.', 'ok');
+    }});
 }
 /* ---------- importar clientes a partir das vendas já lançadas ---------- */
 const NOMES_GENERICOS_VENDA = new Set(['venda historica', 'cliente sem nome', 'cliente']);
