@@ -557,6 +557,11 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 <!-- ============ CLIENTES ============ -->
 <section id="clientes" class="pagina">
   <div class="painel">
+    <h2>📥 Importar clientes das vendas já lançadas</h2>
+    <div class="aviso">Escolha um período e o sistema procura, nas vendas já registradas (inclusive as retroativas), os nomes e telefones dos clientes que ainda não estão neste cadastro.</div>
+    <button class="btn" type="button" onclick="abrirImportarClientesVendas()">🔎 Buscar clientes nas vendas</button>
+  </div>
+  <div class="painel">
     <h2>➕ Cadastrar cliente</h2>
     <div class="aviso">Pequeno cadastro para agilizar o atendimento e, no futuro, apoiar um serviço de entrega (delivery).</div>
     <div class="linha-form" style="grid-template-columns:1.6fr 1.2fr 2fr auto">
@@ -3896,6 +3901,69 @@ function autoPreencherCliente(){
   const nome = $('clienteNome').value.trim(); if(!nome) return;
   const c = BD.clientes.find(x => norm(x.nome) === norm(nome)); if(!c) return;
   if(c.whats && !$('clienteTelefone').value) $('clienteTelefone').value = c.whats;
+}
+/* ---------- importar clientes a partir das vendas já lançadas ---------- */
+const NOMES_GENERICOS_VENDA = new Set(['venda historica', 'cliente sem nome', 'cliente']);
+let IMPORT_CLI_CANDIDATOS = [];
+function candidatosClientesNoPeriodo(de, ate){
+  const mapa = new Map();
+  BD.vendas.forEach(v => {
+    if(!v.data || v.data < de || v.data > ate) return;
+    const nome = (v.cliente || '').trim();
+    if(!nome || NOMES_GENERICOS_VENDA.has(norm(nome))) return;
+    const chave = norm(nome);
+    if(!mapa.has(chave)) mapa.set(chave, {nome, telefone: '', qtd: 0});
+    const c = mapa.get(chave);
+    c.qtd++;
+    if(!c.telefone && v.telefone) c.telefone = v.telefone;
+  });
+  return Array.from(mapa.values())
+    .filter(c => !BD.clientes.some(x => norm(x.nome) === norm(c.nome)))
+    .sort((a, b) => b.qtd - a.qtd || a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+function abrirImportarClientesVendas(){
+  const hoje = dataHoje();
+  const html = '<div class="bloco-calc">' +
+    '<div><label for="impCliDe">De</label><input type="date" id="impCliDe" value="' + hoje + '"></div>' +
+    '<div><label for="impCliAte">Até</label><input type="date" id="impCliAte" value="' + hoje + '"></div>' +
+    '</div>' +
+    '<div id="impCliResultado" style="margin-top:12px"></div>';
+  abrirModal({titulo: '📥 Importar clientes das vendas', largo: true, html, botoes: [
+    {rotulo: 'Cancelar', classe: 'cinza'},
+    {rotulo: 'Adicionar selecionados', fn: ctl => confirmarImportacaoClientes(ctl)}
+  ], aoAbrir: ctl => {
+    ctl.corpo.querySelector('#impCliDe').addEventListener('change', () => buscarClientesParaImportar(ctl));
+    ctl.corpo.querySelector('#impCliAte').addEventListener('change', () => buscarClientesParaImportar(ctl));
+    buscarClientesParaImportar(ctl);
+  }});
+}
+function buscarClientesParaImportar(ctl){
+  const de = ctl.corpo.querySelector('#impCliDe').value; const ate = ctl.corpo.querySelector('#impCliAte').value;
+  if(!de || !ate) return;
+  renderCandidatosImportacaoClientes(ctl, candidatosClientesNoPeriodo(de, ate));
+}
+function renderCandidatosImportacaoClientes(ctl, lista){
+  IMPORT_CLI_CANDIDATOS = lista;
+  const el = ctl.corpo.querySelector('#impCliResultado');
+  if(!lista.length){ el.innerHTML = '<div class="vazio">Nenhum cliente novo encontrado nesse período (ou todos já estão cadastrados).</div>'; return; }
+  el.innerHTML = '<div class="dica">' + lista.length + ' cliente(s) novo(s) encontrado(s). Desmarque quem não quiser adicionar e confira/complete o telefone.</div>' +
+    '<div class="tabela-wrap"><table class="tabela"><thead><tr><th><input type="checkbox" checked aria-label="Selecionar todos" onchange="IMPORT_CLI_CANDIDATOS.forEach((_,i) => { const c = document.getElementById(\'impc_\' + i); if(c) c.checked = this.checked; })"></th><th>Nome</th><th>Telefone</th><th class="n">Vendas no período</th></tr></thead><tbody>' +
+    lista.map((c, i) => '<tr><td><input type="checkbox" id="impc_' + i + '" checked aria-label="Selecionar"></td><td>' + esc(c.nome) + '</td><td><input type="tel" id="impt_' + i + '" value="' + esc(c.telefone) + '" placeholder="(00) 00000-0000" style="width:100%"></td><td class="n">' + c.qtd + '</td></tr>').join('') +
+    '</tbody></table></div>';
+}
+function confirmarImportacaoClientes(ctl){
+  const selecionados = IMPORT_CLI_CANDIDATOS.filter((c, i) => { const chk = ctl.el.querySelector('#impc_' + i); return chk && chk.checked; });
+  if(!selecionados.length){ toast('Nenhum cliente selecionado.', 'alerta'); return false; }
+  let add = 0;
+  IMPORT_CLI_CANDIDATOS.forEach((c, i) => {
+    const chk = ctl.el.querySelector('#impc_' + i); if(!chk || !chk.checked) return;
+    if(BD.clientes.some(x => norm(x.nome) === norm(c.nome))) return;
+    const tel = (ctl.el.querySelector('#impt_' + i) || {}).value || '';
+    BD.clientes.push({id: uid(), nome: c.nome, whats: tel.trim(), endereco: ''});
+    add++;
+  });
+  salvar('clientes'); renderClientes(); atualizarDatalists();
+  toast(add + ' cliente(s) adicionado(s) ao cadastro. Complete o endereço quando puder.', 'ok', {ms: 7000});
 }
 function cadastrarCupom(){
   lerLinhasCupom();
