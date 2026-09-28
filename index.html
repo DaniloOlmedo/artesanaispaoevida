@@ -2257,10 +2257,16 @@ function editarItemFicha(i){
   }});
 }
 function removerItemFicha(i){ const f = fichaObj(); if(!f) return; f.itens.splice(i, 1); finalizarEdicaoFicha(f); }
+function moverItemFicha(i, dir){
+  const f = fichaObj(); if(!f) return;
+  const j = i + dir; if(j < 0 || j >= f.itens.length) return;
+  const tmp = f.itens[i]; f.itens[i] = f.itens[j]; f.itens[j] = tmp;
+  salvar('fichas'); renderCorpoFicha(f);
+}
 function renderIngredientes(f){
   $('tabelaIngredientesFicha').innerHTML = f.itens.length ? f.itens.map((it, i) =>
     '<tr' + (it.semInsumo || it.erroUnidade ? ' class="alerta-l"' : '') + '><td>' + esc(it.nome) + (it.semInsumo ? ' <span class="tag vermelho">insumo removido</span>' : '') + (it.erroUnidade ? ' <span class="tag vermelho" title="' + esc(it.erroUnidade) + '">unidade?</span>' : '') + '</td><td class="n">' + fmt(it.quantidadeExibida, 2) + '</td><td>' + esc(it.unidade) + '</td><td class="n">' + brl(it.custoItem) + '</td>' +
-    '<td class="acoes"><button class="btn cinza pequeno" onclick="editarItemFicha(' + i + ')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="removerItemFicha(' + i + ')" aria-label="Remover">✕</button></td></tr>'
+    '<td class="acoes"><button class="btn cinza pequeno" onclick="moverItemFicha(' + i + ',-1)" aria-label="Mover para cima" title="Mover para cima"' + (i === 0 ? ' disabled' : '') + '>⬆️</button><button class="btn cinza pequeno" onclick="moverItemFicha(' + i + ',1)" aria-label="Mover para baixo" title="Mover para baixo"' + (i === f.itens.length - 1 ? ' disabled' : '') + '>⬇️</button><button class="btn cinza pequeno" onclick="editarItemFicha(' + i + ')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="removerItemFicha(' + i + ')" aria-label="Remover">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="5"><div class="vazio">Sem ingredientes. Adicione acima.</div></td></tr>';
   $('custoInsumosFicha').textContent = brl(ingredientesTotal(f));
 }
@@ -2275,6 +2281,12 @@ function adicionarComponenteFicha(){
   salvar('fichas'); renderComponentesFicha(f); atualizarDatalistComponentes();
 }
 function removerComponenteFicha(i){ const f = fichaObj(); if(!f) return; f.componentes.splice(i, 1); salvar('fichas'); renderComponentesFicha(f); }
+function moverComponenteFicha(i, dir){
+  const f = fichaObj(); if(!f) return;
+  const j = i + dir; if(j < 0 || j >= f.componentes.length) return;
+  const tmp = f.componentes[i]; f.componentes[i] = f.componentes[j]; f.componentes[j] = tmp;
+  salvar('fichas'); renderComponentesFicha(f);
+}
 function editarComponenteFicha(i){
   const f = fichaObj(); const c = f && f.componentes[i]; if(!c) return;
   formModal({titulo: 'Editar componente', campos: [{id: 'nome', rotulo: 'Nome (igual ao do estoque)', valor: c.nome, lista: 'listaComponentesSugeridos'}, {id: 'qtd', rotulo: 'Quantidade por unidade vendida', tipo: 'numero', valor: c.qtd}],
@@ -2282,7 +2294,7 @@ function editarComponenteFicha(i){
 }
 function renderComponentesFicha(f){
   $('tabelaComponentesFicha').innerHTML = f.componentes.length ? f.componentes.map((c, i) =>
-    '<tr><td>' + esc(c.nome) + (componenteEstoque(c.nome) ? '' : ' <span class="tag cinza" title="Não cadastrado no Estoque: não é controlado">sem estoque</span>') + '</td><td class="n">' + fmt(c.qtd, 2) + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarComponenteFicha(' + i + ')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="removerComponenteFicha(' + i + ')" aria-label="Remover">✕</button></td></tr>'
+    '<tr><td>' + esc(c.nome) + (componenteEstoque(c.nome) ? '' : ' <span class="tag cinza" title="Não cadastrado no Estoque: não é controlado">sem estoque</span>') + '</td><td class="n">' + fmt(c.qtd, 2) + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="moverComponenteFicha(' + i + ',-1)" aria-label="Mover para cima" title="Mover para cima"' + (i === 0 ? ' disabled' : '') + '>⬆️</button><button class="btn cinza pequeno" onclick="moverComponenteFicha(' + i + ',1)" aria-label="Mover para baixo" title="Mover para baixo"' + (i === f.componentes.length - 1 ? ' disabled' : '') + '>⬇️</button><button class="btn cinza pequeno" onclick="editarComponenteFicha(' + i + ')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="removerComponenteFicha(' + i + ')" aria-label="Remover">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="3"><div class="vazio">Nenhum componente vinculado.</div></td></tr>';
 }
 /* embalagem */
