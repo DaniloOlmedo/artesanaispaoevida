@@ -682,6 +682,9 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <div style="flex:3"><label for="fichaNome">Nome do produto</label><input type="text" id="fichaNome" placeholder="Ex: Pizza Margherita" onkeydown="if(event.key==='Enter')criarFicha()"></div>
       <div class="fixo"><button class="btn" type="button" onclick="criarFicha()">Criar / carregar ficha</button></div>
     </div>
+    <div class="flex-linha" style="margin-top:8px">
+      <button class="btn laranja" type="button" onclick="abrirCriarFichasMassaCongelada()">🧊 Criar fichas de massa congelada + panuozzo</button>
+    </div>
     <div id="semFicha" class="vazio" style="margin-top:12px">Digite o nome e clique para criar, ou escolha uma ficha na lista abaixo.</div>
     <div id="conteudoFicha" class="oculto">
       <hr>
@@ -2139,6 +2142,56 @@ async function criarFicha(){
   }
   $('fichaNome').value = '';
   carregarFicha(f.id);
+}
+/* ---------- assistente: fichas de massa congelada (combos) + panuozzo, a partir de uma receita de Massa já publicada como insumo ---------- */
+function novaFichaBase(nome, categoria){
+  return {id: uid(), nome, itens: [], qtdPorcao: 1, custoFixo: 0, perdaPerc: 0, markupDesejado: null, precoPraticado: 0,
+    componentes: [], embalagemViagem: [], embalagemLocal: [], ativo: true, custoUnitario: 0, precoSugerido: 0, margemReal: 0, categoria: categoria || 'Massa Congelada'};
+}
+function candidatasMassaInsumo(){
+  return BD.formulasMassa.filter(m => m.sinc).map(m => { const ins = achaInsumoDerivado('massa', m.id); return ins ? {m, ins} : null; }).filter(Boolean);
+}
+function abrirCriarFichasMassaCongelada(){
+  const cands = candidatasMassaInsumo();
+  if(!cands.length) return toast('Nenhuma receita de Massa está publicada como insumo ainda. Vá em Massa, monte/abra a receita e clique em "🔗 Usar esta massa como insumo" primeiro.', 'alerta', {ms: 9000});
+  const opcoes = cands.map(c => ({v: c.m.id, t: c.m.nome + ' — ' + brl(c.ins.precoBase * 1000) + '/kg'}));
+  formModal({
+    titulo: '🧊 Criar fichas de massa congelada + panuozzo',
+    aviso: 'Cria automaticamente 4 fichas — "Massa Congelada - 1 unidade", "- Combo 3 unidades", "- Combo 5 unidades" e "Panuozzo" — todas puxando o custo e descontando o mesmo estoque da receita de massa escolhida. Fichas com esse nome que já existirem não são alteradas.',
+    campos: [
+      {id: 'massaId', rotulo: 'Qual receita de massa usar?', tipo: 'select', opcoes, valor: cands[0].m.id},
+      {id: 'gramasUn', rotulo: 'Peso de cada massa/unidade (g)', tipo: 'numero', valor: 250},
+      {id: 'preco1', rotulo: 'Preço — 1 unidade (R$)', tipo: 'numero', valor: 15},
+      {id: 'preco3', rotulo: 'Preço — combo 3 unidades (R$)', tipo: 'numero', valor: 40},
+      {id: 'preco5', rotulo: 'Preço — combo 5 unidades (R$)', tipo: 'numero', valor: 60},
+      {id: 'precoPanuozzo', rotulo: 'Preço — Panuozzo assado (R$, opcional)', tipo: 'numero', valor: null}
+    ],
+    textoSalvar: 'Criar fichas',
+    salvar: v => criarFichasMassaCongelada(v)
+  });
+}
+function criarFichasMassaCongelada(v){
+  const cand = candidatasMassaInsumo().find(c => c.m.id === v.massaId);
+  if(!cand) return toast('Escolha uma receita de massa válida.', 'alerta');
+  const gramas = v.gramasUn > 0 ? v.gramasUn : 250;
+  const defs = [
+    {nome: 'Massa Congelada - 1 unidade', mult: 1, preco: v.preco1},
+    {nome: 'Massa Congelada - Combo 3 unidades', mult: 3, preco: v.preco3},
+    {nome: 'Massa Congelada - Combo 5 unidades', mult: 5, preco: v.preco5},
+    {nome: 'Panuozzo', mult: 1, preco: v.precoPanuozzo}
+  ];
+  const criadas = []; const jaExistiam = [];
+  defs.forEach(d => {
+    if(BD.fichas.find(f => norm(f.nome) === norm(d.nome))){ jaExistiam.push(d.nome); return; }
+    const f = novaFichaBase(d.nome, d.nome === 'Panuozzo' ? 'Panuozzo' : 'Massa Congelada');
+    f.itens.push({insumoId: cand.ins.id, nome: cand.ins.nome, quantidadeExibida: gramas * d.mult, unidade: 'g'});
+    f.componentes.push({nome: cand.ins.nome, qtd: d.mult});
+    f.precoPraticado = d.preco > 0 ? d.preco : 0;
+    BD.fichas.push(f); criadas.push(d.nome);
+  });
+  if(!criadas.length) return toast('Todas essas fichas já existiam — nada foi criado ou alterado.', 'alerta', {ms: 7000});
+  recalcularTudo(); salvar('fichas', 'insumos'); renderFichas(); atualizarDatalistComponentes(); atualizarBadges();
+  toast('Criadas: ' + criadas.join(', ') + '.' + (jaExistiam.length ? ' (já existiam e não foram alteradas: ' + jaExistiam.join(', ') + ')' : ''), 'ok', {ms: 9000});
 }
 function carregarFicha(id){
   if(!BD.fichas.find(x => x.id === id)) return;
