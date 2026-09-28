@@ -474,6 +474,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     </div>
     <div class="grupo-botoes">
       <button class="btn laranja" type="button" onclick="reimprimirUltima()">🖨️ Reimprimir última comanda</button>
+      <button class="btn cinza" type="button" onclick="exportarImagemUltima()" title="Pra quando a impressora não abre direto pelo botão Imprimir — gera uma imagem pra compartilhar no app dela">🖼️ Exportar última em imagem</button>
       <button class="btn vermelho" type="button" onclick="limparCarrinho()">🗑️ Cancelar pedido</button>
     </div>
   </div>
@@ -3465,6 +3466,105 @@ function reimprimirUltima(){
   if(!pid) return toast('Ainda não há pedidos para reimprimir.', 'alerta');
   imprimirComandaPedido(pid);
 }
+function exportarImagemUltima(){
+  let pid = ultimoPedidoImpresso;
+  if(!pid || !linhasDoPedido(pid).length){
+    const ult = BD.vendas.filter(v => !v.retroativo).sort((a, b) => Number(b.pedidoId) - Number(a.pedidoId))[0];
+    pid = ult ? ult.pedidoId : null;
+  }
+  if(!pid) return toast('Ainda não há pedidos para exportar.', 'alerta');
+  abrirExportarComandaImagem(pid);
+}
+/* ---------- comanda em imagem (para impressoras sem AirPrint, que só imprimem via app/compartilhamento) ---------- */
+function comandaLinhasImagem(pid){
+  const p = agruparPedidos(linhasDoPedido(pid))[0]; if(!p) return null;
+  const l0 = p.linhas[0]; const totem = l0.origem === 'totem';
+  const formaTxt = l0.formaPagamento && l0.formaPagamento !== 'pendente' ? ' (' + (rotForma[l0.formaPagamento] || '').replace(/^\S+\s/, '').toUpperCase() + ')' : '';
+  const status = p.pago ? 'PAGO' + formaTxt : (l0.pagamentoPrevisto === 'pix' ? '*** AGUARDA PIX ' + brl(p.total) + ' ***' : '*** COBRAR ' + brl(p.total) + ' ***');
+  const L = [];
+  const add = (texto, opts) => L.push(Object.assign({texto, tam: 20, negrito: false, centro: true, espacoAntes: 0}, opts || {}));
+  const linha = () => L.push({linha: true, espacoAntes: 6});
+  add(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim(), {tam: 26, negrito: true});
+  if(l0.local) add('📍 ' + l0.local.toUpperCase(), {tam: 15});
+  if(totem) add('PEDIDO PELO TOTEM', {tam: 15});
+  if(p.senha) add('Nº ' + p.senha, {tam: 32, negrito: true, espacoAntes: 6});
+  add(fmtData(p.data) + ' - ' + p.horario, {tam: 15});
+  if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 15});
+  if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 15});
+  linha();
+  add(p.cliente.toUpperCase(), {tam: 22, negrito: true});
+  if(p.telefone) add('Tel: ' + p.telefone, {tam: 15});
+  linha();
+  p.linhas.forEach(l => {
+    add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 19, centro: false, negrito: true, espacoAntes: 4});
+    const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
+    if(cons) add('[' + cons + ']', {tam: 14, centro: false});
+    if(l.observacao) add('OBS: ' + l.observacao.toUpperCase(), {tam: 14, centro: false});
+  });
+  linha();
+  add(status, {tam: 19, negrito: true, espacoAntes: 4});
+  if(BD.config.valoresComanda) add('TOTAL ' + brl(p.total), {tam: 22, negrito: true});
+  return L;
+}
+function desenharComandaImagem(pid){
+  const linhas = comandaLinhasImagem(pid); if(!linhas) return null;
+  const largura = 576, pad = 26, maxTextoW = largura - pad * 2;
+  const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
+  function wrap(texto, tam, negrito){
+    ctx.font = (negrito ? 'bold ' : '') + tam + 'px "Courier New", monospace';
+    const palavras = String(texto).split(' '); const out = []; let atual = '';
+    palavras.forEach(w => {
+      const teste = atual ? atual + ' ' + w : w;
+      if(ctx.measureText(teste).width > maxTextoW && atual){ out.push(atual); atual = w; } else atual = teste;
+    });
+    if(atual) out.push(atual);
+    return out;
+  }
+  let y = pad; const finais = [];
+  linhas.forEach(l => {
+    y += (l.espacoAntes || 0);
+    if(l.linha){ finais.push({tracejado: true, y: y + 6}); y += 16; return; }
+    wrap(l.texto, l.tam, l.negrito).forEach(txt => {
+      y += Math.round(l.tam * 1.35);
+      finais.push({texto: txt, y, tam: l.tam, negrito: l.negrito, centro: l.centro});
+    });
+  });
+  const altura = y + pad;
+  cv.width = largura; cv.height = altura;
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, largura, altura);
+  ctx.fillStyle = '#000'; ctx.textBaseline = 'alphabetic';
+  finais.forEach(f => {
+    if(f.tracejado){ ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(pad, f.y); ctx.lineTo(largura - pad, f.y); ctx.stroke(); ctx.setLineDash([]); return; }
+    ctx.font = (f.negrito ? 'bold ' : '') + f.tam + 'px "Courier New", monospace';
+    ctx.textAlign = f.centro ? 'center' : 'left';
+    ctx.fillText(f.texto, f.centro ? largura / 2 : pad, f.y);
+  });
+  return cv;
+}
+function abrirExportarComandaImagem(pid){
+  const cv = desenharComandaImagem(pid); if(!cv) return toast('Pedido não encontrado.', 'erro');
+  const dataUrl = cv.toDataURL('image/png');
+  const nomeArq = 'comanda' + (pid ? '-' + pid : '') + '.png';
+  abrirModal({
+    titulo: '🖼️ Comanda em imagem',
+    html: '<p class="suave pequeno-txt">Salve ou compartilhe essa imagem direto no app da sua impressora, ou mande no WhatsApp do cliente.</p>' +
+      '<div style="text-align:center;border:1px solid var(--borda);border-radius:8px;overflow:auto;max-height:60vh;background:#f4f4f4"><img src="' + dataUrl + '" style="width:100%;display:block" alt="Comanda"></div>',
+    largo: true,
+    botoes: [
+      {rotulo: '💾 Baixar imagem', fn: () => { const a = document.createElement('a'); a.href = dataUrl; a.download = nomeArq; document.body.appendChild(a); a.click(); a.remove(); return false; }},
+      {rotulo: '📤 Compartilhar', classe: 'laranja', fn: async () => {
+        try{
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], nomeArq, {type: 'image/png'});
+          if(navigator.canShare && navigator.canShare({files: [file]})){ await navigator.share({files: [file], title: 'Comanda'}); }
+          else toast('Este navegador não suporta compartilhar direto. Use "Baixar imagem" e envie pelo app da impressora.', 'alerta', {ms: 7000});
+        }catch(e){ if(e && e.name !== 'AbortError') toast('Não foi possível compartilhar.', 'erro'); }
+        return false;
+      }},
+      {rotulo: 'Fechar', classe: 'cinza'}
+    ]
+  });
+}
 function abrirWhatsApp(pid){
   const p = agruparPedidos(linhasDoPedido(pid))[0]; if(!p || !p.telefone) return;
   let d = p.telefone.replace(/\D/g, ''); if(d.length <= 11) d = '55' + d;
@@ -3506,7 +3606,7 @@ function renderVendas(reset){
     html.push('<tr' + (p.pago ? '' : ' style="background:rgba(204,102,51,.10)"') + '><td>' + fmtData(p.data) + '<br><small class="suave">' + esc(p.horario) + '</small></td><td>' + (p.senha ? '<span class="senha">' + p.senha + '</span>' : '—') + '</td><td>' + esc(p.cliente) + (p.telefone ? '<br><small class="suave">' + esc(p.telefone) + '</small>' : '') + '</td><td>' + itens + '</td><td class="n"><b>' + brl(p.total) + '</b></td>' +
       '<td>' + (p.pago ? '<span class="tag">✅ ' + esc((rotForma[forma] || 'Pago').replace(/^\S+\s/, '')) + '</span>' : '<span class="tag laranja">⏳ pendente</span>') + (p.linhas[0].retroativo ? '<br><span class="tag cinza">histórico</span>' : '') + '</td>' +
       '<td class="acoes">' + (p.pago ? '' : '<button class="btn pequeno" onclick="receberPedido(\'' + pid + '\')">💰 Receber</button>') +
-      (p.linhas[0].retroativo ? '' : '<button class="btn cinza pequeno" onclick="imprimirComandaPedido(\'' + pid + '\')" aria-label="Imprimir comanda" title="Reimprimir">🖨️</button>') +
+      (p.linhas[0].retroativo ? '' : '<button class="btn cinza pequeno" onclick="imprimirComandaPedido(\'' + pid + '\')" aria-label="Imprimir comanda" title="Reimprimir">🖨️</button><button class="btn cinza pequeno" onclick="abrirExportarComandaImagem(\'' + pid + '\')" aria-label="Exportar comanda como imagem" title="Exportar como imagem (pra impressoras sem AirPrint)">🖼️</button>') +
       (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + pid + '\')" aria-label="Avisar no WhatsApp" title="Avisar no WhatsApp">💬</button>' : '') +
       '<button class="btn cinza pequeno" onclick="' + (p.linhas[0].retroativo ? 'editarRetro(\'' + p.linhas[0].id + '\')' : 'editarPedido(\'' + pid + '\')') + '" aria-label="Editar">✏️</button>' +
       (!p.linhas[0].retroativo && ['preparo', 'pronto'].includes(statusPedido(p)) ? '<button class="btn laranja pequeno" onclick="perderPedido(\'' + pid + '\')" title="Cliente desistiu — já foi produzido">🗑️ Perda</button>' : '') +
