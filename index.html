@@ -646,6 +646,17 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
   </div>
 
   <div class="painel">
+    <h2>🧾 Recibo de consumo para cliente</h2>
+    <div class="aviso">Gera um recibo simples com os consumos já pagos por um cliente num período — útil quando pedem comprovante pra reembolso ou prestação de contas (condomínio, empresa etc.). Se preencher o CNPJ em "Preferências" acima, ele aparece no recibo.</div>
+    <div class="bloco-calc">
+      <div><label for="reciboCliente">Cliente</label><input type="text" id="reciboCliente" list="listaClientesDL" placeholder="Nome do cliente" autocomplete="off"></div>
+      <div><label for="reciboDe">De</label><input type="date" id="reciboDe"></div>
+      <div><label for="reciboAte">Até</label><input type="date" id="reciboAte"></div>
+    </div>
+    <button class="btn" type="button" onclick="imprimirReciboConsumo()">🖨️ Emitir recibo</button>
+  </div>
+
+  <div class="painel">
     <h2>📊 Controle do limite MEI</h2>
     <div class="aviso">Compara o faturamento bruto do ano com o teto do MEI. Confira sempre o valor vigente no site da Receita/Portal do Empreendedor.</div>
     <div class="bloco-calc">
@@ -874,6 +885,11 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Sistema</th><th class="n">Contagem física</th><th class="n">Diferença</th><th>Ação</th></tr></thead><tbody id="tabelaFechamentoDia"></tbody></table></div>
   </div>
   <div class="painel">
+    <h2>📦 Contagem do depósito (ex: toda sexta-feira)</h2>
+    <div class="aviso">Conte o que tem guardado em casa — farinha, passata, fubá, massas congeladas, empanadas prontas congeladas etc. — e lança o número aqui pra cada item. Cadastre cada um como "componente" ali em cima (ex: "Farinha Globo", "Passata 910g", "Empanada recheada congelada") se ainda não estiver na lista. Se faltar menos do que devia (estragou, venceu), registre como perda; se é só ajuste, use "Só ajustar".</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Depósito (sistema)</th><th class="n">Contagem física</th><th class="n">Diferença</th><th>Ação</th></tr></thead><tbody id="tabelaContagemDeposito"></tbody></table></div>
+  </div>
+  <div class="painel">
     <h2>🗑️ Sobras e perdas registradas</h2>
     <div class="dica" style="margin-bottom:8px">Use o botão "Perda" na linha do componente. A perda desconta do estoque e entra no resultado do mês.</div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Componente</th><th class="n">Qtd</th><th>Motivo</th><th class="n">Valor R$</th><th></th></tr></thead><tbody id="tabelaPerdas"></tbody></table></div>
@@ -951,6 +967,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <label class="linha"><input type="checkbox" id="cfgBackupFechar" onchange="salvarConfig()"> Baixar backup automaticamente ao fechar o dia</label>
     <label class="linha"><input type="checkbox" id="cfgValoresComanda" onchange="salvarConfig()"> Mostrar valores (total) na comanda impressa</label>
     <div class="bloco-calc"><div><label for="cfgVias">Vias impressas em cada comanda</label><select id="cfgVias" onchange="salvarConfig()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente, para levar/pendurar)</option></select></div></div>
+    <div class="bloco-calc"><div><label for="cfgCNPJ">CNPJ do seu negócio (MEI) — opcional</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0000-00" oninput="salvarConfig()"><div class="dica">Aparece no recibo de consumo emitido pra cliente (aba Caixa). Deixe vazio se ainda não tiver CNPJ.</div></div></div>
   </div>
 
   <div id="planoResumo"></div>
@@ -1268,7 +1285,7 @@ const CONFIG_PADRAO = {
   totemTimeout:75, totemRetorno:30, totemChips:['Sem cebola','Sem azeitona','Bem assada','Molho à parte'],
   pixChave:'', pixNome:'', pixCidade:'',
   // identidade / marca (para revenda a outros negócios)
-  negocioNome:'', negocioTagline:'Gestão de vendas e produção', negocioEmoji:'🍞', negocioLogo:'', corPrimaria:'#006644',
+  negocioNome:'', negocioTagline:'Gestão de vendas e produção', negocioEmoji:'🍞', negocioLogo:'', corPrimaria:'#006644', negocioCNPJ:'',
   // plano comercial: 'base' (grátis/barato) ou destravado com código -> recursos avançados (totem, fila, indicadores)
   recursosAvancados:false,
   // local de venda (feira/condomínio/trailer): qual está selecionado agora
@@ -1939,12 +1956,14 @@ function carregarConfigNaTela(){
   $('cfgArredondar').value = c.arredondar; $('cfgTaxaBase').value = c.taxaBase; $('cfgVolume').value = c.volumeMensal || '';
   $('cfgSemEstoque').checked = !!c.semEstoque; $('cfgBackupFechar').checked = !!c.backupFechar; $('cfgValoresComanda').checked = !!c.valoresComanda;
   $('cfgVias').value = String(c.totemVias || 2);
+  $('cfgCNPJ').value = c.negocioCNPJ || '';
 }
 function salvarConfig(){
   const c = BD.config;
   c.arredondar = $('cfgArredondar').value; c.taxaBase = $('cfgTaxaBase').value; c.volumeMensal = parseNum($('cfgVolume').value);
   c.semEstoque = $('cfgSemEstoque').checked; c.backupFechar = $('cfgBackupFechar').checked; c.valoresComanda = $('cfgValoresComanda').checked;
   c.totemVias = $('cfgVias').value === '1' ? 1 : 2;
+  c.negocioCNPJ = $('cfgCNPJ').value.trim();
   recalcularTudo(); salvar('config', 'fichas');
 }
 
@@ -2640,6 +2659,7 @@ function nomesComponentesConhecidos(){
   const add = n => { if(n && !set.has(norm(n))) set.set(norm(n), n); };
   BD.estoqueComponentes.forEach(c => add(c.nome));
   BD.fichas.forEach(f => { f.componentes.forEach(c => add(c.nome)); f.embalagemViagem.forEach(c => add(c.nome)); f.embalagemLocal.forEach(c => add(c.nome)); });
+  BD.insumos.forEach(i => add(i.nome));
   return Array.from(set.values()).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
 /* ---------- diagnóstico: onde um componente é usado, e nomes parecidos que podem estar causando estoque errado ---------- */
@@ -2757,7 +2777,7 @@ async function excluirComponenteEstoque(id){
   if(!await confirmar('Excluir "' + c.nome + '" do estoque? Fichas que usam esse nome deixam de controlar esse item.', {ok: 'Excluir', perigo: true})) return;
   BD.estoqueComponentes = BD.estoqueComponentes.filter(x => x.id !== id); salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
 }
-const MOTIVOS_PERDA = ['Queimou / estragou', 'Caiu / descartou', 'Vencido', 'Brinde / degustação', 'Cliente desistiu / não retirou', 'Fechamento do dia — não bateu a contagem', 'Outro'];
+const MOTIVOS_PERDA = ['Queimou / estragou', 'Caiu / descartou', 'Vencido', 'Brinde / degustação', 'Cliente desistiu / não retirou', 'Fechamento do dia — não bateu a contagem', 'Contagem do depósito — não bateu a contagem', 'Outro'];
 function registrarPerda(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
   formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'Desconta do estoque e entra como perda no resultado do mês.', campos: [
@@ -2863,6 +2883,50 @@ function perdaFechamento(id){
     salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada e estoque ajustado para ' + fmt(contado, 2) + '.', 'ok');
   }});
 }
+/* ---------- contagem do depósito (ex: toda sexta) — mesmo padrão do fechamento do dia, mas em c.deposito ---------- */
+function renderContagemDeposito(){
+  const tb = $('tabelaContagemDeposito'); if(!tb) return;
+  const lista = BD.estoqueComponentes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  tb.innerHTML = lista.length ? lista.map(c =>
+    '<tr data-id="' + c.id + '"><td>' + esc(c.nome) + '</td><td class="n">' + fmt(c.deposito || 0, Number.isInteger(c.deposito) ? 0 : 2) + '</td>' +
+    '<td class="n"><input type="number" min="0" step="0.01" inputmode="decimal" style="width:90px" id="cd_' + c.id + '" placeholder="—" oninput="atualizarDiferencaDeposito(\'' + c.id + '\')" aria-label="Contagem física de ' + esc(c.nome) + ' no depósito"></td>' +
+    '<td class="n" id="cd_dif_' + c.id + '">—</td><td class="acoes" id="cd_acoes_' + c.id + '"></td></tr>'
+  ).join('') : '<tr><td colspan="5"><div class="vazio">Cadastre os componentes acima (inclusive matéria-prima e itens congelados) para poder contar o depósito.</div></td></tr>';
+}
+function atualizarDiferencaDeposito(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  const el = $('cd_' + id); const difEl = $('cd_dif_' + id); const acEl = $('cd_acoes_' + id);
+  const v = el.value.trim();
+  const atual = c.deposito || 0;
+  if(v === ''){ difEl.textContent = '—'; acEl.innerHTML = ''; return; }
+  const contado = parseNum(v); const dif = arred6(atual - contado);
+  if(Math.abs(dif) < 1e-9){ difEl.innerHTML = '<span class="ok">bateu ✅</span>'; acEl.innerHTML = '<button class="btn cinza pequeno" onclick="ajustarContagemDeposito(\'' + id + '\')">🔧 Confirmar</button>'; return; }
+  difEl.innerHTML = '<b class="' + (dif > 0 ? 'alerta' : 'erro') + '">' + (dif > 0 ? '−' : '+') + fmt(Math.abs(dif), 2) + '</b>';
+  acEl.innerHTML = '<button class="btn cinza pequeno" onclick="ajustarContagemDeposito(\'' + id + '\')" title="Corrige o número sem afetar o resultado do mês">🔧 Só ajustar</button>' +
+    (dif > 0 ? '<button class="btn laranja pequeno" onclick="perdaContagemDeposito(\'' + id + '\')" title="Registra como perda no resultado do mês">🗑️ Registrar perda</button>' : '');
+}
+function ajustarContagemDeposito(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  const v = parseNum($('cd_' + id).value, NaN); if(!isFinite(v) || v < 0) return;
+  c.deposito = v; $('cd_' + id).value = ''; $('cd_dif_' + id).textContent = '—'; $('cd_acoes_' + id).innerHTML = '';
+  salvar('estoqueComponentes'); renderEstoque(); toast('Depósito de "' + c.nome + '" ajustado para ' + fmt(v, 2) + '. Nenhum valor entrou como perda.', 'ok');
+}
+function perdaContagemDeposito(id){
+  const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  const contado = parseNum($('cd_' + id).value, NaN); if(!isFinite(contado) || contado < 0) return;
+  const atual = c.deposito || 0;
+  const dif = arred6(atual - contado); if(!(dif > 0)) return;
+  const sugestao = custoEstimadoComponente(c.nome) * dif;
+  formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'O depósito deveria ter <b>' + fmt(atual, 2) + '</b> e a contagem física deu <b>' + fmt(contado, 2) + '</b>. Faltaram <b>' + fmt(dif, 2) + '</b>.', campos: [
+    {id: 'motivo', rotulo: 'Motivo', tipo: 'select', valor: 'Contagem do depósito — não bateu a contagem', opcoes: MOTIVOS_PERDA.map(m => ({v: m, t: m}))},
+    {id: 'valor', rotulo: 'Valor estimado da perda (R$)', tipo: 'numero', valor: sugestao > 0 ? sugestao.toFixed(2) : ''}
+  ], textoSalvar: 'Registrar e ajustar depósito', salvar: v => {
+    c.deposito = contado;
+    BD.perdas.unshift({id: uid(), data: dataHoje(), nome: c.nome, qtd: dif, motivo: v.motivo, valor: v.valor > 0 ? v.valor : 0});
+    $('cd_' + id).value = ''; $('cd_dif_' + id).textContent = '—'; $('cd_acoes_' + id).innerHTML = '';
+    salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada e depósito ajustado para ' + fmt(contado, 2) + '.', 'ok');
+  }});
+}
 
 function renderEstoque(){
   atualizarDatalistComponentes();
@@ -2873,11 +2937,11 @@ function renderEstoque(){
       '<td class="acoes"><button class="btn pequeno" onclick="reporEstoque(\'' + c.id + '\')">+ Repor</button><button class="btn cinza pequeno" onclick="definirEstoque(\'' + c.id + '\')">Definir</button><button class="btn cinza pequeno" onclick="ajustarDeposito(\'' + c.id + '\')" title="Somar ou definir a quantidade guardada no depósito">📦 Depósito</button><button class="btn laranja pequeno" onclick="levarParaDia(\'' + c.id + '\')" title="Mover do depósito para o estoque do dia">🚚 Levar</button><button class="btn laranja pequeno" onclick="devolverAoDeposito(\'' + c.id + '\')" title="Mover do estoque do dia de volta pro depósito">↩️ Devolver</button><button class="btn laranja pequeno" onclick="registrarPerda(\'' + c.id + '\')">Perda</button><button class="btn cinza pequeno" onclick="verUsosComponente(\'' + c.id + '\')" aria-label="Onde é usado" title="Ver em quais fichas este componente é descontado">🔍</button><button class="btn cinza pequeno" onclick="editarComponenteEstoque(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirComponenteEstoque(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum componente cadastrado. Cadastre o que você leva para vender.</div></td></tr>';
   const pend = nomesComponentesConhecidos().filter(n => !componenteEstoque(n));
-  $('sugestoesComponentes').innerHTML = pend.length ? '<div class="aviso alerta-a">💡 Vinculados nas fichas mas <b>sem estoque cadastrado</b> (não são controlados): ' + pend.map(n => '<button class="btn cinza pequeno" style="margin:2px" onclick="preencherComponente(this.dataset.n)" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>' : '';
+  $('sugestoesComponentes').innerHTML = pend.length ? '<div class="aviso alerta-a">💡 Já cadastrados em Insumos ou vinculados nas fichas, mas <b>sem estoque/depósito controlado</b>: clique pra puxar o nome e cadastrar aqui — ' + pend.map(n => '<button class="btn cinza pequeno" style="margin:2px" onclick="preencherComponente(this.dataset.n)" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>' : '';
   $('tabelaPerdas').innerHTML = BD.perdas.length ? BD.perdas.slice(0, 60).map(p =>
     '<tr><td>' + fmtData(p.data) + '</td><td>' + esc(p.nome) + '</td><td class="n">' + fmt(p.qtd, 2) + '</td><td>' + esc(p.motivo) + '</td><td class="n">' + (p.valor > 0 ? brl(p.valor) : '—') + '</td><td><button class="btn vermelho pequeno" onclick="removerPerda(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhuma perda registrada.</div></td></tr>';
-  renderFechamentoDia();
+  renderFechamentoDia(); renderContagemDeposito();
 }
 
 /* ---------- consumo por venda ---------- */
@@ -3739,6 +3803,26 @@ function imprimirRelatorioMEI(){
   window.addEventListener('afterprint', fim);
   try{ window.print(); }catch(e){ toast('Não foi possível abrir a impressão.', 'erro'); }
   setTimeout(fim, 1500);
+}
+function imprimirReciboConsumo(){
+  const nomeCliente = $('reciboCliente').value.trim();
+  if(!nomeCliente) return toast('Informe o nome do cliente.', 'alerta');
+  const de = $('reciboDe').value; const ate = $('reciboAte').value;
+  if(!de || !ate) return toast('Escolha o período (de/até).', 'alerta');
+  const linhas = BD.vendas.filter(v => v.pago !== false && (v.cliente || '').trim() && norm(v.cliente) === norm(nomeCliente) && v.data >= de && v.data <= ate)
+    .sort((a, b) => (a.data + (a.horario || '')).localeCompare(b.data + (b.horario || '')));
+  if(!linhas.length) return toast('Nenhum consumo pago encontrado para esse cliente nesse período.', 'alerta');
+  const total = soma(linhas, l => l.valorTotal);
+  const cnpj = (BD.config.negocioCNPJ || '').trim();
+  const html = cabecalhoRelatorio('Recibo de consumo', fmtData(de) + ' a ' + fmtData(ate)) +
+    (cnpj ? '<p>CNPJ: ' + esc(cnpj) + '</p>' : '') +
+    '<p>Cliente: <b>' + esc(nomeCliente) + '</b></p>' +
+    '<table><thead><tr><th>Data</th><th>Item</th><th class="n">Qtd</th><th class="n">Valor</th></tr></thead><tbody>' +
+    linhas.map(l => '<tr><td>' + fmtData(l.data) + '</td><td>' + esc(l.produto) + '</td><td class="n">' + l.quantidade + '</td><td class="n">' + brl(l.valorTotal) + '</td></tr>').join('') +
+    '</tbody><tfoot><tr><th colspan="3">Total pago no período</th><th class="n">' + brl(total) + '</th></tr></tfoot></table>' +
+    '<p style="margin-top:16px">Recibo referente aos consumos acima, devidamente pagos.</p>' +
+    '<p style="margin-top:50px">_________________________________________<br>' + esc(nomeNegocio()) + (cnpj ? ' — CNPJ ' + esc(cnpj) : '') + '</p>';
+  abrirAreaRelatorioEImprimir(html);
 }
 function abrirAreaRelatorioEImprimir(html){
   $('areaRelatorio').innerHTML = html;
