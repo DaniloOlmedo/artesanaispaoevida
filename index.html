@@ -873,8 +873,9 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <h2>📦 Estoque — depósito e cadastro</h2>
     <div class="aviso"><b>Depósito</b> é o estoque geral guardado em casa — é o ponto de partida de tudo (matéria-prima, massas e itens prontos congelados). Cadastre ou reponha aqui: "Farinha Globo" 10, "Massa de Pizza" 50, "Caixa Pizza 25cm" 40... Vincule as fichas aos componentes (aba Fichas) pra o sistema descontar a cada venda.<br>Quando for vender, use "🚚 Levar" pra mover do depósito pro <b>Estoque do dia</b> (o que está liberado pra vender agora, na feira/condomínio) — leve só a quantidade que pretende vender. Ao voltar, "↩️ Devolver" joga a sobra de volta pro depósito. Componentes <b>não cadastrados aqui não são controlados</b> (não bloqueiam a venda).</div>
     <div class="bloco-calc">
-      <div><label for="compNome">Componente</label><input type="text" id="compNome" list="listaComponentesSugeridos" placeholder="Ex: Massa de Pizza" autocomplete="off"></div>
+      <div><label for="compNome">Componente</label><input type="text" id="compNome" list="listaComponentesSugeridos" placeholder="Ex: Massa de Pizza" autocomplete="off" oninput="sugerirUnidCompNaTela()"></div>
       <div><label for="compQtd">Quantidade</label><input type="number" id="compQtd" step="0.01" placeholder="0" inputmode="decimal"></div>
+      <div><label for="compUnid">Em que unidade?</label><select id="compUnid"><option value="un">unidade (un)</option><option value="kg">quilo (kg)</option><option value="g">grama (g)</option><option value="l">litro (l)</option><option value="ml">mililitro (ml)</option></select></div>
       <div><label for="compMin">Avisar quando restar até</label><input type="number" id="compMin" step="1" min="0" value="3" inputmode="numeric"></div>
     </div>
     <div class="grupo-botoes">
@@ -2749,6 +2750,18 @@ async function salvarInversaComoReceita(){
    ===================================================================== */
 const componenteEstoque = nome => BD.estoqueComponentes.find(c => norm(c.nome) === norm(nome)) || null;
 const arred6 = n => Math.round(n * 1e6) / 1e6;
+// unidade de contagem de cada componente de estoque (independente da unidade de custo do insumo) — 'un' é o padrão (conta em unidades inteiras/peças)
+const UNIDADES_ESTOQUE = [{v: 'un', t: 'unidade (un)'}, {v: 'kg', t: 'quilo (kg)'}, {v: 'g', t: 'grama (g)'}, {v: 'l', t: 'litro (l)'}, {v: 'ml', t: 'mililitro (ml)'}];
+const unidComp = c => (c && c.unid) || 'un';
+// tenta adivinhar a unidade certa olhando se já existe um insumo com esse mesmo nome (ex: "Farinha Globo" cadastrado em Insumos como kg)
+function sugerirUnidPorNome(nome){
+  const ins = acharInsumoPorNome(nome);
+  return ins && UNIDADES_ESTOQUE.some(u => u.v === ins.unid) ? ins.unid : null;
+}
+function fmtCompQtd(c, valor){
+  const u = unidComp(c);
+  return fmt(valor, Number.isInteger(valor) ? 0 : 2) + (u !== 'un' ? ' ' + u : '');
+}
 
 function nomesComponentesConhecidos(){
   const set = new Map();
@@ -2796,76 +2809,85 @@ function atualizarDatalistComponentes(){
 function adicionarComponenteEstoque(modo){
   const nome = $('compNome').value.trim(); const qtd = parseNum($('compQtd').value, NaN);
   const min = parseNum($('compMin').value, 3);
+  const unid = $('compUnid') ? $('compUnid').value : 'un';
   if(!nome) return toast('Informe o nome do componente.', 'alerta');
   if(!isFinite(qtd) || qtd < 0 || (modo === 'somar' && qtd <= 0)) return toast('Informe uma quantidade válida.', 'alerta');
   const ex = componenteEstoque(nome);
-  if(ex){ ex.deposito = arred6(modo === 'somar' ? (ex.deposito || 0) + qtd : qtd); ex.min = min; }
-  else BD.estoqueComponentes.push({id: uid(), nome, qtd: 0, deposito: qtd, min});
-  $('compNome').value = ''; $('compQtd').value = '';
+  if(ex){ ex.deposito = arred6(modo === 'somar' ? (ex.deposito || 0) + qtd : qtd); ex.min = min; ex.unid = unid; }
+  else BD.estoqueComponentes.push({id: uid(), nome, qtd: 0, deposito: qtd, min, unid});
+  $('compNome').value = ''; $('compQtd').value = ''; if($('compUnid')) $('compUnid').value = 'un';
   salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
   toast(ex ? 'Depósito de "' + nome + '" atualizado.' : 'Componente cadastrado no depósito. Use "🚚 Levar" quando for separar pra vender.', 'ok', {ms: 6000});
 }
-function preencherComponente(nome){ $('compNome').value = nome; $('compQtd').focus(); }
+function preencherComponente(nome){ $('compNome').value = nome; sugerirUnidCompNaTela(); $('compQtd').focus(); }
+// ao digitar/escolher o nome, se já existir um insumo com esse nome (ex: "Farinha Globo" em kg), sugere a mesma unidade — o usuário pode trocar se quiser
+function sugerirUnidCompNaTela(){
+  const nomeEl = $('compNome'); const unidEl = $('compUnid'); if(!nomeEl || !unidEl) return;
+  const ex = componenteEstoque(nomeEl.value.trim());
+  const sugerida = ex ? unidComp(ex) : sugerirUnidPorNome(nomeEl.value.trim());
+  if(sugerida) unidEl.value = sugerida;
+}
 function reporEstoque(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
-  formModal({titulo: 'Repor — ' + c.nome, aviso: 'Disponível agora: <b>' + fmt(c.qtd, 2) + '</b>', campos: [{id: 'qtd', rotulo: 'Quantidade a somar', tipo: 'numero', valor: ''}], textoSalvar: 'Somar', salvar: v => {
+  formModal({titulo: 'Repor — ' + c.nome, aviso: 'Disponível agora: <b>' + fmtCompQtd(c, c.qtd) + '</b>', campos: [{id: 'qtd', rotulo: 'Quantidade a somar (em ' + unidComp(c) + ')', tipo: 'numero', valor: ''}], textoSalvar: 'Somar', salvar: v => {
     if(!(v.qtd > 0)){ toast('Informe uma quantidade maior que zero.', 'alerta'); return false; }
     c.qtd = arred6(c.qtd + v.qtd); salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
   }});
 }
 function definirEstoque(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
-  formModal({titulo: 'Definir quantidade — ' + c.nome, campos: [{id: 'qtd', rotulo: 'Quantidade exata disponível', tipo: 'numero', valor: c.qtd}], salvar: v => {
+  formModal({titulo: 'Definir quantidade — ' + c.nome, campos: [{id: 'qtd', rotulo: 'Quantidade exata disponível (em ' + unidComp(c) + ')', tipo: 'numero', valor: c.qtd}], salvar: v => {
     if(v.qtd === null || !isFinite(v.qtd) || v.qtd < 0){ toast('Informe uma quantidade válida.', 'alerta'); return false; }
     c.qtd = v.qtd; salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
   }});
 }
 function ajustarDeposito(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
-  formModal({titulo: 'Depósito — ' + c.nome, aviso: 'No depósito agora: <b>' + fmt(c.deposito || 0, 2) + '</b>. Isso é separado do estoque do dia (' + fmt(c.qtd, 2) + '), que é o que está liberado pra vender.', campos: [
+  formModal({titulo: 'Depósito — ' + c.nome, aviso: 'No depósito agora: <b>' + fmtCompQtd(c, c.deposito || 0) + '</b>. Isso é separado do estoque do dia (' + fmtCompQtd(c, c.qtd) + '), que é o que está liberado pra vender.', campos: [
     {id: 'modo', rotulo: 'O que fazer', tipo: 'select', opcoes: [{v: 'somar', t: 'Somar ao depósito'}, {v: 'definir', t: 'Definir quantidade exata do depósito'}], valor: 'somar'},
-    {id: 'qtd', rotulo: 'Quantidade', tipo: 'numero', valor: ''}
+    {id: 'qtd', rotulo: 'Quantidade (em ' + unidComp(c) + ')', tipo: 'numero', valor: ''}
   ], textoSalvar: 'Salvar', salvar: v => {
     if(v.qtd === null || !isFinite(v.qtd) || v.qtd < 0 || (v.modo === 'somar' && v.qtd <= 0)){ toast('Informe uma quantidade válida.', 'alerta'); return false; }
     c.deposito = arred6(v.modo === 'somar' ? (c.deposito || 0) + v.qtd : v.qtd);
     salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
-    toast('Depósito de "' + c.nome + '" atualizado: ' + fmt(c.deposito, 2) + '.', 'ok');
+    toast('Depósito de "' + c.nome + '" atualizado: ' + fmtCompQtd(c, c.deposito) + '.', 'ok');
   }});
 }
 function levarParaDia(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
-  formModal({titulo: '🚚 Levar para o dia — ' + c.nome, aviso: 'Disponível no depósito: <b>' + fmt(c.deposito || 0, 2) + '</b>. Estoque do dia atual: ' + fmt(c.qtd, 2) + '.', campos: [
-    {id: 'qtd', rotulo: 'Quantidade a levar', tipo: 'numero', valor: ''}
+  formModal({titulo: '🚚 Levar para o dia — ' + c.nome, aviso: 'Disponível no depósito: <b>' + fmtCompQtd(c, c.deposito || 0) + '</b>. Estoque do dia atual: ' + fmtCompQtd(c, c.qtd) + '.', campos: [
+    {id: 'qtd', rotulo: 'Quantidade a levar (em ' + unidComp(c) + ')', tipo: 'numero', valor: ''}
   ], textoSalvar: 'Levar', salvar: v => {
     if(!(v.qtd > 0)){ toast('Informe uma quantidade maior que zero.', 'alerta'); return false; }
-    if(v.qtd > (c.deposito || 0) + 1e-9){ toast('Não tem essa quantidade no depósito (disponível: ' + fmt(c.deposito || 0, 2) + ').', 'alerta'); return false; }
+    if(v.qtd > (c.deposito || 0) + 1e-9){ toast('Não tem essa quantidade no depósito (disponível: ' + fmtCompQtd(c, c.deposito || 0) + ').', 'alerta'); return false; }
     c.deposito = arred6((c.deposito || 0) - v.qtd); c.qtd = arred6(c.qtd + v.qtd);
     salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
-    toast('🚚 ' + fmt(v.qtd, 2) + ' de "' + c.nome + '" levado pro estoque do dia.', 'ok');
+    toast('🚚 ' + fmtCompQtd(c, v.qtd) + ' de "' + c.nome + '" levado pro estoque do dia.', 'ok');
   }});
 }
 function devolverAoDeposito(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
-  formModal({titulo: '↩️ Devolver ao depósito — ' + c.nome, aviso: 'Estoque do dia (sobra) atual: <b>' + fmt(c.qtd, 2) + '</b>.', campos: [
-    {id: 'qtd', rotulo: 'Quantidade a devolver', tipo: 'numero', valor: c.qtd}
+  formModal({titulo: '↩️ Devolver ao depósito — ' + c.nome, aviso: 'Estoque do dia (sobra) atual: <b>' + fmtCompQtd(c, c.qtd) + '</b>.', campos: [
+    {id: 'qtd', rotulo: 'Quantidade a devolver (em ' + unidComp(c) + ')', tipo: 'numero', valor: c.qtd}
   ], textoSalvar: 'Devolver', salvar: v => {
     if(v.qtd === null || !isFinite(v.qtd) || v.qtd <= 0){ toast('Informe uma quantidade maior que zero.', 'alerta'); return false; }
-    if(v.qtd > c.qtd + 1e-9){ toast('Não tem essa sobra no estoque do dia (disponível: ' + fmt(c.qtd, 2) + ').', 'alerta'); return false; }
+    if(v.qtd > c.qtd + 1e-9){ toast('Não tem essa sobra no estoque do dia (disponível: ' + fmtCompQtd(c, c.qtd) + ').', 'alerta'); return false; }
     c.qtd = arred6(c.qtd - v.qtd); c.deposito = arred6((c.deposito || 0) + v.qtd);
     salvar('estoqueComponentes'); renderEstoque(); atualizarBadges();
-    toast('↩️ ' + fmt(v.qtd, 2) + ' de "' + c.nome + '" devolvido ao depósito.', 'ok');
+    toast('↩️ ' + fmtCompQtd(c, v.qtd) + ' de "' + c.nome + '" devolvido ao depósito.', 'ok');
   }});
 }
 function editarComponenteEstoque(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
   formModal({titulo: 'Editar componente', campos: [
+    {id: 'unid', rotulo: 'Unidade de contagem', tipo: 'select', opcoes: UNIDADES_ESTOQUE.map(u => ({v: u.v, t: u.t})), valor: unidComp(c)},
     {id: 'nome', rotulo: 'Nome', valor: c.nome}, {id: 'min', rotulo: 'Avisar quando restar até', tipo: 'numero', valor: c.min}
   ], aviso: 'Embalagens seguem o nome do insumo. Se este componente for uma embalagem, mantenha o nome igual ao do insumo.', salvar: v => {
     if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
     if(BD.estoqueComponentes.some(x => x.id !== c.id && norm(x.nome) === norm(v.nome))){ toast('Já existe um componente com esse nome.', 'alerta'); return false; }
     const antigo = c.nome;
     BD.fichas.forEach(f => f.componentes.forEach(k => { if(norm(k.nome) === norm(antigo)) k.nome = v.nome; }));
-    c.nome = v.nome; c.min = v.min === null ? 3 : v.min; salvar('estoqueComponentes', 'fichas'); renderEstoque(); atualizarBadges();
+    c.nome = v.nome; c.min = v.min === null ? 3 : v.min; c.unid = v.unid || 'un'; salvar('estoqueComponentes', 'fichas'); renderEstoque(); atualizarBadges();
   }});
 }
 async function excluirComponenteEstoque(id){
@@ -2877,7 +2899,7 @@ const MOTIVOS_PERDA = ['Queimou / estragou', 'Caiu / descartou', 'Vencido', 'Bri
 function registrarPerda(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
   formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'Desconta do estoque e entra como perda no resultado do mês.', campos: [
-    {id: 'qtd', rotulo: 'Quantidade perdida', tipo: 'numero', valor: 1},
+    {id: 'qtd', rotulo: 'Quantidade perdida (em ' + unidComp(c) + ')', tipo: 'numero', valor: 1},
     {id: 'motivo', rotulo: 'Motivo', tipo: 'select', valor: MOTIVOS_PERDA[0], opcoes: MOTIVOS_PERDA.map(m => ({v: m, t: m}))},
     {id: 'valor', rotulo: 'Valor estimado da perda (R$, opcional)', tipo: 'numero', valor: '', dica: 'Quanto custou produzir/comprar o que foi perdido.'}
   ], textoSalvar: 'Registrar', salvar: v => {
@@ -2942,8 +2964,8 @@ function renderFechamentoDia(){
   const tb = $('tabelaFechamentoDia'); if(!tb) return;
   const lista = BD.estoqueComponentes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   tb.innerHTML = lista.length ? lista.map(c =>
-    '<tr data-id="' + c.id + '"><td>' + esc(c.nome) + '</td><td class="n">' + fmt(c.qtd, Number.isInteger(c.qtd) ? 0 : 2) + '</td>' +
-    '<td class="n"><input type="number" min="0" step="0.01" inputmode="decimal" style="width:90px" id="fd_' + c.id + '" placeholder="—" oninput="atualizarDiferencaFechamento(\'' + c.id + '\')" aria-label="Contagem física de ' + esc(c.nome) + '"></td>' +
+    '<tr data-id="' + c.id + '"><td>' + esc(c.nome) + '</td><td class="n">' + fmtCompQtd(c, c.qtd) + '</td>' +
+    '<td class="n"><input type="number" min="0" step="0.01" inputmode="decimal" style="width:90px" id="fd_' + c.id + '" placeholder="em ' + unidComp(c) + '" aria-label="Contagem física de ' + esc(c.nome) + ' (em ' + unidComp(c) + ')" oninput="atualizarDiferencaFechamento(\'' + c.id + '\')"></td>' +
     '<td class="n" id="fd_dif_' + c.id + '">—</td><td class="acoes" id="fd_acoes_' + c.id + '"></td></tr>'
   ).join('') : '<tr><td colspan="5"><div class="vazio">Cadastre os componentes acima para poder conferir no fim do dia.</div></td></tr>';
 }
@@ -2954,7 +2976,7 @@ function atualizarDiferencaFechamento(id){
   if(v === ''){ difEl.textContent = '—'; acEl.innerHTML = ''; return; }
   const contado = parseNum(v); const dif = arred6(c.qtd - contado);
   if(Math.abs(dif) < 1e-9){ difEl.innerHTML = '<span class="ok">bateu ✅</span>'; acEl.innerHTML = '<button class="btn cinza pequeno" onclick="ajustarContagemFechamento(\'' + id + '\')">🔧 Confirmar</button>'; return; }
-  difEl.innerHTML = '<b class="' + (dif > 0 ? 'alerta' : 'erro') + '">' + (dif > 0 ? '−' : '+') + fmt(Math.abs(dif), 2) + '</b>';
+  difEl.innerHTML = '<b class="' + (dif > 0 ? 'alerta' : 'erro') + '">' + (dif > 0 ? '−' : '+') + fmtCompQtd(c, Math.abs(dif)) + '</b>';
   acEl.innerHTML = '<button class="btn cinza pequeno" onclick="ajustarContagemFechamento(\'' + id + '\')" title="Corrige o número sem afetar o resultado do mês">🔧 Só ajustar</button>' +
     (dif > 0 ? '<button class="btn laranja pequeno" onclick="perdaFechamento(\'' + id + '\')" title="Registra como perda no resultado do mês">🗑️ Registrar perda</button>' : '');
 }
@@ -2969,14 +2991,14 @@ function perdaFechamento(id){
   const contado = parseNum($('fd_' + id).value, NaN); if(!isFinite(contado) || contado < 0) return;
   const dif = arred6(c.qtd - contado); if(!(dif > 0)) return;
   const sugestao = custoEstimadoComponente(c.nome) * dif;
-  formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'O sistema esperava <b>' + fmt(c.qtd, 2) + '</b> e a contagem física deu <b>' + fmt(contado, 2) + '</b>. Faltaram <b>' + fmt(dif, 2) + '</b>.', campos: [
+  formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'O sistema esperava <b>' + fmtCompQtd(c, c.qtd) + '</b> e a contagem física deu <b>' + fmtCompQtd(c, contado) + '</b>. Faltaram <b>' + fmtCompQtd(c, dif) + '</b>.', campos: [
     {id: 'motivo', rotulo: 'Motivo', tipo: 'select', valor: 'Fechamento do dia — não bateu a contagem', opcoes: MOTIVOS_PERDA.map(m => ({v: m, t: m}))},
     {id: 'valor', rotulo: 'Valor estimado da perda (R$)', tipo: 'numero', valor: sugestao > 0 ? sugestao.toFixed(2) : ''}
   ], textoSalvar: 'Registrar e ajustar estoque', salvar: v => {
     c.qtd = contado;
     BD.perdas.unshift({id: uid(), data: dataHoje(), nome: c.nome, qtd: dif, motivo: v.motivo, valor: v.valor > 0 ? v.valor : 0});
     $('fd_' + id).value = ''; $('fd_dif_' + id).textContent = '—'; $('fd_acoes_' + id).innerHTML = '';
-    salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada e estoque ajustado para ' + fmt(contado, 2) + '.', 'ok');
+    salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada e estoque ajustado para ' + fmtCompQtd(c, contado) + '.', 'ok');
   }});
 }
 /* ---------- contagem do depósito (ex: toda sexta) — mesmo padrão do fechamento do dia, mas em c.deposito ---------- */
@@ -2984,8 +3006,8 @@ function renderContagemDeposito(){
   const tb = $('tabelaContagemDeposito'); if(!tb) return;
   const lista = BD.estoqueComponentes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   tb.innerHTML = lista.length ? lista.map(c =>
-    '<tr data-id="' + c.id + '"><td>' + esc(c.nome) + '</td><td class="n">' + fmt(c.deposito || 0, Number.isInteger(c.deposito) ? 0 : 2) + '</td>' +
-    '<td class="n"><input type="number" min="0" step="0.01" inputmode="decimal" style="width:90px" id="cd_' + c.id + '" placeholder="—" oninput="atualizarDiferencaDeposito(\'' + c.id + '\')" aria-label="Contagem física de ' + esc(c.nome) + ' no depósito"></td>' +
+    '<tr data-id="' + c.id + '"><td>' + esc(c.nome) + '</td><td class="n">' + fmtCompQtd(c, c.deposito || 0) + '</td>' +
+    '<td class="n"><input type="number" min="0" step="0.01" inputmode="decimal" style="width:90px" id="cd_' + c.id + '" placeholder="em ' + unidComp(c) + '" aria-label="Contagem física de ' + esc(c.nome) + ' no depósito (em ' + unidComp(c) + ')" oninput="atualizarDiferencaDeposito(\'' + c.id + '\')"></td>' +
     '<td class="n" id="cd_dif_' + c.id + '">—</td><td class="acoes" id="cd_acoes_' + c.id + '"></td></tr>'
   ).join('') : '<tr><td colspan="5"><div class="vazio">Cadastre os componentes acima (inclusive matéria-prima e itens congelados) para poder contar o depósito.</div></td></tr>';
 }
@@ -2997,7 +3019,7 @@ function atualizarDiferencaDeposito(id){
   if(v === ''){ difEl.textContent = '—'; acEl.innerHTML = ''; return; }
   const contado = parseNum(v); const dif = arred6(atual - contado);
   if(Math.abs(dif) < 1e-9){ difEl.innerHTML = '<span class="ok">bateu ✅</span>'; acEl.innerHTML = '<button class="btn cinza pequeno" onclick="ajustarContagemDeposito(\'' + id + '\')">🔧 Confirmar</button>'; return; }
-  difEl.innerHTML = '<b class="' + (dif > 0 ? 'alerta' : 'erro') + '">' + (dif > 0 ? '−' : '+') + fmt(Math.abs(dif), 2) + '</b>';
+  difEl.innerHTML = '<b class="' + (dif > 0 ? 'alerta' : 'erro') + '">' + (dif > 0 ? '−' : '+') + fmtCompQtd(c, Math.abs(dif)) + '</b>';
   acEl.innerHTML = '<button class="btn cinza pequeno" onclick="ajustarContagemDeposito(\'' + id + '\')" title="Corrige o número sem afetar o resultado do mês">🔧 Só ajustar</button>' +
     (dif > 0 ? '<button class="btn laranja pequeno" onclick="perdaContagemDeposito(\'' + id + '\')" title="Registra como perda no resultado do mês">🗑️ Registrar perda</button>' : '');
 }
@@ -3005,7 +3027,7 @@ function ajustarContagemDeposito(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
   const v = parseNum($('cd_' + id).value, NaN); if(!isFinite(v) || v < 0) return;
   c.deposito = v; $('cd_' + id).value = ''; $('cd_dif_' + id).textContent = '—'; $('cd_acoes_' + id).innerHTML = '';
-  salvar('estoqueComponentes'); renderEstoque(); toast('Depósito de "' + c.nome + '" ajustado para ' + fmt(v, 2) + '. Nenhum valor entrou como perda.', 'ok');
+  salvar('estoqueComponentes'); renderEstoque(); toast('Depósito de "' + c.nome + '" ajustado para ' + fmtCompQtd(c, v) + '. Nenhum valor entrou como perda.', 'ok');
 }
 function perdaContagemDeposito(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
@@ -3013,14 +3035,14 @@ function perdaContagemDeposito(id){
   const atual = c.deposito || 0;
   const dif = arred6(atual - contado); if(!(dif > 0)) return;
   const sugestao = custoEstimadoComponente(c.nome) * dif;
-  formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'O depósito deveria ter <b>' + fmt(atual, 2) + '</b> e a contagem física deu <b>' + fmt(contado, 2) + '</b>. Faltaram <b>' + fmt(dif, 2) + '</b>.', campos: [
+  formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'O depósito deveria ter <b>' + fmtCompQtd(c, atual) + '</b> e a contagem física deu <b>' + fmtCompQtd(c, contado) + '</b>. Faltaram <b>' + fmtCompQtd(c, dif) + '</b>.', campos: [
     {id: 'motivo', rotulo: 'Motivo', tipo: 'select', valor: 'Contagem do depósito — não bateu a contagem', opcoes: MOTIVOS_PERDA.map(m => ({v: m, t: m}))},
     {id: 'valor', rotulo: 'Valor estimado da perda (R$)', tipo: 'numero', valor: sugestao > 0 ? sugestao.toFixed(2) : ''}
   ], textoSalvar: 'Registrar e ajustar depósito', salvar: v => {
     c.deposito = contado;
     BD.perdas.unshift({id: uid(), data: dataHoje(), nome: c.nome, qtd: dif, motivo: v.motivo, valor: v.valor > 0 ? v.valor : 0});
     $('cd_' + id).value = ''; $('cd_dif_' + id).textContent = '—'; $('cd_acoes_' + id).innerHTML = '';
-    salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada e depósito ajustado para ' + fmt(contado, 2) + '.', 'ok');
+    salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada e depósito ajustado para ' + fmtCompQtd(c, contado) + '.', 'ok');
   }});
 }
 
@@ -3029,14 +3051,15 @@ function renderEstoque(){
   const lista = BD.estoqueComponentes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   $('tabelaComponentesEstoque').innerHTML = lista.length ? lista.map(c => {
     const st = c.qtd <= 0 ? '<span class="tag vermelho">esgotado</span>' : (c.qtd <= c.min ? '<span class="tag laranja">baixo</span>' : '');
-    return '<tr' + (c.qtd <= 0 ? ' class="alerta-l"' : '') + '><td><b>' + esc(c.nome) + '</b> ' + st + '</td><td class="n">' + fmt(c.deposito || 0, Number.isInteger(c.deposito) ? 0 : 2) + '</td><td class="n ' + (c.qtd < 0 ? 'erro' : '') + '"><b>' + fmt(c.qtd, Number.isInteger(c.qtd) ? 0 : 2) + '</b></td><td class="n">' + fmt(c.min, 0) + '</td>' +
+    return '<tr' + (c.qtd <= 0 ? ' class="alerta-l"' : '') + '><td><b>' + esc(c.nome) + '</b> ' + st + '</td><td class="n">' + fmtCompQtd(c, c.deposito || 0) + '</td><td class="n ' + (c.qtd < 0 ? 'erro' : '') + '"><b>' + fmtCompQtd(c, c.qtd) + '</b></td><td class="n">' + fmt(c.min, 0) + ' ' + unidComp(c) + '</td>' +
       '<td class="acoes"><button class="btn cinza pequeno" onclick="ajustarDeposito(\'' + c.id + '\')" title="Somar ou definir a quantidade guardada no depósito">📦 Depósito</button><button class="btn laranja pequeno" onclick="levarParaDia(\'' + c.id + '\')" title="Mover do depósito para o estoque do dia">🚚 Levar</button><button class="btn laranja pequeno" onclick="devolverAoDeposito(\'' + c.id + '\')" title="Mover do estoque do dia de volta pro depósito">↩️ Devolver</button><button class="btn pequeno" onclick="reporEstoque(\'' + c.id + '\')" title="Somar direto no estoque do dia, sem passar pelo depósito">+ Repor (dia)</button><button class="btn cinza pequeno" onclick="definirEstoque(\'' + c.id + '\')" title="Definir a quantidade exata do estoque do dia">Definir (dia)</button><button class="btn laranja pequeno" onclick="registrarPerda(\'' + c.id + '\')">Perda</button><button class="btn cinza pequeno" onclick="verUsosComponente(\'' + c.id + '\')" aria-label="Onde é usado" title="Ver em quais fichas este componente é descontado">🔍</button><button class="btn cinza pequeno" onclick="editarComponenteEstoque(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirComponenteEstoque(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum componente cadastrado. Cadastre o que você leva para vender.</div></td></tr>';
   const pend = nomesComponentesConhecidos().filter(n => !componenteEstoque(n));
   $('sugestoesComponentes').innerHTML = pend.length ? '<div class="aviso alerta-a">💡 Já cadastrados em Insumos ou vinculados nas fichas, mas <b>sem estoque/depósito controlado</b>: clique pra puxar o nome e cadastrar aqui — ' + pend.map(n => '<button class="btn cinza pequeno" style="margin:2px" onclick="preencherComponente(this.dataset.n)" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>' : '';
-  $('tabelaPerdas').innerHTML = BD.perdas.length ? BD.perdas.slice(0, 60).map(p =>
-    '<tr><td>' + fmtData(p.data) + '</td><td>' + esc(p.nome) + '</td><td class="n">' + fmt(p.qtd, 2) + '</td><td>' + esc(p.motivo) + '</td><td class="n">' + (p.valor > 0 ? brl(p.valor) : '—') + '</td><td><button class="btn vermelho pequeno" onclick="removerPerda(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>'
-  ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhuma perda registrada.</div></td></tr>';
+  $('tabelaPerdas').innerHTML = BD.perdas.length ? BD.perdas.slice(0, 60).map(p => {
+    const compP = componenteEstoque(p.nome);
+    return '<tr><td>' + fmtData(p.data) + '</td><td>' + esc(p.nome) + '</td><td class="n">' + (compP ? fmtCompQtd(compP, p.qtd) : fmt(p.qtd, 2)) + '</td><td>' + esc(p.motivo) + '</td><td class="n">' + (p.valor > 0 ? brl(p.valor) : '—') + '</td><td><button class="btn vermelho pequeno" onclick="removerPerda(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+  }).join('') : '<tr><td colspan="6"><div class="vazio">Nenhuma perda registrada.</div></td></tr>';
   renderContagemDeposito(); renderFechamentoDia();
 }
 
@@ -4600,7 +4623,7 @@ function renderDashboard(){
   $('dashGraficos').innerHTML = graficoBarras('Faturamento — últimos 14 dias', dias) + graficoBarras('Por horário (mês)', horas, 'O horário é registrado nos pedidos novos.') + graficoBarras('Por dia da semana (mês)', sem);
   // estoque
   const baixos = BD.estoqueComponentes.filter(c => c.qtd <= c.min).sort((a, b) => a.qtd - b.qtd);
-  $('dashEstoqueBaixo').innerHTML = baixos.length ? baixos.map(c => '<div class="linha-kv"><span>' + esc(c.nome) + '</span><b class="' + (c.qtd <= 0 ? 'erro' : 'alerta') + '">' + (c.qtd <= 0 ? 'ESGOTADO' : fmt(c.qtd, Number.isInteger(c.qtd) ? 0 : 2) + ' restantes') + '</b></div>').join('') : '<div class="vazio">' + (BD.estoqueComponentes.length ? 'Nenhum componente acabando. 👍' : 'Nenhum componente cadastrado em Estoque.') + '</div>';
+  $('dashEstoqueBaixo').innerHTML = baixos.length ? baixos.map(c => '<div class="linha-kv"><span>' + esc(c.nome) + '</span><b class="' + (c.qtd <= 0 ? 'erro' : 'alerta') + '">' + (c.qtd <= 0 ? 'ESGOTADO' : fmtCompQtd(c, c.qtd) + ' restantes') + '</b></div>').join('') : '<div class="vazio">' + (BD.estoqueComponentes.length ? 'Nenhum componente acabando. 👍' : 'Nenhum componente cadastrado em Estoque.') + '</div>';
   // top 5
   const agr = new Map(); linhasMes.forEach(l => { if(!agr.has(l.produto)) agr.set(l.produto, {qtd: 0, lucro: 0}); const x = agr.get(l.produto); x.qtd += l.quantidade; x.lucro += lucroVenda(l); });
   const lista = (arr, f, fmtV) => { const max = Math.max(1, ...arr.map(a => f(a[1]))); return arr.length ? arr.map(([n, x]) => '<div class="linha-kv"><span>' + esc(n) + '</span><b>' + fmtV(f(x)) + '</b></div><div class="barra"><i style="width:' + Math.max(2, f(x) / max * 100) + '%"></i></div>').join('') : '<div class="vazio">Sem vendas no mês.</div>'; };
