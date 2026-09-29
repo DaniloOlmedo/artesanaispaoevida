@@ -684,6 +684,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     </div>
     <div class="flex-linha" style="margin-top:8px">
       <button class="btn laranja" type="button" onclick="abrirCriarFichasMassaCongelada()">🧊 Criar fichas de massa pré-assada + panuozzo</button>
+      <button class="btn laranja" type="button" onclick="organizarFichasEmpanada()">🥟 Organizar fichas de empanada (massa + estoque por sabor)</button>
     </div>
     <div id="semFicha" class="vazio" style="margin-top:12px">Digite o nome e clique para criar, ou escolha uma ficha na lista abaixo.</div>
     <div id="conteudoFicha" class="oculto">
@@ -2192,6 +2193,35 @@ function criarFichasMassaCongelada(v){
   if(!criadas.length) return toast('Todas essas fichas já existiam — nada foi criado ou alterado.', 'alerta', {ms: 7000});
   recalcularTudo(); salvar('fichas', 'insumos'); renderFichas(); atualizarDatalistComponentes(); atualizarBadges();
   toast('Criadas: ' + criadas.join(', ') + '.' + (jaExistiam.length ? ' (já existiam e não foram alteradas: ' + jaExistiam.join(', ') + ')' : ''), 'ok', {ms: 9000});
+}
+/* ---------- assistente: organizar fichas de empanada (troca massa antiga → crua + 1 componente de estoque por sabor) ---------- */
+function organizarFichasEmpanada(){
+  const massaCrua = acharInsumoPorNome('Massa Empanada Crua');
+  const alvo = BD.fichas.filter(f => norm(f.nome).includes('empanada'));
+  if(!alvo.length) return toast('Não encontrei nenhuma ficha com "empanada" no nome. Verifique se o nome da ficha inclui essa palavra.', 'alerta', {ms: 8000});
+  const relatorio = [];
+  alvo.forEach(f => {
+    const mudou = [];
+    if(massaCrua){
+      const item = f.itens.find(it => norm(it.nome) === norm('Massa Empanada') && it.insumoId !== massaCrua.id);
+      if(item){ item.insumoId = massaCrua.id; item.nome = massaCrua.nome; mudou.push('ingrediente "Massa Empanada" trocado por "Massa Empanada Crua"'); }
+    }
+    const sabor = f.nome.replace(/^Empanadas?\s+(de\s+)?/i, '').trim() || f.nome;
+    const nomeComp = 'Empanada Congelada - ' + sabor;
+    if(!f.componentes.find(c => norm(c.nome) === norm(nomeComp))){
+      f.componentes.push({nome: nomeComp, qtd: 1});
+      mudou.push('componente de estoque "' + nomeComp + '" vinculado (1 por unidade vendida)');
+    }
+    if(mudou.length) relatorio.push('<li><b>' + esc(f.nome) + '</b>: ' + mudou.map(esc).join('; ') + '.</li>');
+  });
+  recalcularTudo(); salvar('fichas', 'insumos'); renderFichas(); atualizarDatalistComponentes(); atualizarBadges();
+  if(!relatorio.length) return toast('Todas as fichas de empanada já estavam organizadas — nada mudou.', 'alerta', {ms: 7000});
+  abrirModal({
+    titulo: '🥟 Fichas de empanada organizadas',
+    html: '<ul style="margin:0;padding-left:20px;line-height:1.7">' + relatorio.join('') + '</ul>' +
+      '<p class="dica" style="margin-top:12px">O que eu não mexi: o recheio de cada sabor e a quantidade de gás — confira se já estão lá em cada ficha. Se não estiverem cadastrados como insumo, o "Massa Empanada" antiga ainda pode ser excluída em Insumos depois que todas as fichas passarem a usar a "Crua".</p>',
+    botoes: [{rotulo: 'Fechar', classe: ''}]
+  });
 }
 function carregarFicha(id){
   if(!BD.fichas.find(x => x.id === id)) return;
