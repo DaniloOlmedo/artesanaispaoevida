@@ -2438,9 +2438,21 @@ function renderListaFichas(){
   $('listaResumoFichas').innerHTML = lista.length ? lista.map(f => {
     const a = analisar(f, {consumo: 'viagem'});
     const sem = !(f.precoPraticado > 0);
-    return '<tr' + (f.id === fichaAtual ? ' style="background:var(--realce)"' : '') + '><td><b>' + esc(f.nome) + '</b>' + (f.ativo === false ? ' <span class="tag cinza">oculto no PDV</span>' : '') + (f.sincInsumo ? ' <span class="tag">🔗 insumo</span>' : '') + '</td><td class="n">' + brl(a.custo) + '</td><td class="n">' + (a.sugArred === null ? '—' : brl(a.sugArred)) + '</td><td class="n">' + (sem ? '<span class="tag laranja">sem preço</span>' : brl(f.precoPraticado)) + '</td><td class="n ' + (sem ? '' : (a.lucro <= 0 ? 'erro' : (a.margem < margemAlvo(f) ? 'alerta' : 'ok'))) + '">' + (sem ? '—' : fmt(a.margem, 1) + '%') + '</td>' +
+    return '<tr data-id="' + f.id + '"' + (f.id === fichaAtual ? ' style="background:var(--realce)"' : '') + '><td><b>' + esc(f.nome) + '</b>' + (f.ativo === false ? ' <span class="tag cinza">oculto no PDV</span>' : '') + (f.sincInsumo ? ' <span class="tag">🔗 insumo</span>' : '') + '</td><td class="n">' + brl(a.custo) + '</td><td class="n">' + (a.sugArred === null ? '—' : brl(a.sugArred)) + '</td>' +
+      '<td class="n"><input type="number" step="0.01" min="0" inputmode="decimal" style="width:96px" value="' + (f.precoPraticado || '') + '" placeholder="0,00" oninput="mudarPrecoListaFicha(\'' + f.id + '\',this.value)" aria-label="Preço praticado de ' + esc(f.nome) + '"></td>' +
+      '<td class="n ' + (sem ? '' : (a.lucro <= 0 ? 'erro' : (a.margem < margemAlvo(f) ? 'alerta' : 'ok'))) + '" data-k="margem">' + (sem ? '—' : fmt(a.margem, 1) + '%') + '</td>' +
       '<td class="acoes"><button class="btn pequeno" onclick="carregarFicha(\'' + f.id + '\')">Abrir</button><button class="btn cinza pequeno" onclick="duplicarFicha(\'' + f.id + '\')" aria-label="Duplicar" title="Duplicar">⧉</button><button class="btn vermelho pequeno" onclick="excluirFicha(\'' + f.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="6"><div class="vazio">' + (BD.fichas.length ? 'Nenhuma ficha encontrada.' : 'Nenhuma ficha ainda. Crie a primeira acima.') + '</div></td></tr>';
+}
+// Atualiza o preço praticado direto na listagem de fichas (sem precisar abrir a ficha) — mesmo padrão da aba Precificação.
+function mudarPrecoListaFicha(id, valor){
+  const f = BD.fichas.find(x => x.id === id); if(!f) return;
+  f.precoPraticado = Math.max(0, parseNum(valor)); recalcularFicha(f); salvar('fichas');
+  const tr = document.querySelector('#listaResumoFichas tr[data-id="' + id + '"]'); if(!tr) return;
+  const a = analisar(f, {consumo: 'viagem'}); const sem = !(f.precoPraticado > 0);
+  const cel = tr.querySelector('[data-k="margem"]'); if(!cel) return;
+  cel.textContent = sem ? '—' : fmt(a.margem, 1) + '%';
+  cel.className = 'n ' + (sem ? '' : (a.lucro <= 0 ? 'erro' : (a.margem < margemAlvo(f) ? 'alerta' : 'ok')));
 }
 function duplicarFicha(id){
   const o = BD.fichas.find(f => f.id === (id || fichaAtual)); if(!o) return;
