@@ -191,16 +191,17 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
   body.print-comanda>*:not(#areaImpressao),body.print-relatorio>*:not(#areaRelatorio){display:none!important}
   body.print-comanda #areaImpressao{display:block!important}
   body.print-relatorio #areaRelatorio{display:block!important}
-  .comanda-impressao .marca{text-align:center;font-size:16px;font-weight:bold;margin-bottom:4px}
-  .comanda-impressao .senha-c{text-align:center;font-size:44px;font-weight:bold;line-height:1.1;margin:4px 0}
-  .comanda-impressao .data-hora{text-align:center;font-size:16px;font-weight:bold;margin-bottom:10px}
-  .comanda-impressao .cliente-comanda{text-align:center;font-size:24px;font-weight:bold;margin:6px 0}
-  .comanda-impressao .telefone-comanda{text-align:center;font-size:16px;margin-bottom:6px}
-  .comanda-impressao .item{margin:12px 0 2px;font-size:24px;font-weight:bold;line-height:1.3}
-  .comanda-impressao .cons{font-size:18px;font-weight:bold;margin-left:12px}
-  .comanda-impressao .obs{font-size:20px;font-weight:bold;margin:2px 0 12px 12px;border-top:1px dashed #999;padding-top:4px}
-  .comanda-impressao .total{text-align:center;font-size:20px;font-weight:bold;margin-top:12px;border-top:2px solid #000;padding-top:8px}
-  .comanda-impressao .linha{border-bottom:2px dashed #666;margin:8px 0}
+  .comanda-impressao .marca{text-align:center;font-size:14px;font-weight:bold;margin-bottom:3px}
+  .comanda-impressao .senha-c{text-align:center;font-size:36px;font-weight:bold;line-height:1.1;margin:3px 0}
+  .comanda-impressao .data-hora{text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px}
+  .comanda-impressao .cliente-comanda{text-align:center;font-size:20px;font-weight:bold;margin:4px 0}
+  .comanda-impressao .telefone-comanda{text-align:center;font-size:14px;margin-bottom:4px}
+  .comanda-impressao .item{margin:8px 0 2px;font-size:20px;font-weight:bold;line-height:1.25}
+  .comanda-impressao .cons{font-size:15px;font-weight:bold;margin-left:12px}
+  .comanda-impressao .corte-item{font-size:15px;font-weight:bold;margin:0 0 4px 12px}
+  .comanda-impressao .obs{font-size:16px;font-weight:bold;margin:2px 0 8px 12px;border-top:1px dashed #999;padding-top:3px}
+  .comanda-impressao .total{text-align:center;font-size:17px;font-weight:bold;margin-top:8px;border-top:2px solid #000;padding-top:6px}
+  .comanda-impressao .linha{border-bottom:2px dashed #666;margin:6px 0}
   #areaRelatorio{font-family:Arial,sans-serif;font-size:12px;color:#000;padding:10mm}
   #areaRelatorio table{width:100%;border-collapse:collapse;margin-top:10px}
   #areaRelatorio th,#areaRelatorio td{border:1px solid #444;padding:4px 6px;text-align:left}
@@ -322,10 +323,10 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 .tt-idle>div{background:var(--painel);color:var(--texto);padding:34px 44px;border-radius:24px;display:flex;flex-direction:column;gap:16px}
 @media(max-width:760px){.tt-corpo{flex-direction:column}.tt-dir{min-width:0}.tt-quadro{grid-template-columns:1fr}.tt-brand{font-size:1.8rem}.tt-cta{font-size:1.5rem;padding:18px 26px}.tt-senha-grande{font-size:4rem;padding:6px 30px}.tt{padding:10px}}
 @media print{
-  .comanda-impressao .prev{text-align:center;font-size:20px;font-weight:bold;margin:2px 0}
-  .comanda-impressao .corte{text-align:center;font-size:14px;margin:26px 0 10px;border-top:2px dashed #000;padding-top:8px}
-  .comanda-impressao .via-itens{font-size:18px;margin:8px 0;text-align:center}
-  .comanda-impressao .via-msg{text-align:center;font-size:14px;margin-top:8px}
+  .comanda-impressao .prev{text-align:center;font-size:16px;font-weight:bold;margin:2px 0}
+  .comanda-impressao .corte{text-align:center;font-size:13px;margin:14px 0 8px;border-top:2px dashed #000;padding-top:6px}
+  .comanda-impressao .via-itens{font-size:15px;margin:6px 0;text-align:center}
+  .comanda-impressao .via-msg{text-align:center;font-size:12px;margin-top:6px}
 }
 
 /* ===== Logo do negócio (upload próprio) ===== */
@@ -972,7 +973,8 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <label class="linha"><input type="checkbox" id="cfgSemEstoque" onchange="salvarConfig()"> Permitir vender mesmo com estoque insuficiente (apenas avisa)</label>
     <label class="linha"><input type="checkbox" id="cfgBackupFechar" onchange="salvarConfig()"> Baixar backup automaticamente ao fechar o dia</label>
     <label class="linha"><input type="checkbox" id="cfgValoresComanda" onchange="salvarConfig()"> Mostrar valores (total) na comanda impressa</label>
-    <div class="bloco-calc"><div><label for="cfgVias">Vias impressas em cada comanda</label><select id="cfgVias" onchange="salvarConfig()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente, para levar/pendurar)</option></select></div></div>
+    <div class="bloco-calc"><div><label for="cfgVias">Vias impressas em cada comanda</label><select id="cfgVias" onchange="salvarConfig()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente, para levar/pendurar)</option></select><div class="dica">Escolha "1 (só cozinha)" para imprimir só a via do estabelecimento e economizar papel.</div></div></div>
+    <div class="bloco-calc"><div><label for="cfgRodape">Mensagem extra no fim da comanda — opcional</label><input type="text" id="cfgRodape" placeholder="Deixe vazio para não imprimir nada" oninput="salvarConfig()"><div class="dica">Se ficar em branco, nada é impresso após a linha de corte, evitando desperdício de papel.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgCNPJ">CNPJ do seu negócio (MEI) — opcional</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0000-00" oninput="salvarConfig()"><div class="dica">Aparece no recibo de consumo emitido pra cliente (aba Caixa). Deixe vazio se ainda não tiver CNPJ.</div></div></div>
   </div>
 
@@ -1284,7 +1286,7 @@ const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','ven
 const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
-  valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem',
+  valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem', rodapeComanda:'',
   // atendimento / totem
   pdvNaFila:false, capacidade:2, tempoBase:2, tempoPadraoFicha:8, calibrar:true, voz:true,
   totemPin:'', totemNome:'', totemMensagem:'Retire seu pedido no balcão quando chamarem a sua senha.', totemExigePagamento:true, totemImprimir:true, totemVias:2,
@@ -1962,6 +1964,7 @@ function carregarConfigNaTela(){
   $('cfgArredondar').value = c.arredondar; $('cfgTaxaBase').value = c.taxaBase; $('cfgVolume').value = c.volumeMensal || '';
   $('cfgSemEstoque').checked = !!c.semEstoque; $('cfgBackupFechar').checked = !!c.backupFechar; $('cfgValoresComanda').checked = !!c.valoresComanda;
   $('cfgVias').value = String(c.totemVias || 2);
+  $('cfgRodape').value = c.rodapeComanda || '';
   $('cfgCNPJ').value = c.negocioCNPJ || '';
 }
 function salvarConfig(){
@@ -1969,6 +1972,7 @@ function salvarConfig(){
   c.arredondar = $('cfgArredondar').value; c.taxaBase = $('cfgTaxaBase').value; c.volumeMensal = parseNum($('cfgVolume').value);
   c.semEstoque = $('cfgSemEstoque').checked; c.backupFechar = $('cfgBackupFechar').checked; c.valoresComanda = $('cfgValoresComanda').checked;
   c.totemVias = $('cfgVias').value === '1' ? 1 : 2;
+  c.rodapeComanda = $('cfgRodape').value.trim();
   c.negocioCNPJ = $('cfgCNPJ').value.trim();
   recalcularTudo(); salvar('config', 'fichas');
 }
@@ -3258,7 +3262,7 @@ function verificarEAdicionar(novo){
 function adicionarProdutoRapido(tipo, id){
   const p = acharProduto(tipo, id); if(!p) return;
   const preco = tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0);
-  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: 1, tipoConsumo: consumoAtual, obs: '', valorUnit: preco};
+  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: 1, tipoConsumo: consumoAtual, obs: '', corte: '', valorUnit: preco};
   if(preco > 0) return void verificarEAdicionar(novo);
   const sug = tipo === 'ficha' ? analisar(p, {consumo: consumoAtual}).sugArred : null;
   formModal({titulo: '"' + p.nome + '" ainda não tem preço', aviso: sug ? 'Sugestão pela ficha técnica: <b>' + brl(sug) + '</b>. Defina o preço definitivo na aba Fichas.' : 'Defina o preço na aba ' + (tipo === 'ficha' ? 'Fichas' : 'Custos') + '.',
@@ -3273,7 +3277,7 @@ function adicionarPeloFormulario(){
   const p = acharProduto(tipo, id); if(!p) return;
   const preco = tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0);
   const obs = $('obsItemVenda').value.trim();
-  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, valorUnit: preco};
+  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, corte: '', valorUnit: preco};
   const fim = () => { if(verificarEAdicionar(novo)){ $('qtdVendida').value = 1; $('obsItemVenda').value = ''; } };
   if(preco > 0) return fim();
   formModal({titulo: 'Preço de "' + p.nome + '"', campos: [{id: 'preco', rotulo: 'Preço (R$)', tipo: 'numero', valor: ''}], textoSalvar: 'Adicionar', salvar: v => { if(!(v.preco > 0)){ toast('Informe o preço.', 'alerta'); return false; } novo.valorUnit = v.preco; fim(); }});
@@ -3304,7 +3308,7 @@ function abrirMeioAMeio(){
       const qtd = Math.max(1, Math.round(parseNum(ctl.el.querySelector('#mm_qtd').value, 1)));
       const obs = ctl.el.querySelector('#mm_obs').value.trim();
       const preco = Math.max(f1.precoPraticado, f2.precoPraticado);
-      const novo = {uid: uid(), tipo: 'meio', metade1: id1, metade2: id2, produto: '½ ' + f1.nome + ' + ½ ' + f2.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, valorUnit: preco};
+      const novo = {uid: uid(), tipo: 'meio', metade1: id1, metade2: id2, produto: '½ ' + f1.nome + ' + ½ ' + f2.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, corte: '', valorUnit: preco};
       if(!verificarEAdicionar(novo)) return false;
     }}
   ]});
@@ -3343,6 +3347,12 @@ function editarObsLinha(id){
   const c = carrinhoAtual.find(x => x.uid === id); if(!c) return;
   formModal({titulo: 'Observação — ' + c.produto, campos: [{id: 'obs', rotulo: 'Observação do item', valor: c.obs || '', placeholder: 'Ex: sem cebola, bem passada'}], salvar: v => { c.obs = v.obs; renderCarrinho(); }});
 }
+const OPCOES_CORTE_PIZZA = [{v: '', t: 'Sem preferência'}, {v: '8 fatias', t: '8 fatias'}, {v: '4 fatias', t: '4 fatias'}, {v: 'Petisco (quadrados pequenos)', t: 'Petisco (quadrados pequenos)'}];
+const itemEhPizza = c => norm(c.produto || '').includes('pizza');
+function editarCorteLinha(id){
+  const c = carrinhoAtual.find(x => x.uid === id); if(!c) return;
+  formModal({titulo: 'Como cortar — ' + c.produto, campos: [{id: 'corte', rotulo: 'Corte escolhido pelo cliente', tipo: 'select', valor: c.corte || '', opcoes: OPCOES_CORTE_PIZZA}], salvar: v => { c.corte = v.corte; renderCarrinho(); }});
+}
 function editarPrecoLinha(id){
   const c = carrinhoAtual.find(x => x.uid === id); if(!c) return;
   formModal({titulo: 'Preço unitário — ' + c.produto, campos: [{id: 'p', rotulo: 'Preço unitário (R$)', tipo: 'numero', valor: c.valorUnit}], salvar: v => {
@@ -3367,7 +3377,7 @@ function renderCarrinho(){
   $('tabelaCarrinho').innerHTML = carrinhoAtual.map(c =>
     '<tr><td><b>' + esc(c.produto) + '</b></td><td><div class="qtd-ctl"><button type="button" onclick="alterarQtdCarrinho(\'' + c.uid + '\',-1)" aria-label="Diminuir">−</button><b>' + c.quantidade + '</b><button type="button" onclick="alterarQtdCarrinho(\'' + c.uid + '\',1)" aria-label="Aumentar">+</button></div></td>' +
     '<td><button type="button" class="btn cinza pequeno" onclick="alternarConsumoLinha(\'' + c.uid + '\')" title="Trocar viagem/local">' + (c.tipoConsumo === 'local' ? '🍽️ Local' : '🥡 Viagem') + '</button></td>' +
-    '<td><button type="button" class="btn cinza pequeno" onclick="editarObsLinha(\'' + c.uid + '\')">' + (c.obs ? '<span class="observacao-venda" style="padding:2px 6px">' + esc(c.obs) + '</span>' : '+ obs') + '</button></td>' +
+    '<td><button type="button" class="btn cinza pequeno" onclick="editarObsLinha(\'' + c.uid + '\')">' + (c.obs ? '<span class="observacao-venda" style="padding:2px 6px">' + esc(c.obs) + '</span>' : '+ obs') + '</button>' + (itemEhPizza(c) ? ' <button type="button" class="btn cinza pequeno" onclick="editarCorteLinha(\'' + c.uid + '\')" title="Corte da pizza">' + (c.corte ? '✂ ' + esc(c.corte) : '✂ corte') + '</button>' : '') + '</td>' +
     '<td class="n"><button type="button" class="btn cinza pequeno" onclick="editarPrecoLinha(\'' + c.uid + '\')">' + brl(c.valorUnit) + '</button></td><td class="n"><b>' + brl(c.valorUnit * c.quantidade) + '</b></td>' +
     '<td><button type="button" class="btn vermelho pequeno" onclick="removerDoCarrinho(\'' + c.uid + '\')" aria-label="Remover">✕</button></td></tr>').join('');
   $('senhaAtual').textContent = proximaSenha();
@@ -3475,7 +3485,7 @@ function registrarPedido({itens, cliente, telefone, desconto = 0, pagamentos = n
     const custoUnit = custoUnitItem(it);
     const l = {id: uid(), pedidoId, senha, data, horario, cliente: clienteFinal, telefone: telefoneFinal, produto: it.produto, produtoId: it.produtoId, tipoProduto: it.tipo,
       quantidade: it.quantidade, valorUnit: it.valorUnit, descontoValor: dist[i].parte, valorTotal, custoUnit, custoTotal: custoUnit * it.quantidade,
-      tipoConsumo: it.tipoConsumo, observacao: it.obs || '', pago: false, formaPagamento: 'pendente', consumo: baixarConsumo(consumoDoItem(it)),
+      tipoConsumo: it.tipoConsumo, observacao: it.obs || '', corte: it.corte || '', pago: false, formaPagamento: 'pendente', consumo: baixarConsumo(consumoDoItem(it)),
       origem, status, criadoEm: agora, viaSugestao: !!it.sug};
     if(it.tipo === 'meio'){ l.metade1 = it.metade1; l.metade2 = it.metade2; }
     if(BD.config.localAtual) l.local = nomeLocalAtual();
@@ -3568,14 +3578,14 @@ function comandaHTML(pid){
   let h = '<div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div>' + (l0.local ? '<div class="telefone-comanda">📍 ' + esc(l0.local.toUpperCase()) + '</div>' : '') + (totem ? '<div class="telefone-comanda">PEDIDO PELO TOTEM</div>' : '') + (p.senha ? '<div class="senha-c">Nº ' + p.senha + '</div>' : '') +
     '<div class="data-hora">' + fmtData(p.data) + ' - ' + esc(p.horario) + '</div>' + prev + retirar + '<div class="linha"></div>' +
     '<div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + (p.telefone ? '<div class="telefone-comanda">Tel: ' + esc(p.telefone) + '</div>' : '') + '<div class="linha"></div>' +
-    p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.observacao ? '<div class="obs">OBS: ' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
+    p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.corte ? '<div class="corte-item">✂ CORTE: ' + esc(l.corte.toUpperCase()) + '</div>' : '') + (l.observacao ? '<div class="obs">OBS: ' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
     '<div class="linha"></div><div class="total">' + status + (BD.config.valoresComanda ? '<br>TOTAL ' + brl(p.total) : '') + '</div>';
   if(BD.config.totemVias === 2){
     h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div><div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div><div class="senha-c">Nº ' + p.senha + '</div><div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + prev + retirar +
-      '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
+      '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto) + (l.corte ? ' (✂ ' + l.corte + ')' : '')).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
       '<div class="via-msg">' + esc(BD.config.totemMensagem || 'Aguarde ser chamado pela senha.') + '</div>';
   }
-  h += '<div class="via-msg">☕ Em breve: CAFÉ &amp; PROSA, nossa loja fixa!</div>';
+  if(BD.config.rodapeComanda) h += '<div class="via-msg">' + esc(BD.config.rodapeComanda) + '</div>';
   return h;
 }
 function imprimirComandaPedido(pid){
@@ -3629,11 +3639,13 @@ function comandaLinhasImagem(pid){
     add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 19, centro: false, negrito: true, espacoAntes: 4});
     const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
     if(cons) add('[' + cons + ']', {tam: 14, centro: false});
+    if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 14, centro: false, negrito: true});
     if(l.observacao) add('OBS: ' + l.observacao.toUpperCase(), {tam: 14, centro: false});
   });
   linha();
   add(status, {tam: 19, negrito: true, espacoAntes: 4});
   if(BD.config.valoresComanda) add('TOTAL ' + brl(p.total), {tam: 22, negrito: true});
+  if(BD.config.rodapeComanda) add(BD.config.rodapeComanda, {tam: 13, espacoAntes: 6});
   return L;
 }
 function desenharComandaImagem(pid){
