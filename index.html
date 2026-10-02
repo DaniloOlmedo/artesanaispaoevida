@@ -1075,6 +1075,19 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div id="dadosResumo" class="grade" style="margin-top:12px"></div>
   </div>
   <div class="painel">
+    <h2>🔄 Sincronização automática entre aparelhos</h2>
+    <div class="aviso">Opcional e gratuito. Liga a sincronização automática de <b>vendas, despesas, perdas, compras e fechamentos de caixa</b> entre todos os aparelhos com o mesmo "código do negócio" — sem precisar exportar/importar na mão. Fichas, insumos, estoque e configurações continuam só deste aparelho, como hoje. Funciona sem internet: o que for feito offline entra sozinho quando o sinal voltar.</div>
+    <label class="linha"><input type="checkbox" id="syncAtivo" onchange="alternarSync()"> Ativar sincronização automática</label>
+    <div class="bloco-calc">
+      <div><label for="syncCodigo">Código do negócio</label><input type="text" id="syncCodigo" placeholder="Ex: paoevida-danilo-2026" oninput="salvarConfigSync()"><div class="dica">Invente um código único, sem espaços, e use o MESMO em todos os aparelhos que devem sincronizar entre si.</div></div>
+      <div><label for="syncApelido">Nome deste aparelho</label><input type="text" id="syncApelido" placeholder="Ex: Computador ou Tablet da feira" oninput="salvarConfigSync()"></div>
+    </div>
+    <label for="syncFirebaseConfig">Configuração do Firebase (cole aqui)</label>
+    <textarea id="syncFirebaseConfig" rows="4" placeholder="Cole aqui o bloco firebaseConfig = {...} do seu projeto Firebase" oninput="salvarConfigSync()"></textarea>
+    <div class="grupo-botoes" style="margin-top:8px"><button class="btn azul" type="button" onclick="syncConectar()">🔌 Conectar</button></div>
+    <p id="statusSync" class="suave" style="margin-top:6px">Sincronização desativada.</p>
+  </div>
+  <div class="painel">
     <h2>🗄️ Arquivar dados antigos</h2>
     <div class="aviso">Libera espaço no navegador sem perder nada: os registros mais antigos que a data escolhida são salvos num arquivo separado (guarde junto dos seus backups) e removidos daqui. Só mexe em <b>vendas, compras, despesas e perdas</b> — fichas, insumos, estoque, fornecedores e locais nunca são apagados.</div>
     <div class="bloco-calc">
@@ -1368,6 +1381,7 @@ function flush(){
   ESTADO.erroGravacao = falhou;
   if(!falhou) agendarSnapshotAuto();
   atualizarFaixa();
+  if(!falhou && lista.some(k => k === 'caixaDias' || SYNC_TIPOS.includes(k))) syncAgendarEnvio();
 }
 window.addEventListener('pagehide', flush);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') flush(); });
@@ -4582,6 +4596,158 @@ function mesclarVendasArquivo(event){
   leitor.readAsText(arq, 'UTF-8');
 }
 
+/* =====================================================================
+   SINCRONIZAÇÃO AUTOMÁTICA ENTRE APARELHOS (opcional, via Firebase)
+   Só sincroniza vendas, despesas, perdas, compras e fechamentos de caixa
+   (o mesmo que "Mesclar vendas" já fazia manualmente) — fichas, insumos,
+   estoque e configurações continuam só deste aparelho, como sempre.
+   ===================================================================== */
+const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras'];
+const SYNC_CHAVE_LS = 'syncConfig';
+let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null;
+const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, caixaDias: {}};
+
+function syncLerConfig(){ try{ return JSON.parse(localStorage.getItem(SYNC_CHAVE_LS)) || {}; }catch(e){ return {}; } }
+function syncGravarConfig(c){ try{ localStorage.setItem(SYNC_CHAVE_LS, JSON.stringify(c)); }catch(e){} }
+function syncStatus(t){ const el = $('statusSync'); if(el) el.textContent = t; }
+
+function preencherConfigSync(){
+  const c = syncLerConfig();
+  if($('syncAtivo')) $('syncAtivo').checked = !!c.ativo;
+  if($('syncCodigo')) $('syncCodigo').value = c.codigo || '';
+  if($('syncApelido')) $('syncApelido').value = c.apelido || '';
+  if($('syncFirebaseConfig')) $('syncFirebaseConfig').value = c.firebaseConfigTexto || '';
+  if(c.ativo && c.codigo && c.firebaseConfigTexto) syncIniciar();
+  else syncStatus('Sincronização desativada.');
+}
+function salvarConfigSync(){
+  const c = syncLerConfig();
+  if($('syncCodigo')) c.codigo = $('syncCodigo').value.trim();
+  if($('syncApelido')) c.apelido = $('syncApelido').value.trim();
+  if($('syncFirebaseConfig')) c.firebaseConfigTexto = $('syncFirebaseConfig').value;
+  syncGravarConfig(c);
+}
+function alternarSync(){
+  const ligar = $('syncAtivo').checked;
+  const c = syncLerConfig(); c.ativo = ligar; syncGravarConfig(c);
+  if(ligar) syncConectar(); else syncDesconectar();
+}
+function syncConectar(){
+  salvarConfigSync();
+  const c = syncLerConfig();
+  if(!c.codigo) return toast('Preencha o código do negócio (igual em todos os aparelhos).', 'alerta');
+  if(!c.apelido) return toast('Dê um nome pra este aparelho (ex: Computador, Tablet da feira).', 'alerta');
+  if(!c.firebaseConfigTexto || !c.firebaseConfigTexto.trim()) return toast('Cole a configuração do Firebase.', 'alerta');
+  c.ativo = true; syncGravarConfig(c);
+  if($('syncAtivo')) $('syncAtivo').checked = true;
+  syncIniciar();
+}
+function syncDesconectar(){
+  _syncListeners.forEach(f => { try{ f(); }catch(e){} });
+  _syncListeners = []; _syncPronto = false; _syncDb = null;
+  syncStatus('Sincronização desativada.');
+}
+function syncCarregarSDK(cb){
+  if(window.firebase && window.firebase.firestore){ cb(); return; }
+  const urls = ['https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js', 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js', 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'];
+  let i = 0;
+  (function proximo(){
+    if(i >= urls.length) return void cb();
+    const s = document.createElement('script');
+    s.src = urls[i];
+    s.onload = () => { i++; proximo(); };
+    s.onerror = () => { syncStatus('⚠️ Não consegui carregar o Firebase. Verifique a internet.'); };
+    document.head.appendChild(s);
+  })();
+}
+// Aceita colar o bloco inteiro "const firebaseConfig = {...}" copiado do console do Firebase.
+function syncParseFirebaseConfig(texto){
+  try{
+    const m = String(texto).match(/\{[\s\S]*\}/);
+    if(!m) return null;
+    return (new Function('return (' + m[0] + ')'))();
+  }catch(e){ return null; }
+}
+function syncIniciar(){
+  const c = syncLerConfig();
+  if(!c.ativo || !c.codigo || !c.firebaseConfigTexto) return;
+  const cfg = syncParseFirebaseConfig(c.firebaseConfigTexto);
+  if(!cfg || !cfg.projectId) return void syncStatus('⚠️ Configuração do Firebase inválida — cole o bloco completo do console do Firebase.');
+  syncStatus('🔄 Conectando...');
+  syncCarregarSDK(() => {
+    try{
+      const app = (window.firebase.apps && window.firebase.apps.length) ? window.firebase.apps[0] : window.firebase.initializeApp(cfg);
+      _syncDb = window.firebase.firestore(app);
+      try{ _syncDb.enablePersistence({synchronizeTabs: true}).catch(() => {}); }catch(e){}
+      window.firebase.auth(app).signInAnonymously().then(() => {
+        _syncPronto = true;
+        syncAssinarColecoes(c.codigo);
+        syncEmpurrarTudo();
+        syncStatus('🟢 Sincronização ativa — ' + (c.apelido || 'este aparelho'));
+      }).catch(err => syncStatus('⚠️ Erro ao conectar: ' + err.message));
+    }catch(e){ syncStatus('⚠️ Erro ao iniciar: ' + e.message); }
+  });
+}
+function syncAssinarColecoes(codigo){
+  SYNC_TIPOS.concat(['caixaDias']).forEach(tipo => {
+    const ref = _syncDb.collection('negocios').doc(codigo).collection(tipo);
+    const unsub = ref.onSnapshot(snap => {
+      let mudou = false; const tocados = [];
+      snap.docChanges().forEach(ch => {
+        if(ch.type === 'removed') return;
+        const dados = ch.doc.data(); const id = ch.doc.id; const atualTxt = JSON.stringify(dados);
+        if(_syncUltimoEnviado[tipo][id] === atualTxt) return; // já era o que enviamos
+        tocados.push(id);
+        if(tipo === 'caixaDias'){
+          if(JSON.stringify(BD.caixaDias[id]) !== atualTxt){ BD.caixaDias[id] = dados; mudou = true; }
+        }else{
+          const arr = BD[tipo]; const idx = arr.findIndex(x => String(x.id) === id);
+          if(idx === -1){ arr.push(dados); mudou = true; }
+          else if(JSON.stringify(arr[idx]) !== atualTxt){ arr[idx] = dados; mudou = true; }
+        }
+      });
+      if(mudou) normalizarBD();
+      // Guarda a "foto" já normalizada, senão a normalização mudaria o item e a gente reenviaria de volta à toa.
+      tocados.forEach(id => {
+        const atual = tipo === 'caixaDias' ? BD.caixaDias[id] : BD[tipo].find(x => String(x.id) === id);
+        if(atual !== undefined) _syncUltimoEnviado[tipo][id] = JSON.stringify(atual);
+      });
+      if(mudou){ salvar(tipo === 'caixaDias' ? 'caixaDias' : tipo); renderTudo(); }
+    }, err => syncStatus('⚠️ Sincronização interrompida: ' + err.message));
+    _syncListeners.push(() => unsub());
+  });
+}
+function syncAgendarEnvio(){
+  if(!_syncPronto) return;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(syncEmpurrarTudo, 4000);
+}
+function syncEmpurrarTudo(){
+  if(!_syncPronto || !_syncDb) return;
+  const c = syncLerConfig(); if(!c.codigo) return;
+  const base = _syncDb.collection('negocios').doc(c.codigo);
+  let lote = _syncDb.batch(); let n = 0;
+  function add(ref, dados){
+    lote.set(ref, dados, {merge: true}); n++;
+    if(n >= 400){ lote.commit().catch(() => {}); lote = _syncDb.batch(); n = 0; }
+  }
+  SYNC_TIPOS.forEach(tipo => {
+    (BD[tipo] || []).forEach(item => {
+      if(!item || !item.id) return;
+      const id = String(item.id), txt = JSON.stringify(item);
+      if(_syncUltimoEnviado[tipo][id] === txt) return;
+      _syncUltimoEnviado[tipo][id] = txt;
+      add(base.collection(tipo).doc(id), item);
+    });
+  });
+  Object.keys(BD.caixaDias || {}).forEach(dataKey => {
+    const item = BD.caixaDias[dataKey], txt = JSON.stringify(item);
+    if(_syncUltimoEnviado.caixaDias[dataKey] === txt) return;
+    _syncUltimoEnviado.caixaDias[dataKey] = txt;
+    add(base.collection('caixaDias').doc(dataKey), item);
+  });
+  if(n > 0) lote.commit().catch(() => {});
+}
 
 /* =====================================================================
    PAINEL, GRÁFICOS e DIAGNÓSTICO
@@ -5951,6 +6117,7 @@ function iniciar(){
   if(ehInstalacaoNova() && h !== 'totem' && h !== 'painel') assistenteConfiguracaoInicial(entrarNoSistema); else entrarNoSistema();
   $('totemRoot').addEventListener('pointerdown', totemAtividade, true); $('totemRoot').addEventListener('touchstart', totemAtividade, true);
   atualizarFaixa();
+  preencherConfigSync();
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){ navigator.serviceWorker.register('sw.js').catch(() => {}); }
 }
 window.addEventListener('hashchange', () => {
