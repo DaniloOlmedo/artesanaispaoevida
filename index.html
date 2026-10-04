@@ -67,6 +67,20 @@ button,input,select,textarea{font-family:inherit;font-size:.95rem;color:var(--te
 .cab-painel{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .cab-painel h2{margin:0;border:none;padding:0}
 .grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.inicio-cabecalho{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+.inicio-cabecalho .saudacao{font-size:1.3rem;font-weight:700}
+.inicio-cabecalho .data{color:var(--texto);opacity:.65;font-size:.9rem}
+.inicio-grupo{margin-bottom:24px}
+.inicio-grupo h3{margin:0 0 10px;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;opacity:.65;font-weight:700}
+.inicio-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.botao-inicio{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:110px;padding:16px 10px;border-radius:16px;border:1px solid var(--borda);background:var(--painel);box-shadow:var(--sombra);cursor:pointer;color:var(--texto)}
+.botao-inicio:active{transform:scale(.96)}
+.botao-inicio .emoji{font-size:2rem;line-height:1}
+.botao-inicio .rotulo{font-size:.92rem;font-weight:700;text-align:center;line-height:1.2}
+.botao-inicio .selo-inicio{position:absolute;top:8px;right:8px;background:var(--erro);color:#fff;border-radius:10px;min-width:22px;height:22px;padding:0 6px;display:none;align-items:center;justify-content:center;font-size:.76rem;font-weight:700}
+.botao-inicio .selo-inicio.on{display:flex}
+.botao-inicio.destaque{background:var(--verde);color:#fff;border-color:var(--verde)}
+@media(min-width:700px){.botao-inicio{min-height:128px}.botao-inicio .emoji{font-size:2.3rem}.botao-inicio .rotulo{font-size:1rem}}
 .card{background:var(--realce);padding:12px 14px;border-radius:8px;border-left:4px solid var(--verde2)}
 .card h3{font-size:.8rem;color:var(--suave);margin:0 0 4px;font-weight:600}
 .card .valor{font-size:1.35rem;font-weight:700;color:var(--verde)}
@@ -379,6 +393,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 </header>
 <div id="faixaAvisos" role="status"></div>
 <nav class="navegacao" id="nav" aria-label="Seções">
+  <button class="nav-btn" data-p="inicio" onclick="irPara('inicio')">🏠 Início</button>
   <button class="nav-btn" data-p="locais" onclick="irPara('locais')">📍 Locais</button>
   <button class="nav-btn" data-p="clientes" onclick="irPara('clientes')">👤 Clientes</button>
   <button class="nav-btn" data-p="dashboard" onclick="irPara('dashboard')">📊 Painel</button>
@@ -399,6 +414,51 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 </nav>
 
 <!-- ============ PAINEL ============ -->
+<!-- ============ INÍCIO (tela de atalhos) ============ -->
+<section id="inicio" class="pagina">
+  <div class="painel">
+    <div class="inicio-cabecalho">
+      <div class="saudacao" id="inicioSaudacao">Olá!</div>
+      <div class="data" id="inicioData"></div>
+    </div>
+
+    <div class="inicio-grupo">
+      <h3>Operação do dia</h3>
+      <div class="inicio-grade">
+        <button type="button" class="botao-inicio destaque" data-p="vendas" onclick="irPara('vendas')"><span class="emoji">🛒</span><span class="rotulo">Vendas</span></button>
+        <button type="button" class="botao-inicio" data-p="caixa" onclick="irPara('caixa')"><span class="emoji">💵</span><span class="rotulo">Caixa</span><span class="selo-inicio" id="seloCaixaInicio">0</span></button>
+        <button type="button" class="botao-inicio" data-p="fila" onclick="irPara('fila')"><span class="emoji">👨‍🍳</span><span class="rotulo">Fila</span><span class="selo-inicio" id="seloFilaInicio">0</span></button>
+        <button type="button" class="botao-inicio" data-p="atendimento" onclick="irPara('atendimento')"><span class="emoji">⏱️</span><span class="rotulo">Atendimento</span></button>
+        <button type="button" class="botao-inicio" data-p="dashboard" onclick="irPara('dashboard')"><span class="emoji">📊</span><span class="rotulo">Painel</span></button>
+      </div>
+    </div>
+
+    <div class="inicio-grupo">
+      <h3>Produção</h3>
+      <div class="inicio-grade">
+        <button type="button" class="botao-inicio" data-p="estoque" onclick="irPara('estoque')"><span class="emoji">📦</span><span class="rotulo">Estoque</span><span class="selo-inicio" id="seloEstoqueInicio">0</span></button>
+        <button type="button" class="botao-inicio" data-p="fichas" onclick="irPara('fichas')"><span class="emoji">📋</span><span class="rotulo">Fichas</span></button>
+        <button type="button" class="botao-inicio" data-p="precificacao" onclick="irPara('precificacao')"><span class="emoji">🏷️</span><span class="rotulo">Precificação</span></button>
+        <button type="button" class="botao-inicio" data-p="insumos" onclick="irPara('insumos')"><span class="emoji">🧪</span><span class="rotulo">Insumos</span></button>
+        <button type="button" class="botao-inicio" data-p="massa" onclick="irPara('massa')"><span class="emoji">🧮</span><span class="rotulo">Massa</span></button>
+        <button type="button" class="botao-inicio" data-p="etiquetas" onclick="irPara('etiquetas')"><span class="emoji">🏷️</span><span class="rotulo">Etiquetas</span></button>
+        <button type="button" class="botao-inicio" data-p="nutricional" onclick="irPara('nutricional')"><span class="emoji">🔬</span><span class="rotulo">Nutricional</span></button>
+      </div>
+    </div>
+
+    <div class="inicio-grupo">
+      <h3>Negócio</h3>
+      <div class="inicio-grade">
+        <button type="button" class="botao-inicio" data-p="compras" onclick="irPara('compras')"><span class="emoji">🧾</span><span class="rotulo">Compras</span></button>
+        <button type="button" class="botao-inicio" data-p="custos" onclick="irPara('custos')"><span class="emoji">💰</span><span class="rotulo">Custos</span></button>
+        <button type="button" class="botao-inicio" data-p="clientes" onclick="irPara('clientes')"><span class="emoji">👤</span><span class="rotulo">Clientes</span></button>
+        <button type="button" class="botao-inicio" data-p="locais" onclick="irPara('locais')"><span class="emoji">📍</span><span class="rotulo">Locais</span></button>
+        <button type="button" class="botao-inicio" data-p="dados" onclick="irPara('dados')"><span class="emoji">💾</span><span class="rotulo">Dados</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="dashboard" class="pagina">
   <div id="dashPendencias"></div>
   <div class="painel">
@@ -3292,9 +3352,18 @@ function devolverConsumo(lista){
 function atualizarBadges(){
   const baixos = BD.estoqueComponentes.filter(c => c.qtd <= c.min).length;
   const s1 = $('seloEstoque'); if(s1){ s1.textContent = baixos; s1.classList.toggle('on', baixos > 0); }
+  const s1b = $('seloEstoqueInicio'); if(s1b){ s1b.textContent = baixos; s1b.classList.toggle('on', baixos > 0); }
   const pend = pedidosPendentes().length;
   const ativos = pedidosAtivos().filter(p => p.data === dataHoje()).length; const s3 = $('seloFila'); if(s3){ s3.textContent = ativos; s3.classList.toggle('on', ativos > 0); }
+  const s3b = $('seloFilaInicio'); if(s3b){ s3b.textContent = ativos; s3b.classList.toggle('on', ativos > 0); }
   const s2 = $('seloCaixa'); if(s2){ s2.textContent = pend; s2.classList.toggle('on', pend > 0); }
+  const s2b = $('seloCaixaInicio'); if(s2b){ s2b.textContent = pend; s2b.classList.toggle('on', pend > 0); }
+}
+function renderInicio(){
+  const h = new Date().getHours();
+  const saud = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  $('inicioSaudacao').textContent = saud + ', ' + nomeNegocio() + '!';
+  $('inicioData').textContent = new Date().toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'});
 }
 
 
@@ -6515,7 +6584,7 @@ function upsellTotemHTML(){
 }
 function aplicarVisibilidadePlano(){
   const on = planoAvancado();
-  document.querySelectorAll('.nav-btn').forEach(b => { if(PAGINAS_AVANCADAS.includes(b.dataset.p)) b.classList.toggle('oculto', !on); });
+  document.querySelectorAll('.nav-btn, .botao-inicio').forEach(b => { if(PAGINAS_AVANCADAS.includes(b.dataset.p)) b.classList.toggle('oculto', !on); });
   const ef = $('linhaEnviarFila'); if(ef) ef.classList.toggle('oculto', !on);
   const tp = $('painelTotemPix'); const up = $('painelUpsellTotem');
   if(tp) tp.classList.toggle('oculto', !on);
@@ -6628,12 +6697,12 @@ function verDetalheLocal(i){
 /* =====================================================================
    NAVEGAÇÃO e INICIALIZAÇÃO
    ===================================================================== */
-const PAGINAS = ['locais', 'clientes', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'etiquetas', 'nutricional', 'compras', 'custos', 'dados'];
-let _pagina = 'dashboard';
+const PAGINAS = ['inicio', 'locais', 'clientes', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'etiquetas', 'nutricional', 'compras', 'custos', 'dados'];
+let _pagina = 'inicio';
 const paginaAtual = () => _pagina;
 
 function irPara(id){
-  if(!PAGINAS.includes(id)) id = 'dashboard';
+  if(!PAGINAS.includes(id)) id = 'inicio';
   if(PAGINAS_AVANCADAS.includes(id) && !planoAvancado()){ toast('Esse recurso faz parte do plano avançado. Peça o código de ativação em Custos.', 'alerta', {ms: 6000}); id = 'custos'; }
   _pagina = id;
   document.querySelectorAll('.pagina').forEach(p => p.classList.toggle('visivel', p.id === id));
@@ -6648,6 +6717,7 @@ function irPara(id){
 function renderPagina(id){
   try{
     switch(id){
+      case 'inicio': renderInicio(); break;
       case 'dashboard': renderDashboard(); break;
       case 'vendas': renderVendasPagina(); break;
       case 'locais': renderLocais(); break;
@@ -6691,7 +6761,7 @@ function iniciar(){
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   const h = (location.hash || '').replace('#', '');
   const entrarNoSistema = () => {
-    irPara(PAGINAS.includes(h) ? h : 'dashboard');
+    irPara(PAGINAS.includes(h) ? h : 'inicio');
     if(h === 'painel') iniciarPainel();
     else if(h === 'totem'){ if(BD.config.totemPin) iniciarTotem(); else toast('Defina um PIN em Custos → Totem para usar o modo totem.', 'alerta', {ms: 6000}); }
   };
