@@ -67,6 +67,20 @@ button,input,select,textarea{font-family:inherit;font-size:.95rem;color:var(--te
 .cab-painel{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .cab-painel h2{margin:0;border:none;padding:0}
 .grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.inicio-cabecalho{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+.inicio-cabecalho .saudacao{font-size:1.3rem;font-weight:700}
+.inicio-cabecalho .data{color:var(--texto);opacity:.65;font-size:.9rem}
+.inicio-grupo{margin-bottom:24px}
+.inicio-grupo h3{margin:0 0 10px;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;opacity:.65;font-weight:700}
+.inicio-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.botao-inicio{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:110px;padding:16px 10px;border-radius:16px;border:1px solid var(--borda);background:var(--painel);box-shadow:var(--sombra);cursor:pointer;color:var(--texto)}
+.botao-inicio:active{transform:scale(.96)}
+.botao-inicio .emoji{font-size:2rem;line-height:1}
+.botao-inicio .rotulo{font-size:.92rem;font-weight:700;text-align:center;line-height:1.2}
+.botao-inicio .selo-inicio{position:absolute;top:8px;right:8px;background:var(--erro);color:#fff;border-radius:10px;min-width:22px;height:22px;padding:0 6px;display:none;align-items:center;justify-content:center;font-size:.76rem;font-weight:700}
+.botao-inicio .selo-inicio.on{display:flex}
+.botao-inicio.destaque{background:var(--verde);color:#fff;border-color:var(--verde)}
+@media(min-width:700px){.botao-inicio{min-height:128px}.botao-inicio .emoji{font-size:2.3rem}.botao-inicio .rotulo{font-size:1rem}}
 .card{background:var(--realce);padding:12px 14px;border-radius:8px;border-left:4px solid var(--verde2)}
 .card h3{font-size:.8rem;color:var(--suave);margin:0 0 4px;font-weight:600}
 .card .valor{font-size:1.35rem;font-weight:700;color:var(--verde)}
@@ -186,21 +200,46 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 /* Impressão */
 #areaImpressao,#areaRelatorio{display:none}
 .comanda-impressao{width:80mm;margin:0 auto;font-family:monospace;color:#000;background:#fff}
+.comanda-impressao.mm58{width:58mm}
+.etiqueta-prev{font-family:monospace;max-width:300px;margin:0 auto;background:#fff;color:#000;border:1px dashed var(--borda);padding:10px;border-radius:6px}
+.etiqueta-prev .etq-marca{text-align:center;font-weight:bold;margin-bottom:4px}
+.etiqueta-prev .etq-produto{text-align:center;font-weight:bold;font-size:1.05rem;margin-bottom:6px;line-height:1.3}
+.etiqueta-prev .etq-linha{border-bottom:1px dashed #999;margin:4px 0}
+.etiqueta-prev .etq-kv{display:flex;justify-content:space-between;font-size:.85rem;padding:1px 0}
+.nutri-quadro{background:#fff;color:#111;border:2px solid #111;padding:8px 10px 6px;font-family:Arial,Helvetica,sans-serif;font-size:.86rem;max-width:420px}
+.nutri-quadro h4{margin:0 0 2px;font-size:1.05rem;font-weight:800}
+.nutri-quadro p{margin:0;font-size:.78rem;line-height:1.3}
+.nutri-quadro table{width:100%;border-collapse:collapse;margin-top:4px;font-variant-numeric:tabular-nums}
+.nutri-quadro th{font-weight:700;font-size:.72rem;text-align:right;padding:4px 4px;border-top:6px solid #111;border-bottom:1px solid #111}
+.nutri-quadro th:first-child{text-align:left}
+.nutri-quadro td{padding:3px 4px;border-bottom:1px solid #111;text-align:right;font-size:.78rem}
+.nutri-quadro td:first-child{text-align:left}
+.nutri-quadro tr.sub td:first-child{padding-left:16px}
+.nutri-quadro tr:last-child td{border-bottom:6px solid #111}
+.nutri-quadro .rodape{margin:4px 0 0;font-size:.68rem;line-height:1.3}
+.nutri-lupas{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.nutri-lupa{background:#111;color:#fff;font-weight:800;font-size:.76rem;line-height:1.15;padding:7px 9px;border-radius:4px;text-transform:uppercase}
+.nutri-lupa small{display:block;font-weight:600;font-size:.6rem;letter-spacing:.04em}
 @media print{
   body{background:#fff;color:#000;padding:0}
   body.print-comanda>*:not(#areaImpressao),body.print-relatorio>*:not(#areaRelatorio){display:none!important}
   body.print-comanda #areaImpressao{display:block!important}
   body.print-relatorio #areaRelatorio{display:block!important}
-  .comanda-impressao .marca{text-align:center;font-size:16px;font-weight:bold;margin-bottom:4px}
-  .comanda-impressao .senha-c{text-align:center;font-size:44px;font-weight:bold;line-height:1.1;margin:4px 0}
-  .comanda-impressao .data-hora{text-align:center;font-size:16px;font-weight:bold;margin-bottom:10px}
-  .comanda-impressao .cliente-comanda{text-align:center;font-size:24px;font-weight:bold;margin:6px 0}
-  .comanda-impressao .telefone-comanda{text-align:center;font-size:16px;margin-bottom:6px}
-  .comanda-impressao .item{margin:12px 0 2px;font-size:24px;font-weight:bold;line-height:1.3}
-  .comanda-impressao .cons{font-size:18px;font-weight:bold;margin-left:12px}
-  .comanda-impressao .obs{font-size:20px;font-weight:bold;margin:2px 0 12px 12px;border-top:1px dashed #999;padding-top:4px}
-  .comanda-impressao .total{text-align:center;font-size:20px;font-weight:bold;margin-top:12px;border-top:2px solid #000;padding-top:8px}
-  .comanda-impressao .linha{border-bottom:2px dashed #666;margin:8px 0}
+  .comanda-impressao .etq-marca{text-align:center;font-size:13px;font-weight:bold;margin-bottom:4px}
+  .comanda-impressao .etq-produto{text-align:center;font-size:18px;font-weight:bold;margin:4px 0;line-height:1.3}
+  .comanda-impressao .etq-linha{border-bottom:2px dashed #666;margin:4px 0}
+  .comanda-impressao .etq-kv{display:flex;justify-content:space-between;font-size:13px;font-weight:bold;padding:1px 0}
+  .comanda-impressao .marca{text-align:center;font-size:14px;font-weight:bold;margin-bottom:3px}
+  .comanda-impressao .senha-c{text-align:center;font-size:36px;font-weight:bold;line-height:1.1;margin:3px 0}
+  .comanda-impressao .data-hora{text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px}
+  .comanda-impressao .cliente-comanda{text-align:center;font-size:20px;font-weight:bold;margin:4px 0}
+  .comanda-impressao .telefone-comanda{text-align:center;font-size:14px;margin-bottom:4px}
+  .comanda-impressao .item{margin:8px 0 2px;font-size:20px;font-weight:bold;line-height:1.25}
+  .comanda-impressao .cons{font-size:15px;font-weight:bold;margin-left:12px}
+  .comanda-impressao .corte-item{font-size:15px;font-weight:bold;margin:0 0 4px 12px}
+  .comanda-impressao .obs{font-size:16px;font-weight:bold;margin:2px 0 8px 12px;border-top:1px dashed #999;padding-top:3px}
+  .comanda-impressao .total{text-align:center;font-size:17px;font-weight:bold;margin-top:8px;border-top:2px solid #000;padding-top:6px}
+  .comanda-impressao .linha{border-bottom:2px dashed #666;margin:6px 0}
   #areaRelatorio{font-family:Arial,sans-serif;font-size:12px;color:#000;padding:10mm}
   #areaRelatorio table{width:100%;border-collapse:collapse;margin-top:10px}
   #areaRelatorio th,#areaRelatorio td{border:1px solid #444;padding:4px 6px;text-align:left}
@@ -322,10 +361,10 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 .tt-idle>div{background:var(--painel);color:var(--texto);padding:34px 44px;border-radius:24px;display:flex;flex-direction:column;gap:16px}
 @media(max-width:760px){.tt-corpo{flex-direction:column}.tt-dir{min-width:0}.tt-quadro{grid-template-columns:1fr}.tt-brand{font-size:1.8rem}.tt-cta{font-size:1.5rem;padding:18px 26px}.tt-senha-grande{font-size:4rem;padding:6px 30px}.tt{padding:10px}}
 @media print{
-  .comanda-impressao .prev{text-align:center;font-size:20px;font-weight:bold;margin:2px 0}
-  .comanda-impressao .corte{text-align:center;font-size:14px;margin:26px 0 10px;border-top:2px dashed #000;padding-top:8px}
-  .comanda-impressao .via-itens{font-size:18px;margin:8px 0;text-align:center}
-  .comanda-impressao .via-msg{text-align:center;font-size:14px;margin-top:8px}
+  .comanda-impressao .prev{text-align:center;font-size:16px;font-weight:bold;margin:2px 0}
+  .comanda-impressao .corte{text-align:center;font-size:13px;margin:14px 0 8px;border-top:2px dashed #000;padding-top:6px}
+  .comanda-impressao .via-itens{font-size:15px;margin:6px 0;text-align:center}
+  .comanda-impressao .via-msg{text-align:center;font-size:12px;margin-top:6px}
 }
 
 /* ===== Logo do negócio (upload próprio) ===== */
@@ -354,6 +393,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 </header>
 <div id="faixaAvisos" role="status"></div>
 <nav class="navegacao" id="nav" aria-label="Seções">
+  <button class="nav-btn" data-p="inicio" onclick="irPara('inicio')">🏠 Início</button>
   <button class="nav-btn" data-p="locais" onclick="irPara('locais')">📍 Locais</button>
   <button class="nav-btn" data-p="clientes" onclick="irPara('clientes')">👤 Clientes</button>
   <button class="nav-btn" data-p="dashboard" onclick="irPara('dashboard')">📊 Painel</button>
@@ -366,12 +406,59 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
   <button class="nav-btn" data-p="insumos" onclick="irPara('insumos')">🧪 Insumos</button>
   <button class="nav-btn" data-p="massa" onclick="irPara('massa')">🧮 Massa</button>
   <button class="nav-btn" data-p="estoque" onclick="irPara('estoque')">📦 Estoque<span class="selo" id="seloEstoque">0</span></button>
+  <button class="nav-btn" data-p="etiquetas" onclick="irPara('etiquetas')">🏷️ Etiquetas</button>
+  <button class="nav-btn" data-p="nutricional" onclick="irPara('nutricional')">🔬 Nutricional</button>
   <button class="nav-btn" data-p="compras" onclick="irPara('compras')">🧾 Compras</button>
   <button class="nav-btn" data-p="custos" onclick="irPara('custos')">💰 Custos</button>
   <button class="nav-btn" data-p="dados" onclick="irPara('dados')">💾 Dados</button>
 </nav>
 
 <!-- ============ PAINEL ============ -->
+<!-- ============ INÍCIO (tela de atalhos) ============ -->
+<section id="inicio" class="pagina">
+  <div class="painel">
+    <div class="inicio-cabecalho">
+      <div class="saudacao" id="inicioSaudacao">Olá!</div>
+      <div class="data" id="inicioData"></div>
+    </div>
+
+    <div class="inicio-grupo">
+      <h3>Operação do dia</h3>
+      <div class="inicio-grade">
+        <button type="button" class="botao-inicio destaque" data-p="vendas" onclick="irPara('vendas')"><span class="emoji">🛒</span><span class="rotulo">Vendas</span></button>
+        <button type="button" class="botao-inicio" data-p="caixa" onclick="irPara('caixa')"><span class="emoji">💵</span><span class="rotulo">Caixa</span><span class="selo-inicio" id="seloCaixaInicio">0</span></button>
+        <button type="button" class="botao-inicio" data-p="fila" onclick="irPara('fila')"><span class="emoji">👨‍🍳</span><span class="rotulo">Fila</span><span class="selo-inicio" id="seloFilaInicio">0</span></button>
+        <button type="button" class="botao-inicio" data-p="atendimento" onclick="irPara('atendimento')"><span class="emoji">⏱️</span><span class="rotulo">Atendimento</span></button>
+        <button type="button" class="botao-inicio" data-p="dashboard" onclick="irPara('dashboard')"><span class="emoji">📊</span><span class="rotulo">Painel</span></button>
+      </div>
+    </div>
+
+    <div class="inicio-grupo">
+      <h3>Produção</h3>
+      <div class="inicio-grade">
+        <button type="button" class="botao-inicio" data-p="estoque" onclick="irPara('estoque')"><span class="emoji">📦</span><span class="rotulo">Estoque</span><span class="selo-inicio" id="seloEstoqueInicio">0</span></button>
+        <button type="button" class="botao-inicio" data-p="fichas" onclick="irPara('fichas')"><span class="emoji">📋</span><span class="rotulo">Fichas</span></button>
+        <button type="button" class="botao-inicio" data-p="precificacao" onclick="irPara('precificacao')"><span class="emoji">🏷️</span><span class="rotulo">Precificação</span></button>
+        <button type="button" class="botao-inicio" data-p="insumos" onclick="irPara('insumos')"><span class="emoji">🧪</span><span class="rotulo">Insumos</span></button>
+        <button type="button" class="botao-inicio" data-p="massa" onclick="irPara('massa')"><span class="emoji">🧮</span><span class="rotulo">Massa</span></button>
+        <button type="button" class="botao-inicio" data-p="etiquetas" onclick="irPara('etiquetas')"><span class="emoji">🏷️</span><span class="rotulo">Etiquetas</span></button>
+        <button type="button" class="botao-inicio" data-p="nutricional" onclick="irPara('nutricional')"><span class="emoji">🔬</span><span class="rotulo">Nutricional</span></button>
+      </div>
+    </div>
+
+    <div class="inicio-grupo">
+      <h3>Negócio</h3>
+      <div class="inicio-grade">
+        <button type="button" class="botao-inicio" data-p="compras" onclick="irPara('compras')"><span class="emoji">🧾</span><span class="rotulo">Compras</span></button>
+        <button type="button" class="botao-inicio" data-p="custos" onclick="irPara('custos')"><span class="emoji">💰</span><span class="rotulo">Custos</span></button>
+        <button type="button" class="botao-inicio" data-p="clientes" onclick="irPara('clientes')"><span class="emoji">👤</span><span class="rotulo">Clientes</span></button>
+        <button type="button" class="botao-inicio" data-p="locais" onclick="irPara('locais')"><span class="emoji">📍</span><span class="rotulo">Locais</span></button>
+        <button type="button" class="botao-inicio" data-p="dados" onclick="irPara('dados')"><span class="emoji">💾</span><span class="rotulo">Dados</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="dashboard" class="pagina">
   <div id="dashPendencias"></div>
   <div class="painel">
@@ -902,6 +989,114 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
   </div>
 </section>
 
+<!-- ============ ETIQUETAS ============ -->
+<section id="etiquetas" class="pagina">
+  <div class="painel">
+    <h2>🏷️ Gerar etiqueta de freezer</h2>
+    <div class="aviso">Escolha o tipo e o sabor, informe a quantidade e a validade. Ao registrar, o lote entra no controle de estoque congelado abaixo, com numeração automática (dia/mês/ano e sequência do dia).</div>
+    <label>Tipo</label>
+    <div class="grupo-botoes" id="etqTipos">
+      <button type="button" class="tt-chip" data-tipo="massa" onclick="selecionarTipoEtiqueta('massa')">🍞 Massa</button>
+      <button type="button" class="tt-chip" data-tipo="pizza" onclick="selecionarTipoEtiqueta('pizza')">🍕 Pizza</button>
+      <button type="button" class="tt-chip" data-tipo="empanada" onclick="selecionarTipoEtiqueta('empanada')">🥟 Empanada</button>
+    </div>
+    <label>Sabor</label>
+    <div class="grupo-botoes" id="etqSabores"></div>
+    <div class="linha-form" style="grid-template-columns:2fr auto">
+      <div><input type="text" id="etqNovoSabor" placeholder="Novo sabor... Ex: Copa Lombo" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarSaborEtiqueta();}"></div>
+      <button class="btn cinza" type="button" onclick="adicionarSaborEtiqueta()">+ Sabor</button>
+    </div>
+    <div class="bloco-calc">
+      <div><label for="etqUnidade">Quantidade</label>
+        <div class="qtd-ctl"><button type="button" onclick="alterarQtdEtiqueta(-1)" aria-label="Diminuir">−</button><b id="etqQtdVal">1</b><button type="button" onclick="alterarQtdEtiqueta(1)" aria-label="Aumentar">+</button></div></div>
+      <div><label for="etqUnidadeSel">Unidade</label><select id="etqUnidadeSel" onchange="atualizarPreviaEtiqueta()"><option value="pacote">pacote(s)</option><option value="unidade">unidade(s)</option></select></div>
+      <div><label for="etqProduzido">Produzido em</label><input type="date" id="etqProduzido" onchange="atualizarValidadeEtiqueta()"></div>
+      <div><label for="etqDiasValidade">Validade (dias)</label><input type="number" id="etqDiasValidade" min="1" step="1" inputmode="numeric" onchange="atualizarValidadeEtiqueta()"></div>
+    </div>
+    <div class="dica" id="etqValidadeTxt"></div>
+    <label for="etqTamanhoPapel">Tamanho do papel</label>
+    <select id="etqTamanhoPapel" style="max-width:200px" onchange="salvarTamanhoPapelEtiqueta()">
+      <option value="58">58mm</option>
+      <option value="80">80mm</option>
+    </select>
+    <h3>Pré-visualização</h3>
+    <div class="resultado" id="etqPreview"></div>
+    <div class="grupo-botoes">
+      <button class="btn" type="button" onclick="registrarEImprimirEtiqueta()">🖨️ Registrar e imprimir</button>
+      <button class="btn laranja" type="button" onclick="registrarEtiqueta()">📥 Só registrar no estoque</button>
+      <button class="btn cinza" type="button" onclick="copiarTextoEtiqueta()">📋 Copiar texto</button>
+    </div>
+  </div>
+  <div class="painel">
+    <h2>📦 Estoque de etiquetas (congelador)</h2>
+    <div class="aviso">Lotes ordenados pelo mais próximo de vencer. Use "−1" a cada pacote/unidade retirado, ou "Esgotar" quando acabar.</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Lote</th><th>Tipo</th><th>Sabor</th><th>Produzido</th><th>Validade</th><th class="n">Restante</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabelaEstoqueEtiquetas"></tbody></table></div>
+  </div>
+</section>
+
+<!-- ============ NUTRICIONAL ============ -->
+<section id="nutricional" class="pagina">
+  <div class="painel">
+    <h2>🔬 Tabela nutricional</h2>
+    <div class="aviso">Calcula a tabela por 100 g e por porção, com %VD e a rotulagem frontal (lupa), a partir dos ingredientes cadastrados e da receita. <b>Antes de usar numa embalagem de venda</b>, confira com um nutricionista ou a vigilância sanitária: a porção de referência por categoria e as regras de arredondamento (Anexo IV/V da IN 75/2020) podem ter particularidades que este cálculo não cobre.</div>
+    <div class="grupo-botoes" id="nutriAbas">
+      <button type="button" class="tt-chip" data-aba="receita" onclick="selecionarAbaNutri('receita')">📋 Receita</button>
+      <button type="button" class="tt-chip" data-aba="ing" onclick="selecionarAbaNutri('ing')">🧪 Ingredientes</button>
+    </div>
+  </div>
+
+  <div class="painel" id="nutriPainelReceita">
+    <h2>📂 Receitas salvas</h2>
+    <div class="flex-linha">
+      <div style="flex:3"><select id="nutriSelReceita" onchange="carregarReceitaNutri(this.value)"></select></div>
+      <div class="fixo"><button class="btn cinza pequeno" type="button" onclick="novaReceitaNutri()">🔄 Nova</button></div>
+      <div class="fixo"><button class="btn pequeno" type="button" onclick="salvarReceitaNutri()">💾 Salvar</button></div>
+      <div class="fixo"><button class="btn vermelho pequeno" type="button" onclick="excluirReceitaNutri()">🗑️ Excluir</button></div>
+    </div>
+    <div class="bloco-calc">
+      <div><label>Produto</label>
+        <div class="grupo-botoes" id="nutriTipoSel">
+          <button type="button" class="tt-chip" data-tipo="massa" onclick="selecionarTipoNutri('massa')">Massa de pizza</button>
+          <button type="button" class="tt-chip" data-tipo="empanada" onclick="selecionarTipoNutri('empanada')">Empanada</button>
+        </div>
+      </div>
+      <div><label for="nutriNome">Nome da receita</label><input type="text" id="nutriNome" maxlength="40" placeholder="Ex: Empanada de frango"></div>
+    </div>
+    <h3>Ingredientes da receita <span id="nutriSomaTxt" class="suave"></span></h3>
+    <div id="nutriLinhas"></div>
+    <button class="btn cinza" type="button" onclick="adicionarLinhaNutri()">+ Adicionar ingrediente</button>
+    <h3>Pesos</h3>
+    <div class="bloco-calc">
+      <div><label for="nutriPesoFinal">Peso final da receita (g)</label><input type="number" step="0.1" id="nutriPesoFinal" placeholder="soma dos ingredientes" oninput="renderResultadoNutri()"></div>
+      <div><label for="nutriPorcao">Porção (g)</label><input type="number" step="0.1" id="nutriPorcao" placeholder="Ex: 80" oninput="renderResultadoNutri()"></div>
+      <div><label for="nutriMedida">Medida caseira</label><input type="text" id="nutriMedida" maxlength="30" placeholder="Ex: 1 unidade" oninput="renderResultadoNutri()"></div>
+      <div><label for="nutriPacote">Peso do pacote (g)</label><input type="number" step="0.1" id="nutriPacote" placeholder="Ex: 480" oninput="renderResultadoNutri()"></div>
+    </div>
+    <div class="dica">Peso final: se a receita perde água no forno antes de congelar, pese o produto pronto e digite aqui. Em branco vale a soma dos ingredientes.</div>
+    <h3>Tabela</h3>
+    <div id="nutriResultado"></div>
+    <div id="nutriTextoBloco" class="oculto">
+      <label for="nutriPapel">Tamanho do papel (mini impressora)</label>
+      <select id="nutriPapel" onchange="renderResultadoNutri()" style="max-width:240px">
+        <option value="32">58mm (32 colunas)</option>
+        <option value="48" selected>80mm (48 colunas)</option>
+      </select>
+      <div class="resultado"><pre id="nutriTextoPre" style="white-space:pre;font-family:monospace;font-size:.78rem;margin:0;overflow-x:auto"></pre></div>
+      <div class="grupo-botoes">
+        <button class="btn" type="button" onclick="imprimirNutri()">🖨️ Imprimir</button>
+        <button class="btn cinza" type="button" onclick="copiarTextoNutri()">📋 Copiar texto</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="painel oculto" id="nutriPainelIng">
+    <h2>🧪 Ingredientes cadastrados</h2>
+    <div class="aviso">Cadastre cada ingrediente uma vez, com os valores por 100 g que estão no rótulo da embalagem. Depois é só escolher na receita.</div>
+    <button class="btn" type="button" onclick="novoIngredienteNutri()">+ Novo ingrediente</button>
+    <div id="nutriListaIng" style="margin-top:12px"></div>
+  </div>
+</section>
+
 <!-- ============ COMPRAS ============ -->
 <section id="compras" class="pagina">
   <div class="painel">
@@ -972,7 +1167,8 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <label class="linha"><input type="checkbox" id="cfgSemEstoque" onchange="salvarConfig()"> Permitir vender mesmo com estoque insuficiente (apenas avisa)</label>
     <label class="linha"><input type="checkbox" id="cfgBackupFechar" onchange="salvarConfig()"> Baixar backup automaticamente ao fechar o dia</label>
     <label class="linha"><input type="checkbox" id="cfgValoresComanda" onchange="salvarConfig()"> Mostrar valores (total) na comanda impressa</label>
-    <div class="bloco-calc"><div><label for="cfgVias">Vias impressas em cada comanda</label><select id="cfgVias" onchange="salvarConfig()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente, para levar/pendurar)</option></select></div></div>
+    <div class="bloco-calc"><div><label for="cfgVias">Vias impressas em cada comanda</label><select id="cfgVias" onchange="salvarConfig()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente, para levar/pendurar)</option></select><div class="dica">Escolha "1 (só cozinha)" para imprimir só a via do estabelecimento e economizar papel.</div></div></div>
+    <div class="bloco-calc"><div><label for="cfgRodape">Mensagem extra no fim da comanda — opcional</label><input type="text" id="cfgRodape" placeholder="Deixe vazio para não imprimir nada" oninput="salvarConfig()"><div class="dica">Se ficar em branco, nada é impresso após a linha de corte, evitando desperdício de papel.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgCNPJ">CNPJ do seu negócio (MEI) — opcional</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0000-00" oninput="salvarConfig()"><div class="dica">Aparece no recibo de consumo emitido pra cliente (aba Caixa). Deixe vazio se ainda não tiver CNPJ.</div></div></div>
   </div>
 
@@ -1071,6 +1267,19 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="grupo-botoes"><button class="btn azul" type="button" onclick="$('arquivoMesclar').click()">🔀 Mesclar vendas de outro aparelho</button></div>
     <p id="statusBackup" class="suave" style="margin-top:6px"></p>
     <div id="dadosResumo" class="grade" style="margin-top:12px"></div>
+  </div>
+  <div class="painel">
+    <h2>🔄 Sincronização automática entre aparelhos</h2>
+    <div class="aviso">Opcional e gratuito. Liga a sincronização automática de <b>vendas, despesas, perdas, compras e fechamentos de caixa</b> entre todos os aparelhos com o mesmo "código do negócio" — sem precisar exportar/importar na mão. Fichas, insumos, estoque e configurações continuam só deste aparelho, como hoje. Funciona sem internet: o que for feito offline entra sozinho quando o sinal voltar.</div>
+    <label class="linha"><input type="checkbox" id="syncAtivo" onchange="alternarSync()"> Ativar sincronização automática</label>
+    <div class="bloco-calc">
+      <div><label for="syncCodigo">Código do negócio</label><input type="text" id="syncCodigo" placeholder="Ex: paoevida-danilo-2026" oninput="salvarConfigSync()"><div class="dica">Invente um código único, sem espaços, e use o MESMO em todos os aparelhos que devem sincronizar entre si.</div></div>
+      <div><label for="syncApelido">Nome deste aparelho</label><input type="text" id="syncApelido" placeholder="Ex: Computador ou Tablet da feira" oninput="salvarConfigSync()"></div>
+    </div>
+    <label for="syncFirebaseConfig">Configuração do Firebase (cole aqui)</label>
+    <textarea id="syncFirebaseConfig" rows="4" placeholder="Cole aqui o bloco firebaseConfig = {...} do seu projeto Firebase" oninput="salvarConfigSync()"></textarea>
+    <div class="grupo-botoes" style="margin-top:8px"><button class="btn azul" type="button" onclick="syncConectar()">🔌 Conectar</button></div>
+    <p id="statusSync" class="suave" style="margin-top:6px">Sincronização desativada.</p>
   </div>
   <div class="painel">
     <h2>🗄️ Arquivar dados antigos</h2>
@@ -1278,13 +1487,16 @@ function formModal({titulo, campos, salvar, textoSalvar = 'Salvar', aviso = '', 
 const CHAVES = {
   custos:'custosFixos', taxas:'taxas', insumos:'insumos', fichas:'fichas', formulasMassa:'formulasMassa',
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
-  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores', clientes:'clientes'
+  config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores', clientes:'clientes',
+  etiquetaSabores:'etiquetaSabores', etiquetaLotes:'etiquetaLotes',
+  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[]};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
-  valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem',
+  valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem', rodapeComanda:'',
+  etiquetaValidadeDias: {massa: 60, pizza: 60, empanada: 60},
   // atendimento / totem
   pdvNaFila:false, capacidade:2, tempoBase:2, tempoPadraoFicha:8, calibrar:true, voz:true,
   totemPin:'', totemNome:'', totemMensagem:'Retire seu pedido no balcão quando chamarem a sua senha.', totemExigePagamento:true, totemImprimir:true, totemVias:2,
@@ -1305,11 +1517,32 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0, categoria:'Bebidas'},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0, categoria:'Bebidas'}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[]};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
 let ultimoPedidoImpresso = null;
+let ETQ_TIPO = 'massa';
+let ETQ_SABOR = null;
+let ETQ_QTD = 1;
+const NUTRI_KEYS = [
+  {k:'kcal', nome:'Valor energético', un:'kcal', vd:2000, ns:4, sub:false, rotulo:'Energia (kcal)'},
+  {k:'carb', nome:'Carboidratos', un:'g', vd:300, ns:0.5, sub:false, rotulo:'Carboidratos (g)'},
+  {k:'acuc', nome:'Açúcares totais', un:'g', vd:null, ns:0.5, sub:true, rotulo:'Açúcares totais (g)'},
+  {k:'acucAd', nome:'Açúcares adicionados', un:'g', vd:50, ns:0.5, sub:true, rotulo:'Açúcares adicionados (g)'},
+  {k:'prot', nome:'Proteínas', un:'g', vd:50, ns:0.5, sub:false, rotulo:'Proteínas (g)'},
+  {k:'gord', nome:'Gorduras totais', un:'g', vd:65, ns:0.5, sub:false, rotulo:'Gorduras totais (g)'},
+  {k:'sat', nome:'Gorduras saturadas', un:'g', vd:20, ns:0.1, sub:true, rotulo:'Gorduras saturadas (g)'},
+  {k:'trans', nome:'Gorduras trans', un:'g', vd:2, ns:0.1, sub:true, rotulo:'Gorduras trans (g)'},
+  {k:'fib', nome:'Fibra alimentar', un:'g', vd:25, ns:0.5, sub:false, rotulo:'Fibras (g)'},
+  {k:'sod', nome:'Sódio', un:'mg', vd:2000, ns:5, sub:false, rotulo:'Sódio (mg)'}
+];
+const NUTRI_SHORT32 = {kcal:'Energia kcal', carb:'Carboid. g', acuc:'Açúc.totais g', acucAd:'Açúc.adic. g', prot:'Proteínas g', gord:'Gord.totais g', sat:'Gord.satur. g', trans:'Gord.trans g', fib:'Fibra g', sod:'Sódio mg'};
+let NUTRI_ABA = 'receita';
+let NUTRI_TIPO = 'empanada';
+let NUTRI_REC = null;
+let NUTRI_ROWS = [{ing:'', g:''}];
+let NUTRI_EDIT_ING = null;
 
 function lerLS(chave, padrao){
   let t = null;
@@ -1366,6 +1599,7 @@ function flush(){
   ESTADO.erroGravacao = falhou;
   if(!falhou) agendarSnapshotAuto();
   atualizarFaixa();
+  if(!falhou && lista.some(k => k === 'caixaDias' || SYNC_TIPOS.includes(k))) syncAgendarEnvio();
 }
 window.addEventListener('pagehide', flush);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') flush(); });
@@ -1549,7 +1783,7 @@ function acharInsumo(ref){ // ref: {insumoId, nome}
   return acharInsumoPorNome(ref.nome);
 }
 function normalizarBD(){
-  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores'];
+  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas'];
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
@@ -1557,7 +1791,7 @@ function normalizarBD(){
   const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
-  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores'].forEach(k => {
+  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas'].forEach(k => {
     BD[k].forEach(x => { if(x && typeof x === 'object' && !x.id) x.id = uid(); });
   });
   BD.custos.forEach(c => { c.val = parseNum(c.val); });
@@ -1962,6 +2196,7 @@ function carregarConfigNaTela(){
   $('cfgArredondar').value = c.arredondar; $('cfgTaxaBase').value = c.taxaBase; $('cfgVolume').value = c.volumeMensal || '';
   $('cfgSemEstoque').checked = !!c.semEstoque; $('cfgBackupFechar').checked = !!c.backupFechar; $('cfgValoresComanda').checked = !!c.valoresComanda;
   $('cfgVias').value = String(c.totemVias || 2);
+  $('cfgRodape').value = c.rodapeComanda || '';
   $('cfgCNPJ').value = c.negocioCNPJ || '';
 }
 function salvarConfig(){
@@ -1969,6 +2204,7 @@ function salvarConfig(){
   c.arredondar = $('cfgArredondar').value; c.taxaBase = $('cfgTaxaBase').value; c.volumeMensal = parseNum($('cfgVolume').value);
   c.semEstoque = $('cfgSemEstoque').checked; c.backupFechar = $('cfgBackupFechar').checked; c.valoresComanda = $('cfgValoresComanda').checked;
   c.totemVias = $('cfgVias').value === '1' ? 1 : 2;
+  c.rodapeComanda = $('cfgRodape').value.trim();
   c.negocioCNPJ = $('cfgCNPJ').value.trim();
   recalcularTudo(); salvar('config', 'fichas');
 }
@@ -2438,9 +2674,21 @@ function renderListaFichas(){
   $('listaResumoFichas').innerHTML = lista.length ? lista.map(f => {
     const a = analisar(f, {consumo: 'viagem'});
     const sem = !(f.precoPraticado > 0);
-    return '<tr' + (f.id === fichaAtual ? ' style="background:var(--realce)"' : '') + '><td><b>' + esc(f.nome) + '</b>' + (f.ativo === false ? ' <span class="tag cinza">oculto no PDV</span>' : '') + (f.sincInsumo ? ' <span class="tag">🔗 insumo</span>' : '') + '</td><td class="n">' + brl(a.custo) + '</td><td class="n">' + (a.sugArred === null ? '—' : brl(a.sugArred)) + '</td><td class="n">' + (sem ? '<span class="tag laranja">sem preço</span>' : brl(f.precoPraticado)) + '</td><td class="n ' + (sem ? '' : (a.lucro <= 0 ? 'erro' : (a.margem < margemAlvo(f) ? 'alerta' : 'ok'))) + '">' + (sem ? '—' : fmt(a.margem, 1) + '%') + '</td>' +
+    return '<tr data-id="' + f.id + '"' + (f.id === fichaAtual ? ' style="background:var(--realce)"' : '') + '><td><b>' + esc(f.nome) + '</b>' + (f.ativo === false ? ' <span class="tag cinza">oculto no PDV</span>' : '') + (f.sincInsumo ? ' <span class="tag">🔗 insumo</span>' : '') + '</td><td class="n">' + brl(a.custo) + '</td><td class="n">' + (a.sugArred === null ? '—' : brl(a.sugArred)) + '</td>' +
+      '<td class="n"><input type="number" step="0.01" min="0" inputmode="decimal" style="width:96px" value="' + (f.precoPraticado || '') + '" placeholder="0,00" oninput="mudarPrecoListaFicha(\'' + f.id + '\',this.value)" aria-label="Preço praticado de ' + esc(f.nome) + '"></td>' +
+      '<td class="n ' + (sem ? '' : (a.lucro <= 0 ? 'erro' : (a.margem < margemAlvo(f) ? 'alerta' : 'ok'))) + '" data-k="margem">' + (sem ? '—' : fmt(a.margem, 1) + '%') + '</td>' +
       '<td class="acoes"><button class="btn pequeno" onclick="carregarFicha(\'' + f.id + '\')">Abrir</button><button class="btn cinza pequeno" onclick="duplicarFicha(\'' + f.id + '\')" aria-label="Duplicar" title="Duplicar">⧉</button><button class="btn vermelho pequeno" onclick="excluirFicha(\'' + f.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="6"><div class="vazio">' + (BD.fichas.length ? 'Nenhuma ficha encontrada.' : 'Nenhuma ficha ainda. Crie a primeira acima.') + '</div></td></tr>';
+}
+// Atualiza o preço praticado direto na listagem de fichas (sem precisar abrir a ficha) — mesmo padrão da aba Precificação.
+function mudarPrecoListaFicha(id, valor){
+  const f = BD.fichas.find(x => x.id === id); if(!f) return;
+  f.precoPraticado = Math.max(0, parseNum(valor)); recalcularFicha(f); salvar('fichas');
+  const tr = document.querySelector('#listaResumoFichas tr[data-id="' + id + '"]'); if(!tr) return;
+  const a = analisar(f, {consumo: 'viagem'}); const sem = !(f.precoPraticado > 0);
+  const cel = tr.querySelector('[data-k="margem"]'); if(!cel) return;
+  cel.textContent = sem ? '—' : fmt(a.margem, 1) + '%';
+  cel.className = 'n ' + (sem ? '' : (a.lucro <= 0 ? 'erro' : (a.margem < margemAlvo(f) ? 'alerta' : 'ok')));
 }
 function duplicarFicha(id){
   const o = BD.fichas.find(f => f.id === (id || fichaAtual)); if(!o) return;
@@ -3104,9 +3352,18 @@ function devolverConsumo(lista){
 function atualizarBadges(){
   const baixos = BD.estoqueComponentes.filter(c => c.qtd <= c.min).length;
   const s1 = $('seloEstoque'); if(s1){ s1.textContent = baixos; s1.classList.toggle('on', baixos > 0); }
+  const s1b = $('seloEstoqueInicio'); if(s1b){ s1b.textContent = baixos; s1b.classList.toggle('on', baixos > 0); }
   const pend = pedidosPendentes().length;
   const ativos = pedidosAtivos().filter(p => p.data === dataHoje()).length; const s3 = $('seloFila'); if(s3){ s3.textContent = ativos; s3.classList.toggle('on', ativos > 0); }
+  const s3b = $('seloFilaInicio'); if(s3b){ s3b.textContent = ativos; s3b.classList.toggle('on', ativos > 0); }
   const s2 = $('seloCaixa'); if(s2){ s2.textContent = pend; s2.classList.toggle('on', pend > 0); }
+  const s2b = $('seloCaixaInicio'); if(s2b){ s2b.textContent = pend; s2b.classList.toggle('on', pend > 0); }
+}
+function renderInicio(){
+  const h = new Date().getHours();
+  const saud = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  $('inicioSaudacao').textContent = saud + ', ' + nomeNegocio() + '!';
+  $('inicioData').textContent = new Date().toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'});
 }
 
 
@@ -3246,7 +3503,7 @@ function verificarEAdicionar(novo){
 function adicionarProdutoRapido(tipo, id){
   const p = acharProduto(tipo, id); if(!p) return;
   const preco = tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0);
-  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: 1, tipoConsumo: consumoAtual, obs: '', valorUnit: preco};
+  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: 1, tipoConsumo: consumoAtual, obs: '', corte: '', valorUnit: preco};
   if(preco > 0) return void verificarEAdicionar(novo);
   const sug = tipo === 'ficha' ? analisar(p, {consumo: consumoAtual}).sugArred : null;
   formModal({titulo: '"' + p.nome + '" ainda não tem preço', aviso: sug ? 'Sugestão pela ficha técnica: <b>' + brl(sug) + '</b>. Defina o preço definitivo na aba Fichas.' : 'Defina o preço na aba ' + (tipo === 'ficha' ? 'Fichas' : 'Custos') + '.',
@@ -3261,7 +3518,7 @@ function adicionarPeloFormulario(){
   const p = acharProduto(tipo, id); if(!p) return;
   const preco = tipo === 'ficha' ? (p.precoPraticado || 0) : (p.preco || 0);
   const obs = $('obsItemVenda').value.trim();
-  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, valorUnit: preco};
+  const novo = {uid: uid(), tipo, produtoId: id, produto: p.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, corte: '', valorUnit: preco};
   const fim = () => { if(verificarEAdicionar(novo)){ $('qtdVendida').value = 1; $('obsItemVenda').value = ''; } };
   if(preco > 0) return fim();
   formModal({titulo: 'Preço de "' + p.nome + '"', campos: [{id: 'preco', rotulo: 'Preço (R$)', tipo: 'numero', valor: ''}], textoSalvar: 'Adicionar', salvar: v => { if(!(v.preco > 0)){ toast('Informe o preço.', 'alerta'); return false; } novo.valorUnit = v.preco; fim(); }});
@@ -3292,7 +3549,7 @@ function abrirMeioAMeio(){
       const qtd = Math.max(1, Math.round(parseNum(ctl.el.querySelector('#mm_qtd').value, 1)));
       const obs = ctl.el.querySelector('#mm_obs').value.trim();
       const preco = Math.max(f1.precoPraticado, f2.precoPraticado);
-      const novo = {uid: uid(), tipo: 'meio', metade1: id1, metade2: id2, produto: '½ ' + f1.nome + ' + ½ ' + f2.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, valorUnit: preco};
+      const novo = {uid: uid(), tipo: 'meio', metade1: id1, metade2: id2, produto: '½ ' + f1.nome + ' + ½ ' + f2.nome, quantidade: qtd, tipoConsumo: consumoAtual, obs, corte: '', valorUnit: preco};
       if(!verificarEAdicionar(novo)) return false;
     }}
   ]});
@@ -3331,6 +3588,12 @@ function editarObsLinha(id){
   const c = carrinhoAtual.find(x => x.uid === id); if(!c) return;
   formModal({titulo: 'Observação — ' + c.produto, campos: [{id: 'obs', rotulo: 'Observação do item', valor: c.obs || '', placeholder: 'Ex: sem cebola, bem passada'}], salvar: v => { c.obs = v.obs; renderCarrinho(); }});
 }
+const OPCOES_CORTE_PIZZA = [{v: '', t: 'Sem preferência'}, {v: '8 fatias', t: '8 fatias'}, {v: '4 fatias', t: '4 fatias'}, {v: 'Petisco (quadrados pequenos)', t: 'Petisco (quadrados pequenos)'}];
+const itemEhPizza = c => norm(c.produto || '').includes('pizza');
+function editarCorteLinha(id){
+  const c = carrinhoAtual.find(x => x.uid === id); if(!c) return;
+  formModal({titulo: 'Como cortar — ' + c.produto, campos: [{id: 'corte', rotulo: 'Corte escolhido pelo cliente', tipo: 'select', valor: c.corte || '', opcoes: OPCOES_CORTE_PIZZA}], salvar: v => { c.corte = v.corte; renderCarrinho(); }});
+}
 function editarPrecoLinha(id){
   const c = carrinhoAtual.find(x => x.uid === id); if(!c) return;
   formModal({titulo: 'Preço unitário — ' + c.produto, campos: [{id: 'p', rotulo: 'Preço unitário (R$)', tipo: 'numero', valor: c.valorUnit}], salvar: v => {
@@ -3355,7 +3618,7 @@ function renderCarrinho(){
   $('tabelaCarrinho').innerHTML = carrinhoAtual.map(c =>
     '<tr><td><b>' + esc(c.produto) + '</b></td><td><div class="qtd-ctl"><button type="button" onclick="alterarQtdCarrinho(\'' + c.uid + '\',-1)" aria-label="Diminuir">−</button><b>' + c.quantidade + '</b><button type="button" onclick="alterarQtdCarrinho(\'' + c.uid + '\',1)" aria-label="Aumentar">+</button></div></td>' +
     '<td><button type="button" class="btn cinza pequeno" onclick="alternarConsumoLinha(\'' + c.uid + '\')" title="Trocar viagem/local">' + (c.tipoConsumo === 'local' ? '🍽️ Local' : '🥡 Viagem') + '</button></td>' +
-    '<td><button type="button" class="btn cinza pequeno" onclick="editarObsLinha(\'' + c.uid + '\')">' + (c.obs ? '<span class="observacao-venda" style="padding:2px 6px">' + esc(c.obs) + '</span>' : '+ obs') + '</button></td>' +
+    '<td><button type="button" class="btn cinza pequeno" onclick="editarObsLinha(\'' + c.uid + '\')">' + (c.obs ? '<span class="observacao-venda" style="padding:2px 6px">' + esc(c.obs) + '</span>' : '+ obs') + '</button>' + (itemEhPizza(c) ? ' <button type="button" class="btn cinza pequeno" onclick="editarCorteLinha(\'' + c.uid + '\')" title="Corte da pizza">' + (c.corte ? '✂ ' + esc(c.corte) : '✂ corte') + '</button>' : '') + '</td>' +
     '<td class="n"><button type="button" class="btn cinza pequeno" onclick="editarPrecoLinha(\'' + c.uid + '\')">' + brl(c.valorUnit) + '</button></td><td class="n"><b>' + brl(c.valorUnit * c.quantidade) + '</b></td>' +
     '<td><button type="button" class="btn vermelho pequeno" onclick="removerDoCarrinho(\'' + c.uid + '\')" aria-label="Remover">✕</button></td></tr>').join('');
   $('senhaAtual').textContent = proximaSenha();
@@ -3463,7 +3726,7 @@ function registrarPedido({itens, cliente, telefone, desconto = 0, pagamentos = n
     const custoUnit = custoUnitItem(it);
     const l = {id: uid(), pedidoId, senha, data, horario, cliente: clienteFinal, telefone: telefoneFinal, produto: it.produto, produtoId: it.produtoId, tipoProduto: it.tipo,
       quantidade: it.quantidade, valorUnit: it.valorUnit, descontoValor: dist[i].parte, valorTotal, custoUnit, custoTotal: custoUnit * it.quantidade,
-      tipoConsumo: it.tipoConsumo, observacao: it.obs || '', pago: false, formaPagamento: 'pendente', consumo: baixarConsumo(consumoDoItem(it)),
+      tipoConsumo: it.tipoConsumo, observacao: it.obs || '', corte: it.corte || '', pago: false, formaPagamento: 'pendente', consumo: baixarConsumo(consumoDoItem(it)),
       origem, status, criadoEm: agora, viaSugestao: !!it.sug};
     if(it.tipo === 'meio'){ l.metade1 = it.metade1; l.metade2 = it.metade2; }
     if(BD.config.localAtual) l.local = nomeLocalAtual();
@@ -3556,14 +3819,14 @@ function comandaHTML(pid){
   let h = '<div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div>' + (l0.local ? '<div class="telefone-comanda">📍 ' + esc(l0.local.toUpperCase()) + '</div>' : '') + (totem ? '<div class="telefone-comanda">PEDIDO PELO TOTEM</div>' : '') + (p.senha ? '<div class="senha-c">Nº ' + p.senha + '</div>' : '') +
     '<div class="data-hora">' + fmtData(p.data) + ' - ' + esc(p.horario) + '</div>' + prev + retirar + '<div class="linha"></div>' +
     '<div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + (p.telefone ? '<div class="telefone-comanda">Tel: ' + esc(p.telefone) + '</div>' : '') + '<div class="linha"></div>' +
-    p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.observacao ? '<div class="obs">OBS: ' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
+    p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.corte ? '<div class="corte-item">✂ CORTE: ' + esc(l.corte.toUpperCase()) + '</div>' : '') + (l.observacao ? '<div class="obs">OBS: ' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
     '<div class="linha"></div><div class="total">' + status + (BD.config.valoresComanda ? '<br>TOTAL ' + brl(p.total) : '') + '</div>';
   if(BD.config.totemVias === 2){
     h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div><div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div><div class="senha-c">Nº ' + p.senha + '</div><div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + prev + retirar +
-      '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
+      '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto) + (l.corte ? ' (✂ ' + l.corte + ')' : '')).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
       '<div class="via-msg">' + esc(BD.config.totemMensagem || 'Aguarde ser chamado pela senha.') + '</div>';
   }
-  h += '<div class="via-msg">☕ Em breve: CAFÉ &amp; PROSA, nossa loja fixa!</div>';
+  if(BD.config.rodapeComanda) h += '<div class="via-msg">' + esc(BD.config.rodapeComanda) + '</div>';
   return h;
 }
 function imprimirComandaPedido(pid){
@@ -3617,11 +3880,13 @@ function comandaLinhasImagem(pid){
     add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 19, centro: false, negrito: true, espacoAntes: 4});
     const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
     if(cons) add('[' + cons + ']', {tam: 14, centro: false});
+    if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 14, centro: false, negrito: true});
     if(l.observacao) add('OBS: ' + l.observacao.toUpperCase(), {tam: 14, centro: false});
   });
   linha();
   add(status, {tam: 19, negrito: true, espacoAntes: 4});
   if(BD.config.valoresComanda) add('TOTAL ' + brl(p.total), {tam: 22, negrito: true});
+  if(BD.config.rodapeComanda) add(BD.config.rodapeComanda, {tam: 13, espacoAntes: 6});
   return L;
 }
 function desenharComandaImagem(pid){
@@ -4416,6 +4681,428 @@ async function excluirCompra(id){
   BD.compras = BD.compras.filter(x => x.id !== id); if(d) BD.despesas = BD.despesas.filter(x => x.id !== d.id);
   salvar('compras', 'despesas'); renderCompras();
 }
+function tipoEtiquetaLabel(t){ return t === 'massa' ? 'Massa' : t === 'pizza' ? 'Pizza' : 'Empanada'; }
+function tipoEtiquetaEmoji(t){ return t === 'massa' ? '🍞' : t === 'pizza' ? '🍕' : '🥟'; }
+function gerarNumeroLoteEtiqueta(dataISO){
+  const d = new Date((dataISO || dataHoje()) + 'T00:00:00');
+  const prefixo = String(d.getDate()).padStart(2, '0') + String(d.getMonth() + 1).padStart(2, '0') + String(d.getFullYear()).slice(-2);
+  const n = BD.etiquetaLotes.filter(l => l.lote && l.lote.startsWith(prefixo + '-')).length + 1;
+  return prefixo + '-' + n;
+}
+function renderEtiquetas(){
+  if(!$('etqProduzido').value) $('etqProduzido').value = dataHoje();
+  if(!$('etqDiasValidade').value) $('etqDiasValidade').value = (BD.config.etiquetaValidadeDias || {})[ETQ_TIPO] || 60;
+  $('etqTamanhoPapel').value = BD.config.etiquetaTamanhoPapel || '80';
+  $('etqQtdVal').textContent = ETQ_QTD;
+  renderTiposEtiqueta();
+  renderSaboresEtiqueta();
+  atualizarValidadeEtiqueta();
+  renderEstoqueEtiquetas();
+}
+function renderTiposEtiqueta(){
+  document.querySelectorAll('#etqTipos .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.tipo === ETQ_TIPO));
+}
+function selecionarTipoEtiqueta(t){
+  ETQ_TIPO = t; ETQ_SABOR = null;
+  $('etqDiasValidade').value = (BD.config.etiquetaValidadeDias || {})[ETQ_TIPO] || 60;
+  renderTiposEtiqueta(); renderSaboresEtiqueta(); atualizarValidadeEtiqueta();
+}
+function renderSaboresEtiqueta(){
+  const sabores = BD.etiquetaSabores.filter(s => s.tipo === ETQ_TIPO);
+  if(!sabores.length){
+    $('etqSabores').innerHTML = '<span class="suave">Nenhum sabor cadastrado ainda — adicione um abaixo.</span>';
+    ETQ_SABOR = null;
+  }else{
+    if(!ETQ_SABOR || !sabores.some(s => s.id === ETQ_SABOR)) ETQ_SABOR = sabores[0].id;
+    $('etqSabores').innerHTML = sabores.map(s => '<button type="button" class="tt-chip' + (s.id === ETQ_SABOR ? ' on' : '') + '" onclick="selecionarSaborEtiqueta(\'' + s.id + '\')">' + esc(s.nome) + ' <span onclick="event.stopPropagation();removerSaborEtiqueta(\'' + s.id + '\')" title="Remover sabor" style="opacity:.7">✕</span></button>').join('');
+  }
+  atualizarPreviaEtiqueta();
+}
+function selecionarSaborEtiqueta(id){ ETQ_SABOR = id; renderSaboresEtiqueta(); }
+function adicionarSaborEtiqueta(){
+  const nome = $('etqNovoSabor').value.trim(); if(!nome) return;
+  if(BD.etiquetaSabores.some(s => s.tipo === ETQ_TIPO && norm(s.nome) === norm(nome))) return toast('Esse sabor já existe.', 'erro');
+  const s = {id: uid(), tipo: ETQ_TIPO, nome};
+  BD.etiquetaSabores.push(s); salvar('etiquetaSabores');
+  $('etqNovoSabor').value = ''; ETQ_SABOR = s.id; renderSaboresEtiqueta();
+  toast('Sabor adicionado.', 'ok');
+}
+async function removerSaborEtiqueta(id){
+  const s = BD.etiquetaSabores.find(x => x.id === id); if(!s) return;
+  const emUso = BD.etiquetaLotes.some(l => l.saborId === id && l.quantidade > 0);
+  if(!await confirmar((emUso ? 'Esse sabor tem lote(s) em estoque. ' : '') + 'Remover o sabor "' + s.nome + '"?' + (emUso ? ' Os lotes já registrados continuam no histórico.' : ''), {ok: 'Remover', perigo: true})) return;
+  BD.etiquetaSabores = BD.etiquetaSabores.filter(x => x.id !== id); salvar('etiquetaSabores');
+  if(ETQ_SABOR === id) ETQ_SABOR = null;
+  renderSaboresEtiqueta();
+}
+function alterarQtdEtiqueta(d){
+  ETQ_QTD = Math.max(1, ETQ_QTD + d); $('etqQtdVal').textContent = ETQ_QTD; atualizarPreviaEtiqueta();
+}
+function atualizarValidadeEtiqueta(){
+  const dias = parseInt($('etqDiasValidade').value, 10) || 0;
+  const prod = $('etqProduzido').value || dataHoje();
+  const d = new Date(prod + 'T00:00:00'); d.setDate(d.getDate() + dias);
+  const validadeISO = d.toISOString().slice(0, 10);
+  $('etqValidadeTxt').dataset.validade = validadeISO;
+  $('etqValidadeTxt').textContent = 'Validade: ' + fmtData(validadeISO) + (dias ? ' (' + dias + ' dias após a produção)' : '');
+  if(!BD.config.etiquetaValidadeDias) BD.config.etiquetaValidadeDias = {};
+  if(dias > 0){ BD.config.etiquetaValidadeDias[ETQ_TIPO] = dias; salvar('config'); }
+  atualizarPreviaEtiqueta();
+}
+function salvarTamanhoPapelEtiqueta(){ BD.config.etiquetaTamanhoPapel = $('etqTamanhoPapel').value; salvar('config'); }
+function dadosEtiquetaAtual(){
+  const sabor = BD.etiquetaSabores.find(s => s.id === ETQ_SABOR);
+  const unidade = $('etqUnidadeSel') ? $('etqUnidadeSel').value : 'pacote';
+  const produzidoEm = $('etqProduzido').value || dataHoje();
+  const validadeEm = $('etqValidadeTxt').dataset.validade || produzidoEm;
+  return {tipo: ETQ_TIPO, sabor, quantidade: ETQ_QTD, unidade, produzidoEm, validadeEm};
+}
+function textoEtiqueta(d, lote){
+  const un = d.unidade === 'unidade' ? (d.quantidade > 1 ? 'unidades' : 'unidade') : (d.quantidade > 1 ? 'pacotes' : 'pacote');
+  return nomeNegocio().toUpperCase() + '\n' +
+    tipoEtiquetaEmoji(d.tipo) + ' ' + tipoEtiquetaLabel(d.tipo).toUpperCase() + (d.sabor ? ' - ' + d.sabor.nome.toUpperCase() : '') + '\n' +
+    'Lote: ' + lote + '\n' +
+    'Qtd: ' + d.quantidade + ' ' + un + '\n' +
+    'Produzido: ' + fmtData(d.produzidoEm) + '\n' +
+    'Validade: ' + fmtData(d.validadeEm);
+}
+function etiquetaHTML(d, lote){
+  const un = d.unidade === 'unidade' ? (d.quantidade > 1 ? 'unidades' : 'unidade') : (d.quantidade > 1 ? 'pacotes' : 'pacote');
+  const saborNome = d.sabor ? (d.sabor.nome || d.sabor) : '';
+  return '<div class="etq-marca">' + esc(nomeNegocio().toUpperCase()) + '</div>' +
+    '<div class="etq-produto">' + tipoEtiquetaEmoji(d.tipo) + ' ' + esc(tipoEtiquetaLabel(d.tipo).toUpperCase()) + (saborNome ? '<br>' + esc(String(saborNome).toUpperCase()) : '') + '</div>' +
+    '<div class="etq-linha"></div>' +
+    '<div class="etq-kv"><span>Lote</span><b>' + esc(lote) + '</b></div>' +
+    '<div class="etq-kv"><span>Qtd</span><b>' + d.quantidade + ' ' + un + '</b></div>' +
+    '<div class="etq-kv"><span>Produzido</span><b>' + fmtData(d.produzidoEm) + '</b></div>' +
+    '<div class="etq-kv"><span>Validade</span><b>' + fmtData(d.validadeEm) + '</b></div>';
+}
+function atualizarPreviaEtiqueta(){
+  const d = dadosEtiquetaAtual();
+  if(!d.sabor){ $('etqPreview').innerHTML = '<p class="suave">Escolha ou cadastre um sabor para ver a pré-visualização.</p>'; return; }
+  const loteProvavel = gerarNumeroLoteEtiqueta(d.produzidoEm);
+  $('etqPreview').innerHTML = '<div class="etiqueta-prev">' + etiquetaHTML(d, loteProvavel + ' (prévia)') + '</div>';
+}
+function registrarEtiqueta(){
+  const d = dadosEtiquetaAtual();
+  if(!d.sabor) return toast('Escolha ou cadastre um sabor primeiro.', 'erro'), null;
+  const lote = gerarNumeroLoteEtiqueta(d.produzidoEm);
+  BD.etiquetaLotes.push({
+    id: uid(), tipo: d.tipo, saborId: d.sabor.id, sabor: d.sabor.nome,
+    lote, quantidade: d.quantidade, unidade: d.unidade,
+    produzidoEm: d.produzidoEm, validadeEm: d.validadeEm,
+    tamanhoPapel: $('etqTamanhoPapel').value, criadoEm: Date.now()
+  });
+  salvar('etiquetaLotes');
+  toast('Lote ' + lote + ' registrado no estoque.', 'ok');
+  renderEstoqueEtiquetas();
+  return lote;
+}
+function registrarEImprimirEtiqueta(){
+  const d = dadosEtiquetaAtual();
+  if(!d.sabor) return toast('Escolha ou cadastre um sabor primeiro.', 'erro');
+  const lote = registrarEtiqueta(); if(!lote) return;
+  imprimirEtiquetaHTML(etiquetaHTML(d, lote), $('etqTamanhoPapel').value);
+}
+function imprimirEtiquetaHTML(html, tamanho){
+  $('areaImpressao').className = 'comanda-impressao' + (tamanho === '58' ? ' mm58' : '');
+  $('areaImpressao').innerHTML = html;
+  document.body.classList.add('print-comanda');
+  const fim = () => { document.body.classList.remove('print-comanda'); $('areaImpressao').className = 'comanda-impressao'; window.removeEventListener('afterprint', fim); };
+  window.addEventListener('afterprint', fim);
+  try{ window.print(); }catch(e){ toast('Não foi possível abrir a impressão neste aparelho.', 'erro'); }
+  setTimeout(fim, 1500);
+}
+function copiarTextoEtiqueta(){
+  const d = dadosEtiquetaAtual(); if(!d.sabor) return toast('Escolha ou cadastre um sabor primeiro.', 'erro');
+  const lote = gerarNumeroLoteEtiqueta(d.produzidoEm);
+  const texto = textoEtiqueta(d, lote);
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texto).then(() => toast('Texto copiado.', 'ok')).catch(() => toast('Não foi possível copiar neste aparelho.', 'erro'));
+  else toast('Cópia automática não suportada neste aparelho.', 'erro');
+}
+function statusValidadeEtiqueta(validadeEm){
+  const dias = Math.round((new Date(validadeEm + 'T00:00:00') - new Date(dataHoje() + 'T00:00:00')) / 86400000);
+  if(dias < 0) return {txt: 'vencido há ' + Math.abs(dias) + 'd', cls: 'vermelho'};
+  if(dias <= 7) return {txt: dias + 'd restante(s)', cls: 'laranja'};
+  return {txt: dias + 'd restante(s)', cls: ''};
+}
+function renderEstoqueEtiquetas(){
+  const lotes = BD.etiquetaLotes.filter(l => l.quantidade > 0).slice().sort((a, b) => a.validadeEm < b.validadeEm ? -1 : a.validadeEm > b.validadeEm ? 1 : 0);
+  $('tabelaEstoqueEtiquetas').innerHTML = lotes.length ? lotes.map(l => {
+    const st = statusValidadeEtiqueta(l.validadeEm);
+    const un = l.unidade === 'unidade' ? 'un' : 'pct';
+    return '<tr><td>' + esc(l.lote) + '</td><td>' + tipoEtiquetaEmoji(l.tipo) + ' ' + tipoEtiquetaLabel(l.tipo) + '</td><td>' + esc(l.sabor) + '</td><td>' + fmtData(l.produzidoEm) + '</td><td>' + fmtData(l.validadeEm) + '</td><td class="n">' + l.quantidade + ' ' + un + '</td><td><span class="tag ' + st.cls + '">' + st.txt + '</span></td>' +
+      '<td class="acoes"><button class="btn cinza pequeno" onclick="baixarUnidadeLoteEtiqueta(\'' + l.id + '\')" aria-label="Baixar 1">−1</button><button class="btn laranja pequeno" onclick="esgotarLoteEtiqueta(\'' + l.id + '\')" aria-label="Esgotar">Esgotar</button><button class="btn cinza pequeno" onclick="reimprimirLoteEtiqueta(\'' + l.id + '\')" aria-label="Reimprimir">🖨️</button><button class="btn vermelho pequeno" onclick="excluirLoteEtiqueta(\'' + l.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+  }).join('') : '<tr><td colspan="8" class="suave">Nenhum lote em estoque.</td></tr>';
+}
+function baixarUnidadeLoteEtiqueta(id){
+  const l = BD.etiquetaLotes.find(x => x.id === id); if(!l) return;
+  l.quantidade = Math.max(0, l.quantidade - 1);
+  salvar('etiquetaLotes'); renderEstoqueEtiquetas();
+}
+async function esgotarLoteEtiqueta(id){
+  const l = BD.etiquetaLotes.find(x => x.id === id); if(!l) return;
+  if(!await confirmar('Zerar o estoque do lote ' + l.lote + '?')) return;
+  l.quantidade = 0; salvar('etiquetaLotes'); renderEstoqueEtiquetas();
+}
+async function excluirLoteEtiqueta(id){
+  const l = BD.etiquetaLotes.find(x => x.id === id); if(!l) return;
+  if(!await confirmar('Excluir o lote ' + l.lote + ' do histórico? Essa ação não pode ser desfeita.', {ok: 'Excluir', perigo: true})) return;
+  BD.etiquetaLotes = BD.etiquetaLotes.filter(x => x.id !== id);
+  salvar('etiquetaLotes'); renderEstoqueEtiquetas();
+}
+function reimprimirLoteEtiqueta(id){
+  const l = BD.etiquetaLotes.find(x => x.id === id); if(!l) return;
+  const html = etiquetaHTML({tipo: l.tipo, sabor: {nome: l.sabor}, quantidade: l.quantidade, unidade: l.unidade, produzidoEm: l.produzidoEm, validadeEm: l.validadeEm}, l.lote);
+  imprimirEtiquetaHTML(html, l.tamanhoPapel || '80');
+}
+function nutriIngById(id){ return BD.nutriIngredientes.find(i => i.id === id); }
+function renderNutricional(){
+  renderAbasNutri();
+  renderTipoNutri();
+  renderSelReceitaNutri();
+  renderLinhasNutri();
+  renderResultadoNutri();
+  renderListaIngNutri();
+}
+function renderAbasNutri(){
+  document.querySelectorAll('#nutriAbas .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.aba === NUTRI_ABA));
+  $('nutriPainelReceita').classList.toggle('oculto', NUTRI_ABA !== 'receita');
+  $('nutriPainelIng').classList.toggle('oculto', NUTRI_ABA !== 'ing');
+}
+function selecionarAbaNutri(aba){ NUTRI_ABA = aba; renderAbasNutri(); }
+function renderTipoNutri(){
+  document.querySelectorAll('#nutriTipoSel .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.tipo === NUTRI_TIPO));
+}
+function selecionarTipoNutri(t){ NUTRI_TIPO = t; renderTipoNutri(); }
+function renderLinhasNutri(){
+  const box = $('nutriLinhas');
+  if(!BD.nutriIngredientes.length){
+    box.innerHTML = '<p class="suave">Nenhum ingrediente cadastrado ainda. <button class="btn pequeno" type="button" onclick="selecionarAbaNutri(\'ing\')">Cadastrar ingredientes</button></p>';
+    return;
+  }
+  const opcoes = BD.nutriIngredientes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  box.innerHTML = NUTRI_ROWS.map((r, i) => {
+    const existe = r.ing && nutriIngById(r.ing);
+    return '<div class="linha-form" style="grid-template-columns:1fr 90px auto;margin-bottom:6px">' +
+      '<select aria-label="Ingrediente ' + (i + 1) + '" onchange="definirIngredienteLinhaNutri(' + i + ',this.value)"><option value="">Escolha o ingrediente</option>' +
+      opcoes.map(o => '<option value="' + o.id + '"' + (o.id === r.ing ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('') +
+      (r.ing && !existe ? '<option value="' + esc(r.ing) + '" selected>(removido)</option>' : '') + '</select>' +
+      '<input type="text" inputmode="decimal" placeholder="g" aria-label="Gramas ' + (i + 1) + '" value="' + esc(r.g || '') + '" oninput="definirGramasLinhaNutri(' + i + ',this.value)">' +
+      '<button class="btn vermelho pequeno" type="button" onclick="removerLinhaNutri(' + i + ')" aria-label="Remover">✕</button></div>';
+  }).join('');
+}
+function definirIngredienteLinhaNutri(i, v){ NUTRI_ROWS[i].ing = v; renderResultadoNutri(); }
+function definirGramasLinhaNutri(i, v){ NUTRI_ROWS[i].g = v; renderResultadoNutri(); }
+function adicionarLinhaNutri(){ NUTRI_ROWS.push({ing: '', g: ''}); renderLinhasNutri(); }
+function removerLinhaNutri(i){
+  NUTRI_ROWS.splice(i, 1); if(!NUTRI_ROWS.length) NUTRI_ROWS.push({ing: '', g: ''});
+  renderLinhasNutri(); renderResultadoNutri();
+}
+function nutriCompute(){
+  const tot = {}; NUTRI_KEYS.forEach(k => tot[k.k] = 0);
+  let soma = 0, faltando = 0;
+  NUTRI_ROWS.forEach(r => {
+    const g = parseNum(r.g, 0); if(!r.ing && !g) return;
+    const ing = nutriIngById(r.ing);
+    if(!ing){ if(g) faltando++; return; }
+    soma += g;
+    NUTRI_KEYS.forEach(k => tot[k.k] += g / 100 * parseNum(ing.v[k.k], 0));
+  });
+  const pf = parseNum($('nutriPesoFinal').value, 0) || soma;
+  const porcao = parseNum($('nutriPorcao').value, 0);
+  const pacote = parseNum($('nutriPacote').value, 0);
+  if(!pf) return {soma, pf: 0, faltando};
+  const p100 = {}, pp = {};
+  NUTRI_KEYS.forEach(k => { p100[k.k] = tot[k.k] / pf * 100; pp[k.k] = porcao ? tot[k.k] / pf * porcao : 0; });
+  return {soma, pf, porcao, pacote, p100, pp, faltando};
+}
+function nutriDeclarado(v, key){
+  const def = NUTRI_KEYS.find(x => x.k === key);
+  if(v <= def.ns) return 0;
+  if(key === 'kcal' || key === 'sod') return Math.round(v);
+  if(v >= 10) return Math.round(v);
+  return Math.round(v * 10) / 10;
+}
+function nutriMostrar(n){ return Number.isInteger(n) ? String(n) : String(n).replace('.', ','); }
+function nutriVdPct(v, def){ if(!def.vd) return ''; return String(Math.round(v / def.vd * 100)); }
+function renderResultadoNutri(){
+  const box = $('nutriResultado');
+  const c = nutriCompute();
+  $('nutriPesoFinal').placeholder = c.soma ? 'soma: ' + fmt(c.soma, c.soma % 1 ? 1 : 0) : 'soma dos ingredientes';
+  if(!c.pf){
+    $('nutriTextoBloco').classList.add('oculto');
+    $('nutriSomaTxt').textContent = '';
+    box.innerHTML = '<p class="suave">Escolha os ingredientes e os gramas usados na receita para ver a tabela aqui.</p>';
+    return;
+  }
+  $('nutriSomaTxt').textContent = 'soma ' + fmt(c.soma, c.soma % 1 ? 1 : 0) + ' g';
+  let avisos = '';
+  if(c.faltando) avisos += '<p class="alerta">' + c.faltando + ' linha(s) usam um ingrediente que não existe mais na lista e não entraram na conta.</p>';
+  if(!c.porcao) avisos += '<p class="alerta">Informe o peso da porção para preencher a coluna da porção e o %VD.</p>';
+  const medida = ($('nutriMedida').value || '').trim();
+  const portLabel = c.porcao ? (fmt(c.porcao, c.porcao % 1 ? 1 : 0) + ' g' + (medida ? ' (' + esc(medida) + ')' : '')) : '—';
+  const nPort = c.porcao && c.pacote ? c.pacote / c.porcao : 0;
+  const nPortTxt = nPort ? (Number.isInteger(nPort) ? String(nPort) : 'aprox. ' + nutriMostrar(Math.round(nPort * 10) / 10)) : '—';
+  let linhas = '';
+  NUTRI_KEYS.forEach(k => {
+    const d100 = nutriDeclarado(c.p100[k.k], k.k);
+    const dp = c.porcao ? nutriDeclarado(c.pp[k.k], k.k) : null;
+    const vd = c.porcao && k.vd ? nutriVdPct(dp === 0 ? 0 : c.pp[k.k], k) : '';
+    linhas += '<tr' + (k.sub ? ' class="sub"' : '') + '><td>' + esc(k.nome) + ' (' + k.un + ')</td><td>' + nutriMostrar(d100) + '</td><td>' + (dp === null ? '—' : nutriMostrar(dp)) + '</td><td>' + esc(vd) + '</td></tr>';
+  });
+  const quadro = '<div class="nutri-quadro"><h4>INFORMAÇÃO NUTRICIONAL</h4>' +
+    '<p>Porções por embalagem: ' + esc(nPortTxt) + '</p><p>Porção: ' + portLabel + '</p>' +
+    '<table><thead><tr><th></th><th>100 g</th><th>' + (c.porcao ? fmt(c.porcao, c.porcao % 1 ? 1 : 0) + ' g' : 'porção') + '</th><th>%VD*</th></tr></thead><tbody>' + linhas + '</tbody></table>' +
+    '<p class="rodape">*Percentual de valores diários fornecidos pela porção.</p></div>';
+  const w = [];
+  if(c.p100.acucAd >= 15) w.push('Açúcar adicionado');
+  if(c.p100.sat >= 6) w.push('Gordura saturada');
+  if(c.p100.sod >= 600) w.push('Sódio');
+  const lupas = w.length
+    ? '<p class="suave" style="margin-top:8px">Este produto precisa da rotulagem frontal (lupa) na embalagem:</p><div class="nutri-lupas">' + w.map(x => '<div class="nutri-lupa"><small>ALTO EM</small>' + esc(x) + '</div>').join('') + '</div>'
+    : '<p class="dica" style="margin-top:8px">Nenhum nutriente passa do limite da lupa por 100 g (açúcar adicionado 15g, gordura saturada 6g, sódio 600mg).</p>';
+  box.innerHTML = avisos + quadro + lupas;
+  $('nutriTextoBloco').classList.remove('oculto');
+  renderTextoNutri(c, portLabel, nPortTxt);
+}
+function renderTextoNutri(c, portLabel, nPortTxt){
+  const W = parseInt($('nutriPapel').value, 10) || 48;
+  const wide = W >= 48;
+  const nameW = wide ? 23 : 14, c1 = wide ? 8 : 6, c2 = wide ? 8 : 6, c3 = W - nameW - c1 - c2;
+  const padR = (s, n) => { s = String(s); return s.length >= n ? s.slice(0, n) : s + ' '.repeat(n - s.length); };
+  const padL = (s, n) => { s = String(s); return s.length >= n ? s : ' '.repeat(n - s.length) + s; };
+  const out = [];
+  out.push('INFORMAÇÃO NUTRICIONAL');
+  out.push('Porções por embalagem: ' + nPortTxt);
+  out.push('Porção: ' + portLabel.replace(/<[^>]+>/g, ''));
+  out.push('-'.repeat(W));
+  out.push(padR('', nameW) + padL('100g', c1) + padL(c.porcao ? Math.round(c.porcao) + 'g' : '—', c2) + padL('%VD*', c3));
+  NUTRI_KEYS.forEach(k => {
+    const nm = wide ? (k.nome + ' (' + k.un + ')') : NUTRI_SHORT32[k.k];
+    const dp = c.porcao ? nutriDeclarado(c.pp[k.k], k.k) : null;
+    const vd = c.porcao && k.vd ? nutriVdPct(dp === 0 ? 0 : c.pp[k.k], k) : '';
+    out.push(padR(nm, nameW) + padL(nutriMostrar(nutriDeclarado(c.p100[k.k], k.k)), c1) + padL(dp === null ? '—' : nutriMostrar(dp), c2) + padL(vd, c3));
+  });
+  out.push('-'.repeat(W));
+  out.push('*% dos valores diários da porção');
+  $('nutriTextoPre').textContent = out.join('\n');
+}
+function imprimirNutri(){
+  const texto = $('nutriTextoPre').textContent; if(!texto) return toast('Monte a receita primeiro.', 'erro');
+  const tamanho = (parseInt($('nutriPapel').value, 10) || 48) >= 48 ? '80' : '58';
+  $('areaImpressao').className = 'comanda-impressao' + (tamanho === '58' ? ' mm58' : '');
+  $('areaImpressao').innerHTML = '<pre style="white-space:pre;font-family:monospace;font-size:11px;margin:0">' + esc(texto) + '</pre>';
+  document.body.classList.add('print-comanda');
+  const fim = () => { document.body.classList.remove('print-comanda'); $('areaImpressao').className = 'comanda-impressao'; window.removeEventListener('afterprint', fim); };
+  window.addEventListener('afterprint', fim);
+  try{ window.print(); }catch(e){ toast('Não foi possível abrir a impressão neste aparelho.', 'erro'); }
+  setTimeout(fim, 1500);
+}
+function copiarTextoNutri(){
+  const texto = $('nutriTextoPre').textContent; if(!texto) return toast('Monte a receita primeiro.', 'erro');
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texto + '\n\n').then(() => toast('Texto copiado.', 'ok')).catch(() => toast('Não foi possível copiar neste aparelho.', 'erro'));
+  else toast('Cópia automática não suportada neste aparelho.', 'erro');
+}
+function renderSelReceitaNutri(){
+  const sel = $('nutriSelReceita'); if(!sel) return;
+  const recs = BD.nutriReceitas.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  sel.innerHTML = '<option value="">' + (recs.length ? 'Abrir receita salva…' : 'Nenhuma receita salva ainda') + '</option>' +
+    recs.map(r => '<option value="' + r.id + '"' + (r.id === NUTRI_REC ? ' selected' : '') + '>' + (r.tipo === 'massa' ? 'Massa · ' : 'Empanada · ') + esc(r.nome) + '</option>').join('');
+  sel.value = NUTRI_REC || '';
+}
+function carregarReceitaNutri(id){
+  if(!id){ novaReceitaNutri(); return; }
+  const r = BD.nutriReceitas.find(x => x.id === id); if(!r){ novaReceitaNutri(); return; }
+  NUTRI_REC = id; NUTRI_TIPO = r.tipo || 'empanada';
+  $('nutriNome').value = r.nome || '';
+  NUTRI_ROWS = (r.rows && r.rows.length ? r.rows : [{ing: '', g: ''}]).map(x => ({ing: x.ing || '', g: x.g == null ? '' : String(x.g)}));
+  $('nutriPesoFinal').value = r.pesoFinal || ''; $('nutriPorcao').value = r.porcao || ''; $('nutriMedida').value = r.medida || ''; $('nutriPacote').value = r.pacote || '';
+  renderTipoNutri(); renderLinhasNutri(); renderResultadoNutri(); renderSelReceitaNutri();
+}
+function novaReceitaNutri(){
+  NUTRI_REC = null; NUTRI_ROWS = [{ing: '', g: ''}]; NUTRI_TIPO = 'empanada';
+  $('nutriNome').value = ''; $('nutriPesoFinal').value = ''; $('nutriPorcao').value = ''; $('nutriMedida').value = ''; $('nutriPacote').value = '';
+  renderTipoNutri(); renderLinhasNutri(); renderResultadoNutri(); renderSelReceitaNutri();
+}
+function salvarReceitaNutri(){
+  const nome = $('nutriNome').value.replace(/\s+/g, ' ').trim();
+  if(!nome) return toast('Dê um nome para a receita antes de salvar.', 'erro');
+  let r = NUTRI_REC && BD.nutriReceitas.find(x => x.id === NUTRI_REC);
+  if(!r){ r = {id: uid()}; BD.nutriReceitas.push(r); }
+  Object.assign(r, {
+    tipo: NUTRI_TIPO, nome,
+    rows: NUTRI_ROWS.filter(x => x.ing || parseNum(x.g, 0)).map(x => ({ing: x.ing, g: parseNum(x.g, 0)})),
+    pesoFinal: parseNum($('nutriPesoFinal').value, 0) || null,
+    porcao: parseNum($('nutriPorcao').value, 0) || null,
+    medida: ($('nutriMedida').value || '').trim(),
+    pacote: parseNum($('nutriPacote').value, 0) || null
+  });
+  NUTRI_REC = r.id; salvar('nutriReceitas'); renderSelReceitaNutri();
+  toast('Receita "' + nome + '" salva.', 'ok');
+}
+async function excluirReceitaNutri(){
+  if(!NUTRI_REC) return toast('Abra uma receita salva para excluir.', 'erro');
+  const r = BD.nutriReceitas.find(x => x.id === NUTRI_REC); if(!r) return;
+  if(!await confirmar('Excluir a receita "' + r.nome + '"?', {ok: 'Excluir', perigo: true})) return;
+  BD.nutriReceitas = BD.nutriReceitas.filter(x => x.id !== NUTRI_REC);
+  salvar('nutriReceitas'); novaReceitaNutri();
+  toast('Receita excluída.', 'ok');
+}
+function nutriResumoIng(i){
+  return fmt(i.v.kcal, 0) + ' kcal · carb ' + fmt(i.v.carb, 1) + 'g · prot ' + fmt(i.v.prot, 1) + 'g · gord ' + fmt(i.v.gord, 1) + 'g · sódio ' + fmt(i.v.sod, 0) + 'mg (por 100g)';
+}
+function renderListaIngNutri(){
+  const box = $('nutriListaIng'); if(!box) return;
+  let html = '';
+  if(NUTRI_EDIT_ING === 'novo') html += nutriEditorIngHTML(null);
+  const lista = BD.nutriIngredientes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  if(!lista.length && NUTRI_EDIT_ING !== 'novo') html += '<p class="suave">Lista vazia. Toque em "Novo ingrediente" e copie os valores por 100g do rótulo da embalagem.</p>';
+  lista.forEach(i => {
+    if(NUTRI_EDIT_ING === i.id){ html += nutriEditorIngHTML(i); return; }
+    html += '<div class="painel" style="margin-bottom:10px">' +
+      '<b>' + esc(i.nome) + '</b>' +
+      '<div class="suave" style="font-size:.82rem">' + nutriResumoIng(i) + '</div>' +
+      '<div class="grupo-botoes" style="margin-top:8px"><button class="btn cinza pequeno" type="button" onclick="editarIngredienteNutri(\'' + i.id + '\')">✏️ Editar</button><button class="btn vermelho pequeno" type="button" onclick="removerIngredienteNutri(\'' + i.id + '\')">🗑️ Excluir</button></div>' +
+    '</div>';
+  });
+  box.innerHTML = html;
+}
+function novoIngredienteNutri(){ NUTRI_EDIT_ING = 'novo'; renderListaIngNutri(); }
+function editarIngredienteNutri(id){ NUTRI_EDIT_ING = id; renderListaIngNutri(); }
+function cancelarEdicaoIngNutri(){ NUTRI_EDIT_ING = null; renderListaIngNutri(); }
+function nutriEditorIngHTML(i){
+  const val = k => i ? String(i.v[k] ?? 0).replace('.', ',') : '';
+  return '<div class="painel" style="margin-bottom:10px;border:2px solid var(--laranja)">' +
+    '<label for="nutriIngNome">Nome</label><input type="text" id="nutriIngNome" maxlength="40" placeholder="Ex: Farinha de trigo" value="' + esc(i ? i.nome : '') + '">' +
+    '<div class="bloco-calc" style="margin-top:10px">' +
+    NUTRI_KEYS.map(k => '<div><label for="nutriIng_' + k.k + '">' + esc(k.rotulo) + '</label><input type="text" inputmode="decimal" id="nutriIng_' + k.k + '" placeholder="0" value="' + val(k.k) + '"></div>').join('') +
+    '</div>' +
+    '<div class="dica" style="margin-top:8px">Rótulo em ml (leite, óleo)? Digite os valores do rótulo mesmo assim e use os gramas na receita. Em água e leite, 1 ml pesa cerca de 1 g.</div>' +
+    '<div class="grupo-botoes" style="margin-top:10px"><button class="btn cinza" type="button" onclick="cancelarEdicaoIngNutri()">Cancelar</button><button class="btn" type="button" onclick="salvarIngredienteNutri(' + (i ? "'" + i.id + "'" : 'null') + ')">💾 Salvar ingrediente</button></div>' +
+  '</div>';
+}
+function salvarIngredienteNutri(id){
+  const nome = $('nutriIngNome').value.replace(/\s+/g, ' ').trim();
+  if(!nome) return toast('Escreva o nome do ingrediente.', 'erro');
+  const v = {}; NUTRI_KEYS.forEach(k => v[k.k] = parseNum($('nutriIng_' + k.k).value, 0));
+  let ing = id && BD.nutriIngredientes.find(x => x.id === id);
+  if(!ing){
+    if(BD.nutriIngredientes.some(x => norm(x.nome) === norm(nome))) return toast('Já existe um ingrediente com esse nome. Edite o que já está na lista.', 'erro');
+    ing = {id: uid()}; BD.nutriIngredientes.push(ing);
+  }
+  Object.assign(ing, {nome, v});
+  salvar('nutriIngredientes'); NUTRI_EDIT_ING = null;
+  renderListaIngNutri(); renderLinhasNutri(); renderResultadoNutri();
+  toast('Ingrediente salvo.', 'ok');
+}
+async function removerIngredienteNutri(id){
+  const i = BD.nutriIngredientes.find(x => x.id === id); if(!i) return;
+  if(!await confirmar('Excluir o ingrediente "' + i.nome + '"?', {ok: 'Excluir', perigo: true})) return;
+  BD.nutriIngredientes = BD.nutriIngredientes.filter(x => x.id !== id);
+  salvar('nutriIngredientes'); renderListaIngNutri(); renderLinhasNutri(); renderResultadoNutri();
+  toast('Ingrediente excluído.', 'ok');
+}
 function renderCompras(){
   renderFornecedores();
   if(!$('cupomData').value) $('cupomData').value = dataHoje();
@@ -4558,6 +5245,158 @@ function mesclarVendasArquivo(event){
   leitor.readAsText(arq, 'UTF-8');
 }
 
+/* =====================================================================
+   SINCRONIZAÇÃO AUTOMÁTICA ENTRE APARELHOS (opcional, via Firebase)
+   Só sincroniza vendas, despesas, perdas, compras e fechamentos de caixa
+   (o mesmo que "Mesclar vendas" já fazia manualmente) — fichas, insumos,
+   estoque e configurações continuam só deste aparelho, como sempre.
+   ===================================================================== */
+const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras'];
+const SYNC_CHAVE_LS = 'syncConfig';
+let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null;
+const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, caixaDias: {}};
+
+function syncLerConfig(){ try{ return JSON.parse(localStorage.getItem(SYNC_CHAVE_LS)) || {}; }catch(e){ return {}; } }
+function syncGravarConfig(c){ try{ localStorage.setItem(SYNC_CHAVE_LS, JSON.stringify(c)); }catch(e){} }
+function syncStatus(t){ const el = $('statusSync'); if(el) el.textContent = t; }
+
+function preencherConfigSync(){
+  const c = syncLerConfig();
+  if($('syncAtivo')) $('syncAtivo').checked = !!c.ativo;
+  if($('syncCodigo')) $('syncCodigo').value = c.codigo || '';
+  if($('syncApelido')) $('syncApelido').value = c.apelido || '';
+  if($('syncFirebaseConfig')) $('syncFirebaseConfig').value = c.firebaseConfigTexto || '';
+  if(c.ativo && c.codigo && c.firebaseConfigTexto) syncIniciar();
+  else syncStatus('Sincronização desativada.');
+}
+function salvarConfigSync(){
+  const c = syncLerConfig();
+  if($('syncCodigo')) c.codigo = $('syncCodigo').value.trim();
+  if($('syncApelido')) c.apelido = $('syncApelido').value.trim();
+  if($('syncFirebaseConfig')) c.firebaseConfigTexto = $('syncFirebaseConfig').value;
+  syncGravarConfig(c);
+}
+function alternarSync(){
+  const ligar = $('syncAtivo').checked;
+  const c = syncLerConfig(); c.ativo = ligar; syncGravarConfig(c);
+  if(ligar) syncConectar(); else syncDesconectar();
+}
+function syncConectar(){
+  salvarConfigSync();
+  const c = syncLerConfig();
+  if(!c.codigo) return toast('Preencha o código do negócio (igual em todos os aparelhos).', 'alerta');
+  if(!c.apelido) return toast('Dê um nome pra este aparelho (ex: Computador, Tablet da feira).', 'alerta');
+  if(!c.firebaseConfigTexto || !c.firebaseConfigTexto.trim()) return toast('Cole a configuração do Firebase.', 'alerta');
+  c.ativo = true; syncGravarConfig(c);
+  if($('syncAtivo')) $('syncAtivo').checked = true;
+  syncIniciar();
+}
+function syncDesconectar(){
+  _syncListeners.forEach(f => { try{ f(); }catch(e){} });
+  _syncListeners = []; _syncPronto = false; _syncDb = null;
+  syncStatus('Sincronização desativada.');
+}
+function syncCarregarSDK(cb){
+  if(window.firebase && window.firebase.firestore){ cb(); return; }
+  const urls = ['https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js', 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js', 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'];
+  let i = 0;
+  (function proximo(){
+    if(i >= urls.length) return void cb();
+    const s = document.createElement('script');
+    s.src = urls[i];
+    s.onload = () => { i++; proximo(); };
+    s.onerror = () => { syncStatus('⚠️ Não consegui carregar o Firebase. Verifique a internet.'); };
+    document.head.appendChild(s);
+  })();
+}
+// Aceita colar o bloco inteiro "const firebaseConfig = {...}" copiado do console do Firebase.
+function syncParseFirebaseConfig(texto){
+  try{
+    const m = String(texto).match(/\{[\s\S]*\}/);
+    if(!m) return null;
+    return (new Function('return (' + m[0] + ')'))();
+  }catch(e){ return null; }
+}
+function syncIniciar(){
+  const c = syncLerConfig();
+  if(!c.ativo || !c.codigo || !c.firebaseConfigTexto) return;
+  const cfg = syncParseFirebaseConfig(c.firebaseConfigTexto);
+  if(!cfg || !cfg.projectId) return void syncStatus('⚠️ Configuração do Firebase inválida — cole o bloco completo do console do Firebase.');
+  syncStatus('🔄 Conectando...');
+  syncCarregarSDK(() => {
+    try{
+      const app = (window.firebase.apps && window.firebase.apps.length) ? window.firebase.apps[0] : window.firebase.initializeApp(cfg);
+      _syncDb = window.firebase.firestore(app);
+      try{ _syncDb.enablePersistence({synchronizeTabs: true}).catch(() => {}); }catch(e){}
+      window.firebase.auth(app).signInAnonymously().then(() => {
+        _syncPronto = true;
+        syncAssinarColecoes(c.codigo);
+        syncEmpurrarTudo();
+        syncStatus('🟢 Sincronização ativa — ' + (c.apelido || 'este aparelho'));
+      }).catch(err => syncStatus('⚠️ Erro ao conectar: ' + err.message));
+    }catch(e){ syncStatus('⚠️ Erro ao iniciar: ' + e.message); }
+  });
+}
+function syncAssinarColecoes(codigo){
+  SYNC_TIPOS.concat(['caixaDias']).forEach(tipo => {
+    const ref = _syncDb.collection('negocios').doc(codigo).collection(tipo);
+    const unsub = ref.onSnapshot(snap => {
+      let mudou = false; const tocados = [];
+      snap.docChanges().forEach(ch => {
+        if(ch.type === 'removed') return;
+        const dados = ch.doc.data(); const id = ch.doc.id; const atualTxt = JSON.stringify(dados);
+        if(_syncUltimoEnviado[tipo][id] === atualTxt) return; // já era o que enviamos
+        tocados.push(id);
+        if(tipo === 'caixaDias'){
+          if(JSON.stringify(BD.caixaDias[id]) !== atualTxt){ BD.caixaDias[id] = dados; mudou = true; }
+        }else{
+          const arr = BD[tipo]; const idx = arr.findIndex(x => String(x.id) === id);
+          if(idx === -1){ arr.push(dados); mudou = true; }
+          else if(JSON.stringify(arr[idx]) !== atualTxt){ arr[idx] = dados; mudou = true; }
+        }
+      });
+      if(mudou) normalizarBD();
+      // Guarda a "foto" já normalizada, senão a normalização mudaria o item e a gente reenviaria de volta à toa.
+      tocados.forEach(id => {
+        const atual = tipo === 'caixaDias' ? BD.caixaDias[id] : BD[tipo].find(x => String(x.id) === id);
+        if(atual !== undefined) _syncUltimoEnviado[tipo][id] = JSON.stringify(atual);
+      });
+      if(mudou){ salvar(tipo === 'caixaDias' ? 'caixaDias' : tipo); renderTudo(); }
+    }, err => syncStatus('⚠️ Sincronização interrompida: ' + err.message));
+    _syncListeners.push(() => unsub());
+  });
+}
+function syncAgendarEnvio(){
+  if(!_syncPronto) return;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(syncEmpurrarTudo, 4000);
+}
+function syncEmpurrarTudo(){
+  if(!_syncPronto || !_syncDb) return;
+  const c = syncLerConfig(); if(!c.codigo) return;
+  const base = _syncDb.collection('negocios').doc(c.codigo);
+  let lote = _syncDb.batch(); let n = 0;
+  function add(ref, dados){
+    lote.set(ref, dados, {merge: true}); n++;
+    if(n >= 400){ lote.commit().catch(() => {}); lote = _syncDb.batch(); n = 0; }
+  }
+  SYNC_TIPOS.forEach(tipo => {
+    (BD[tipo] || []).forEach(item => {
+      if(!item || !item.id) return;
+      const id = String(item.id), txt = JSON.stringify(item);
+      if(_syncUltimoEnviado[tipo][id] === txt) return;
+      _syncUltimoEnviado[tipo][id] = txt;
+      add(base.collection(tipo).doc(id), item);
+    });
+  });
+  Object.keys(BD.caixaDias || {}).forEach(dataKey => {
+    const item = BD.caixaDias[dataKey], txt = JSON.stringify(item);
+    if(_syncUltimoEnviado.caixaDias[dataKey] === txt) return;
+    _syncUltimoEnviado.caixaDias[dataKey] = txt;
+    add(base.collection('caixaDias').doc(dataKey), item);
+  });
+  if(n > 0) lote.commit().catch(() => {});
+}
 
 /* =====================================================================
    PAINEL, GRÁFICOS e DIAGNÓSTICO
@@ -5745,7 +6584,7 @@ function upsellTotemHTML(){
 }
 function aplicarVisibilidadePlano(){
   const on = planoAvancado();
-  document.querySelectorAll('.nav-btn').forEach(b => { if(PAGINAS_AVANCADAS.includes(b.dataset.p)) b.classList.toggle('oculto', !on); });
+  document.querySelectorAll('.nav-btn, .botao-inicio').forEach(b => { if(PAGINAS_AVANCADAS.includes(b.dataset.p)) b.classList.toggle('oculto', !on); });
   const ef = $('linhaEnviarFila'); if(ef) ef.classList.toggle('oculto', !on);
   const tp = $('painelTotemPix'); const up = $('painelUpsellTotem');
   if(tp) tp.classList.toggle('oculto', !on);
@@ -5858,12 +6697,12 @@ function verDetalheLocal(i){
 /* =====================================================================
    NAVEGAÇÃO e INICIALIZAÇÃO
    ===================================================================== */
-const PAGINAS = ['locais', 'clientes', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'compras', 'custos', 'dados'];
-let _pagina = 'dashboard';
+const PAGINAS = ['inicio', 'locais', 'clientes', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'etiquetas', 'nutricional', 'compras', 'custos', 'dados'];
+let _pagina = 'inicio';
 const paginaAtual = () => _pagina;
 
 function irPara(id){
-  if(!PAGINAS.includes(id)) id = 'dashboard';
+  if(!PAGINAS.includes(id)) id = 'inicio';
   if(PAGINAS_AVANCADAS.includes(id) && !planoAvancado()){ toast('Esse recurso faz parte do plano avançado. Peça o código de ativação em Custos.', 'alerta', {ms: 6000}); id = 'custos'; }
   _pagina = id;
   document.querySelectorAll('.pagina').forEach(p => p.classList.toggle('visivel', p.id === id));
@@ -5878,6 +6717,7 @@ function irPara(id){
 function renderPagina(id){
   try{
     switch(id){
+      case 'inicio': renderInicio(); break;
       case 'dashboard': renderDashboard(); break;
       case 'vendas': renderVendasPagina(); break;
       case 'locais': renderLocais(); break;
@@ -5890,6 +6730,8 @@ function renderPagina(id){
       case 'insumos': renderInsumos(); break;
       case 'massa': renderMassa(); break;
       case 'estoque': renderEstoque(); break;
+      case 'etiquetas': renderEtiquetas(); break;
+      case 'nutricional': renderNutricional(); break;
       case 'compras': renderCompras(); break;
       case 'custos': renderCustos(); break;
       case 'dados': renderDados(); break;
@@ -5919,7 +6761,7 @@ function iniciar(){
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   const h = (location.hash || '').replace('#', '');
   const entrarNoSistema = () => {
-    irPara(PAGINAS.includes(h) ? h : 'dashboard');
+    irPara(PAGINAS.includes(h) ? h : 'inicio');
     if(h === 'painel') iniciarPainel();
     else if(h === 'totem'){ if(BD.config.totemPin) iniciarTotem(); else toast('Defina um PIN em Custos → Totem para usar o modo totem.', 'alerta', {ms: 6000}); }
   };
@@ -5927,6 +6769,7 @@ function iniciar(){
   if(ehInstalacaoNova() && h !== 'totem' && h !== 'painel') assistenteConfiguracaoInicial(entrarNoSistema); else entrarNoSistema();
   $('totemRoot').addEventListener('pointerdown', totemAtividade, true); $('totemRoot').addEventListener('touchstart', totemAtividade, true);
   atualizarFaixa();
+  preencherConfigSync();
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){ navigator.serviceWorker.register('sw.js').catch(() => {}); }
 }
 window.addEventListener('hashchange', () => {
