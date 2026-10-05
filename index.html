@@ -1224,7 +1224,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="linha-form" style="grid-template-columns:2fr 1fr 1fr auto">
       <div><label for="custoDesc">Descrição</label><input type="text" id="custoDesc" placeholder="Descrição"></div>
       <div><label for="custoValor">Valor R$</label><input type="number" step="0.01" id="custoValor" inputmode="decimal" onkeydown="if(event.key==='Enter')adicionarCusto()"></div>
-      <div><label for="custoCat">Categoria</label><select id="custoCat"><option>Moradia</option><option>Pessoal</option><option>Serviços</option><option>Impostos</option><option>Outros</option></select></div>
+      <div><label for="custoCat">Categoria</label><input type="text" id="custoCat" list="listaCategoriasCustoDL" placeholder="Ex: Moradia, Serviços..." autocomplete="off"></div>
       <button class="btn" type="button" onclick="adicionarCusto()">+</button>
     </div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Descrição</th><th class="n">Valor R$</th><th>Categoria</th><th>Ação</th></tr></thead><tbody id="tabelaCustos"></tbody>
@@ -1323,6 +1323,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 <datalist id="listaClientesDL"></datalist>
 <datalist id="listaComponentesSugeridos"></datalist>
 <datalist id="listaCategoriasDL"></datalist>
+<datalist id="listaCategoriasCustoDL"></datalist>
 
 <div id="totemRoot" class="oculto"><div id="totemTela"></div><div id="ttIdle" class="tt-idle oculto"><div><h2>Ainda está aí?</h2><p>Seu pedido será cancelado em <b id="ttIdleSeg">10</b> segundos.</p><button class="tt-btn grande" onclick="totemAtividade()">👍 Continuar pedindo</button></div></div></div>
 <div id="painelRoot" class="oculto"></div>
@@ -2144,7 +2145,7 @@ function editarCusto(id){
   formModal({titulo: 'Editar custo fixo', campos: [
     {id: 'desc', rotulo: 'Descrição', valor: c.desc},
     {id: 'val', rotulo: 'Valor mensal (R$)', tipo: 'numero', valor: c.val},
-    {id: 'cat', rotulo: 'Categoria', tipo: 'select', valor: c.cat, opcoes: ['Moradia', 'Pessoal', 'Serviços', 'Impostos', 'Outros'].map(x => ({v: x, t: x}))}
+    {id: 'cat', rotulo: 'Categoria', valor: c.cat || '', lista: 'listaCategoriasCustoDL', placeholder: 'Ex: Moradia, Serviços...'}
   ], salvar: v => {
     if(!v.desc || !(v.val > 0)) { toast('Informe descrição e valor válido.', 'alerta'); return false; }
     c.desc = v.desc; c.val = v.val; c.cat = v.cat; salvar('custos'); renderCustos();
@@ -2155,11 +2156,19 @@ async function removerCusto(id){
   BD.custos = BD.custos.filter(c => c.id !== id); salvar('custos'); renderCustos();
 }
 const custosFixosMensais = () => soma(BD.custos, c => c.val);
+const CATEGORIAS_CUSTO_SUGERIDAS = ['Moradia', 'Pessoal', 'Serviços', 'Impostos', 'Outros'];
+function atualizarDatalistCategoriasCusto(){
+  const el = $('listaCategoriasCustoDL'); if(!el) return;
+  const set = new Set(CATEGORIAS_CUSTO_SUGERIDAS);
+  BD.custos.forEach(c => { if(c.cat && c.cat.trim()) set.add(c.cat.trim()); });
+  el.innerHTML = Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR')).map(c => '<option value="' + esc(c) + '"></option>').join('');
+}
 function renderCustos(){
   $('tabelaCustos').innerHTML = BD.custos.length ? BD.custos.map(c =>
     '<tr><td>' + esc(c.desc) + '</td><td class="n">' + brl(c.val) + '</td><td>' + esc(c.cat) + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarCusto(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="removerCusto(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum custo fixo cadastrado.</div></td></tr>';
   $('somaCustosFixos').textContent = brl(custosFixosMensais());
+  atualizarDatalistCategoriasCusto();
   carregarTaxasNaTela(); renderDespesas(); carregarConfigNaTela(); carregarConfigTotemNaTela();
   const mr = $('marcaResumo'); if(mr) mr.innerHTML = cardHTML('Nome', nomeNegocio()) + cardHTML('Logotipo', temLogo() ? '🖼️ imagem enviada' : (BD.config.negocioEmoji || '🍞')) + cardHTML('Cor principal', BD.config.corPrimaria || '#006644');
 }
