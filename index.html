@@ -1112,6 +1112,19 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 <!-- ============ COMPRAS ============ -->
 <section id="compras" class="pagina">
   <div class="painel">
+    <div class="cab-painel"><h2>💳 Contas a pagar</h2></div>
+    <div class="aviso">Cadastre qualquer conta que falta pagar — compra a prazo, aluguel, internet, parcela de equipamento etc. Marque como paga quando o dinheiro sair de verdade: isso lança a despesa sozinho, na data certa.</div>
+    <div class="grade" id="cpResumo" style="margin-bottom:10px"></div>
+    <div class="grupo-botoes" id="cpFiltro">
+      <button type="button" class="tt-chip" data-f="abertas" onclick="filtrarContasPagar('abertas')">Em aberto</button>
+      <button type="button" class="tt-chip" data-f="vencidas" onclick="filtrarContasPagar('vencidas')">Vencidas</button>
+      <button type="button" class="tt-chip" data-f="pagas" onclick="filtrarContasPagar('pagas')">Pagas</button>
+      <button type="button" class="tt-chip" data-f="todas" onclick="filtrarContasPagar('todas')">Todas</button>
+    </div>
+    <button class="btn" type="button" onclick="abrirNovaContaPagar()" style="margin:10px 0">+ Nova conta a pagar</button>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Vencimento</th><th>Descrição</th><th>Fornecedor</th><th>Parc.</th><th class="n">Valor</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabelaContasPagar"></tbody></table></div>
+  </div>
+  <div class="painel">
     <h2>🚚 Fornecedores</h2>
     <div class="aviso">Cadastre seus fornecedores para escolher rápido na hora de lançar um cupom, e ter o contato sempre à mão.</div>
     <div class="linha-form" style="grid-template-columns:1.6fr 1.2fr 1.6fr 1.6fr auto">
@@ -1141,7 +1154,20 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <label for="cupomItens">Observações / itens em texto livre</label>
     <textarea id="cupomItens" rows="2" placeholder="Ex: promoção, forma de pagamento..."></textarea>
     <label class="linha"><input type="checkbox" id="cupomAtualizarPrecos" checked> Atualizar o preço dos insumos com os itens informados</label>
-    <label class="linha"><input type="checkbox" id="cupomLancarDespesa" checked> Lançar o valor total como despesa (Insumos avulsos)</label>
+    <label>Pagamento</label>
+    <div class="grupo-botoes" id="cupomPagamentoTipo">
+      <button type="button" class="tt-chip on" data-t="vista" onclick="selecionarPagamentoCupom('vista')">💵 À vista</button>
+      <button type="button" class="tt-chip" data-t="prazo" onclick="selecionarPagamentoCupom('prazo')">📅 A prazo</button>
+    </div>
+    <label class="linha" id="cupomLancarDespesaWrap"><input type="checkbox" id="cupomLancarDespesa" checked> Lançar o valor total como despesa (Insumos avulsos)</label>
+    <div id="cupomPrazoBloco" class="oculto">
+      <div class="bloco-calc">
+        <div><label for="cupomParcelas">Nº de parcelas</label><input type="number" id="cupomParcelas" min="1" step="1" value="1" inputmode="numeric"></div>
+        <div><label for="cupomPrimeiroVenc">1º vencimento</label><input type="date" id="cupomPrimeiroVenc"></div>
+        <div><label for="cupomIntervaloDias">Intervalo entre parcelas (dias)</label><input type="number" id="cupomIntervaloDias" min="1" step="1" value="30" inputmode="numeric"></div>
+      </div>
+      <div class="dica">Em vez de lançar a despesa agora, isso cria as parcelas em "Contas a pagar" — a despesa só entra quando você marcar cada parcela como paga.</div>
+    </div>
     <button class="btn" type="button" onclick="cadastrarCupom()">✅ Salvar cupom</button>
   </div>
   <div class="painel">
@@ -1282,7 +1308,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
   </div>
   <div class="painel">
     <h2>🔄 Sincronização automática entre aparelhos</h2>
-    <div class="aviso">Opcional e gratuito. Liga a sincronização automática de <b>vendas, despesas, perdas, compras e fechamentos de caixa</b> entre todos os aparelhos com o mesmo "código do negócio" — sem precisar exportar/importar na mão. Fichas, insumos, estoque e configurações continuam só deste aparelho, como hoje. Funciona sem internet: o que for feito offline entra sozinho quando o sinal voltar.</div>
+    <div class="aviso">Opcional e gratuito. Liga a sincronização automática de <b>vendas, despesas, perdas, compras, contas a pagar e fechamentos de caixa</b> entre todos os aparelhos com o mesmo "código do negócio" — sem precisar exportar/importar na mão. Fichas, insumos, estoque e configurações continuam só deste aparelho, como hoje. Funciona sem internet: o que for feito offline entra sozinho quando o sinal voltar.</div>
     <label class="linha"><input type="checkbox" id="syncAtivo" onchange="alternarSync()"> Ativar sincronização automática</label>
     <div class="bloco-calc">
       <div><label for="syncCodigo">Código do negócio</label><input type="text" id="syncCodigo" placeholder="Ex: paoevida-danilo-2026" oninput="salvarConfigSync()"><div class="dica">Invente um código único, sem espaços, e use o MESMO em todos os aparelhos que devem sincronizar entre si.</div></div>
@@ -1503,10 +1529,10 @@ const CHAVES = {
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
   config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores', clientes:'clientes',
   etiquetaSabores:'etiquetaSabores', etiquetaLotes:'etiquetaLotes',
-  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas'
+  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas', contasPagar:'contasPagar'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[]};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
   valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem', rodapeComanda:'',
@@ -1531,12 +1557,14 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0, categoria:'Bebidas'},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0, categoria:'Bebidas'}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[]};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
 let ultimoPedidoImpresso = null;
 let ETQ_TIPO = 'massa';
+let CUPOM_PAGAMENTO = 'vista';
+let CP_FILTRO = 'abertas';
 let ETQ_SABOR = null;
 let ETQ_QTD = 1;
 const NUTRI_KEYS = [
@@ -1791,13 +1819,17 @@ function acharInsumoPorNome(nome){
   const n = norm(nome); if(!n) return null;
   return BD.insumos.find(i => norm(i.nome) === n) || null;
 }
+function acharFornecedorPorNome(nome){
+  const n = norm(nome); if(!n) return null;
+  return BD.fornecedores.find(f => norm(f.nome) === n) || null;
+}
 function acharInsumo(ref){ // ref: {insumoId, nome}
   if(!ref) return null;
   if(ref.insumoId){ const i = BD.insumos.find(x => x.id === ref.insumoId); if(i) return i; }
   return acharInsumoPorNome(ref.nome);
 }
 function normalizarBD(){
-  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas'];
+  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar'];
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
@@ -1805,10 +1837,11 @@ function normalizarBD(){
   const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
-  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas'].forEach(k => {
+  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar'].forEach(k => {
     BD[k].forEach(x => { if(x && typeof x === 'object' && !x.id) x.id = uid(); });
   });
   BD.custos.forEach(c => { c.val = parseNum(c.val); });
+  BD.contasPagar.forEach(c => { c.valor = parseNum(c.valor); if(c.pago === undefined) c.pago = false; });
 
   // taxas
   const t = BD.taxas;
@@ -4484,6 +4517,135 @@ function renderFornecedores(){
   const dl = $('listaFornecedoresSugeridos');
   if(dl) dl.innerHTML = lista.map(f => '<option value="' + esc(f.nome) + '"></option>').join('');
 }
+
+/* ---------- contas a pagar ---------- */
+function statusContaPagar(c){
+  if(c.pago) return {txt: '✅ paga ' + fmtData(c.pagoEm), cls: ''};
+  const dias = Math.round((new Date(c.vencimento + 'T00:00:00') - new Date(dataHoje() + 'T00:00:00')) / 86400000);
+  if(dias < 0) return {txt: '🔴 vencida há ' + Math.abs(dias) + 'd', cls: 'vermelho'};
+  if(dias === 0) return {txt: '🟠 vence hoje', cls: 'laranja'};
+  if(dias <= 7) return {txt: dias + 'd restante(s)', cls: 'laranja'};
+  return {txt: dias + 'd restante(s)', cls: ''};
+}
+function gerarParcelasContaPagar({desc, fornecedorId, fornecedorNome, categoria, valorTotal, primeiraData, parcelas, intervaloDias, origem, compraId}){
+  const grupoId = uid();
+  const porParcela = Math.floor((valorTotal / parcelas) * 100) / 100;
+  const criadas = [];
+  for(let i = 0; i < parcelas; i++){
+    const d = new Date(primeiraData + 'T00:00:00'); d.setDate(d.getDate() + i * intervaloDias);
+    const valorParcela = (i === parcelas - 1) ? r2(valorTotal - porParcela * (parcelas - 1)) : porParcela;
+    const c = {
+      id: uid(), grupoId, desc, fornecedorId: fornecedorId || null, fornecedorNome: fornecedorNome || '',
+      categoria: categoria || '', valor: valorParcela, vencimento: dataLocal(d),
+      parcela: i + 1, totalParcelas: parcelas, origem: origem || 'manual', compraId: compraId || null,
+      pago: false, pagoEm: null, despesaId: null, criadoEm: Date.now()
+    };
+    BD.contasPagar.push(c); criadas.push(c);
+  }
+  return criadas;
+}
+function opcoesCustoFixoVinculo(selecionado){
+  return [{v: '', t: '(não atualizar nenhum)'}, {v: '_novo', t: '+ Criar novo custo fixo com esse nome'}]
+    .concat(BD.custos.slice().sort((a, b) => a.desc.localeCompare(b.desc, 'pt-BR')).map(c => ({v: c.id, t: c.desc + ' — ' + brl(c.val) + '/mês'})));
+}
+const DICA_CUSTO_FIXO_VINCULO = 'Pra contas que variam todo mês mas sempre existem (água, energia...): ao marcar como paga, o valor pago atualiza esse custo fixo sozinho, sem precisar editar em Custos.';
+function abrirNovaContaPagar(){
+  const opcForn = [{v: '', t: '(nenhum)'}].concat(BD.fornecedores.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(f => ({v: f.id, t: f.nome})));
+  formModal({titulo: 'Nova conta a pagar', campos: [
+    {id: 'desc', rotulo: 'Descrição', placeholder: 'Ex: Aluguel de outubro, Internet, Energia, Forno em 3x...'},
+    {id: 'fornecedorId', rotulo: 'Fornecedor (opcional)', tipo: 'select', valor: '', opcoes: opcForn},
+    {id: 'categoria', rotulo: 'Categoria (opcional)', placeholder: 'Ex: Moradia, Insumos avulsos, Equipamento...', lista: 'listaCategoriasCustoDL'},
+    {id: 'valor', rotulo: 'Valor total (R$)', tipo: 'numero'},
+    {id: 'primeiraData', rotulo: '1º vencimento', tipo: 'data', valor: dataHoje()},
+    {id: 'parcelas', rotulo: 'Nº de parcelas', tipo: 'numero', valor: 1},
+    {id: 'intervaloDias', rotulo: 'Intervalo entre parcelas (dias)', tipo: 'numero', valor: 30},
+    {id: 'custoFixoId', rotulo: 'Atualizar um custo fixo ao pagar (opcional)', tipo: 'select', valor: '', opcoes: opcoesCustoFixoVinculo(), dica: DICA_CUSTO_FIXO_VINCULO}
+  ], salvar: v => {
+    if(!v.desc || !(v.valor > 0) || !v.primeiraData){ toast('Informe descrição, valor e 1º vencimento.', 'alerta'); return false; }
+    const parcelas = Math.max(1, Math.round(v.parcelas || 1));
+    const intervalo = Math.max(1, Math.round(v.intervaloDias || 30));
+    const forn = v.fornecedorId ? BD.fornecedores.find(f => f.id === v.fornecedorId) : null;
+    let custoFixoId = null;
+    if(v.custoFixoId === '_novo'){
+      const novo = {id: uid(), desc: v.desc, val: 0, cat: (v.categoria || '').trim() || 'Outros'};
+      BD.custos.push(novo); custoFixoId = novo.id;
+    }else if(v.custoFixoId){ custoFixoId = v.custoFixoId; }
+    const criadas = gerarParcelasContaPagar({
+      desc: v.desc, fornecedorId: forn ? forn.id : null, fornecedorNome: forn ? forn.nome : '',
+      categoria: (v.categoria || '').trim(), valorTotal: v.valor, primeiraData: v.primeiraData,
+      parcelas, intervaloDias: intervalo, origem: 'manual'
+    });
+    if(custoFixoId) criadas.forEach(c => { c.custoFixoId = custoFixoId; });
+    salvar('contasPagar', 'custos'); renderContasPagar();
+    toast((parcelas > 1 ? parcelas + ' parcelas criadas' : 'Conta criada') + (custoFixoId ? '. Vinculada a um custo fixo — ele atualiza sozinho quando você pagar.' : '') + '.', 'ok', {ms: custoFixoId ? 8000 : 4000});
+  }});
+}
+function editarContaPagar(id){
+  const c = BD.contasPagar.find(x => x.id === id); if(!c) return;
+  const opcForn = [{v: '', t: '(nenhum)'}].concat(BD.fornecedores.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(f => ({v: f.id, t: f.nome})));
+  formModal({titulo: 'Editar conta a pagar' + (c.totalParcelas > 1 ? ' (parcela ' + c.parcela + '/' + c.totalParcelas + ')' : ''), campos: [
+    {id: 'desc', rotulo: 'Descrição', valor: c.desc},
+    {id: 'fornecedorId', rotulo: 'Fornecedor (opcional)', tipo: 'select', valor: c.fornecedorId || '', opcoes: opcForn},
+    {id: 'categoria', rotulo: 'Categoria (opcional)', valor: c.categoria || '', lista: 'listaCategoriasCustoDL'},
+    {id: 'valor', rotulo: 'Valor (R$)', tipo: 'numero', valor: c.valor},
+    {id: 'vencimento', rotulo: 'Vencimento', tipo: 'data', valor: c.vencimento},
+    {id: 'custoFixoId', rotulo: 'Atualizar um custo fixo ao pagar (opcional)', tipo: 'select', valor: c.custoFixoId || '', opcoes: opcoesCustoFixoVinculo(c.custoFixoId), dica: DICA_CUSTO_FIXO_VINCULO}
+  ], salvar: v => {
+    if(!v.desc || !(v.valor > 0) || !v.vencimento){ toast('Informe descrição, valor e vencimento.', 'alerta'); return false; }
+    const forn = v.fornecedorId ? BD.fornecedores.find(f => f.id === v.fornecedorId) : null;
+    let custoFixoId = c.custoFixoId || null;
+    if(v.custoFixoId === '_novo'){
+      const novo = {id: uid(), desc: v.desc, val: 0, cat: (v.categoria || '').trim() || 'Outros'};
+      BD.custos.push(novo); custoFixoId = novo.id;
+    }else{ custoFixoId = v.custoFixoId || null; }
+    Object.assign(c, {desc: v.desc, fornecedorId: forn ? forn.id : null, fornecedorNome: forn ? forn.nome : '', categoria: (v.categoria || '').trim(), valor: v.valor, vencimento: v.vencimento, custoFixoId});
+    salvar('contasPagar', 'custos'); renderContasPagar();
+  }});
+}
+function pagarContaPagar(id){
+  const c = BD.contasPagar.find(x => x.id === id); if(!c || c.pago) return;
+  formModal({titulo: 'Pagar — ' + c.desc, campos: [
+    {id: 'data', rotulo: 'Data do pagamento', tipo: 'data', valor: dataHoje()},
+    {id: 'valor', rotulo: 'Valor pago (R$)', tipo: 'numero', valor: c.valor}
+  ], textoSalvar: '💰 Confirmar pagamento', salvar: v => {
+    if(!v.data || !(v.valor > 0)){ toast('Informe data e valor válidos.', 'alerta'); return false; }
+    c.pago = true; c.pagoEm = v.data;
+    const d = {id: uid(), data: v.data, desc: c.desc + (c.totalParcelas > 1 ? ' (parcela ' + c.parcela + '/' + c.totalParcelas + ')' : ''), valor: v.valor, categoria: c.categoria || 'Compras a prazo', contaPagarId: c.id};
+    BD.despesas.unshift(d); c.despesaId = d.id;
+    let msgCusto = '';
+    if(c.custoFixoId){
+      const custo = BD.custos.find(x => x.id === c.custoFixoId);
+      if(custo){ custo.val = v.valor; msgCusto = ' Custo fixo "' + custo.desc + '" atualizado para ' + brl(v.valor) + '/mês.'; }
+    }
+    salvar('contasPagar', 'despesas', 'custos'); renderContasPagar();
+    toast('Pago e lançado como despesa.' + msgCusto, 'ok', {ms: msgCusto ? 9000 : 4000});
+  }});
+}
+async function excluirContaPagar(id){
+  const c = BD.contasPagar.find(x => x.id === id); if(!c) return;
+  if(!await confirmar((c.pago ? 'Essa conta já está paga. ' : '') + 'Excluir "' + c.desc + '"?' + (c.pago ? ' A despesa já lançada não é apagada — exclua-a em Custos ou Dados se quiser desfazer.' : ''), {ok: 'Excluir', perigo: true})) return;
+  BD.contasPagar = BD.contasPagar.filter(x => x.id !== id);
+  salvar('contasPagar'); renderContasPagar();
+}
+function filtrarContasPagar(f){ CP_FILTRO = f; renderContasPagar(); }
+function renderContasPagar(){
+  document.querySelectorAll('#cpFiltro .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.f === CP_FILTRO));
+  const abertas = BD.contasPagar.filter(c => !c.pago);
+  const vencidas = abertas.filter(c => c.vencimento < dataHoje());
+  $('cpResumo').innerHTML = cardHTML('Em aberto', brl(soma(abertas, c => c.valor)), abertas.length + ' conta(s)') +
+    cardHTML('Vencidas', brl(soma(vencidas, c => c.valor)), vencidas.length + ' conta(s)', vencidas.length ? 'vermelho' : '');
+  let lista = BD.contasPagar.slice();
+  if(CP_FILTRO === 'abertas') lista = lista.filter(c => !c.pago);
+  else if(CP_FILTRO === 'vencidas') lista = lista.filter(c => !c.pago && c.vencimento < dataHoje());
+  else if(CP_FILTRO === 'pagas') lista = lista.filter(c => c.pago);
+  lista.sort((a, b) => a.pago !== b.pago ? (a.pago ? 1 : -1) : (a.vencimento || '').localeCompare(b.vencimento || ''));
+  $('tabelaContasPagar').innerHTML = lista.length ? lista.map(c => {
+    const st = statusContaPagar(c);
+    const custoVinc = c.custoFixoId && BD.custos.find(x => x.id === c.custoFixoId);
+    return '<tr><td>' + fmtData(c.vencimento) + '</td><td>' + esc(c.desc) + (custoVinc ? ' <span title="Atualiza o custo fixo \'' + esc(custoVinc.desc) + '\' ao pagar">📌</span>' : '') + '</td><td>' + esc(c.fornecedorNome || '—') + '</td><td>' + (c.totalParcelas > 1 ? c.parcela + '/' + c.totalParcelas : '—') + '</td><td class="n">' + brl(c.valor) + '</td><td><span class="tag ' + st.cls + '">' + st.txt + '</span></td>' +
+      '<td class="acoes">' + (c.pago ? '' : '<button class="btn pequeno" onclick="pagarContaPagar(\'' + c.id + '\')">💰 Pagar</button>') + '<button class="btn cinza pequeno" onclick="editarContaPagar(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirContaPagar(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+  }).join('') : '<tr><td colspan="7"><div class="vazio">Nenhuma conta nessa visualização.</div></td></tr>';
+}
 /* ---------- cadastro de clientes (aba Clientes) ---------- */
 function adicionarCliente(){
   const nome = $('clNome').value.trim(); const whats = $('clWhats').value.trim(); const endereco = $('clEndereco').value.trim();
@@ -4705,15 +4867,37 @@ function cadastrarCupom(){
       ins.unid = l.unid; ins.qtd = l.qtd; ins.valor = l.valor; ins.precoBase = precoBaseDe(l.unid, l.qtd, l.valor); rotularInsumo(ins); registrarHistorico(ins); atualizados++;
     });
   }
-  if($('cupomLancarDespesa').checked){
+  let parcelasGeradas = 0;
+  if(CUPOM_PAGAMENTO === 'prazo'){
+    const parcelas = Math.max(1, parseInt($('cupomParcelas').value, 10) || 1);
+    const primeiraData = $('cupomPrimeiroVenc').value || data;
+    const intervalo = Math.max(1, parseInt($('cupomIntervaloDias').value, 10) || 30);
+    const forn = acharFornecedorPorNome(mercado);
+    const grupo = gerarParcelasContaPagar({
+      desc: 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : ''),
+      fornecedorId: forn ? forn.id : null, fornecedorNome: mercado,
+      categoria: 'Insumos avulsos', valorTotal: valor, primeiraData, parcelas, intervaloDias: intervalo,
+      origem: 'compra', compraId: compra.id
+    });
+    parcelasGeradas = grupo.length;
+    compra.contasPagarGrupoId = grupo.length ? grupo[0].grupoId : null;
+  }else if($('cupomLancarDespesa').checked){
     const d = {id: uid(), data, desc: 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : ''), valor, categoria: 'Insumos avulsos', compraId: compra.id};
     BD.despesas.unshift(d); compra.despesaId = d.id;
   }
   BD.compras.unshift(compra);
   if(atualizados){ recalcularTudo(); }
   ['cupomNum', 'cupomCNPJ', 'cupomMercado', 'cupomValor', 'cupomItens'].forEach(i => $(i).value = ''); LINHAS_CUPOM = []; renderLinhasCupom();
-  salvar('compras', 'despesas', 'insumos', 'fichas'); renderCompras();
-  toast('Cupom salvo.' + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
+  selecionarPagamentoCupom('vista');
+  salvar('compras', 'despesas', 'insumos', 'fichas', 'contasPagar'); renderCompras();
+  toast('Cupom salvo.' + (parcelasGeradas ? ' ' + parcelasGeradas + ' parcela(s) criada(s) em Contas a pagar.' : '') + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
+}
+function selecionarPagamentoCupom(t){
+  CUPOM_PAGAMENTO = t;
+  document.querySelectorAll('#cupomPagamentoTipo .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  if($('cupomPrazoBloco')) $('cupomPrazoBloco').classList.toggle('oculto', t !== 'prazo');
+  if($('cupomLancarDespesaWrap')) $('cupomLancarDespesaWrap').classList.toggle('oculto', t === 'prazo');
+  if(t === 'prazo' && $('cupomPrimeiroVenc') && !$('cupomPrimeiroVenc').value) $('cupomPrimeiroVenc').value = dataHoje();
 }
 function editarCompra(id){
   const c = BD.compras.find(x => x.id === id); if(!c) return;
@@ -5216,8 +5400,11 @@ async function removerIngredienteNutri(id){
 }
 function renderCompras(){
   renderFornecedores();
+  atualizarDatalistCategoriasCusto();
+  renderContasPagar();
   if(!$('cupomData').value) $('cupomData').value = dataHoje();
   if(!$('cupomItensLista').children.length && !LINHAS_CUPOM.length) renderLinhasCupom();
+  selecionarPagamentoCupom(CUPOM_PAGAMENTO);
   const q = norm($('pesquisaCupom').value);
   const lista = BD.compras.filter(c => !q || norm(c.numero).includes(q) || norm(c.cnpj).includes(q) || norm(c.mercado).includes(q)).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
   $('tabelaCompras').innerHTML = lista.length ? lista.map(c =>
@@ -5343,13 +5530,13 @@ function mesclarVendasArquivo(event){
     try{
       const b = JSON.parse(leitor.result); const d = validarBackup(b);
       const novos = (lista, atual) => { const ids = new Set(atual.map(x => x.id)); return lista.filter(x => x && x.id && !ids.has(x.id)); };
-      const nv = novos(d.vendas, BD.vendas), nd = novos(d.despesas, BD.despesas), np = novos(d.perdas, BD.perdas), nc = novos(d.compras, BD.compras);
+      const nv = novos(d.vendas, BD.vendas), nd = novos(d.despesas, BD.despesas), np = novos(d.perdas, BD.perdas), nc = novos(d.compras, BD.compras), ncp = novos(d.contasPagar, BD.contasPagar);
       const dias = Object.keys(d.caixaDias).filter(k => !BD.caixaDias[k]);
-      if(!nv.length && !nd.length && !np.length && !nc.length && !dias.length) return toast('Nada novo para mesclar: tudo isso já existe aqui.', 'alerta');
+      if(!nv.length && !nd.length && !np.length && !nc.length && !ncp.length && !dias.length) return toast('Nada novo para mesclar: tudo isso já existe aqui.', 'alerta');
       const ped = new Set(nv.map(v => String(v.pedidoId))).size;
-      if(!await confirmar('Do arquivo entram:\n' + ped + ' pedido(s) (' + nv.length + ' itens) • ' + nd.length + ' despesa(s) • ' + np.length + ' perda(s) • ' + nc.length + ' compra(s) • ' + dias.length + ' fechamento(s) de caixa.\nNada do que já existe aqui é alterado ou apagado. O estoque NÃO é modificado.', {titulo: 'Mesclar vendas', ok: 'Mesclar'})) return;
+      if(!await confirmar('Do arquivo entram:\n' + ped + ' pedido(s) (' + nv.length + ' itens) • ' + nd.length + ' despesa(s) • ' + np.length + ' perda(s) • ' + nc.length + ' compra(s) • ' + ncp.length + ' conta(s) a pagar • ' + dias.length + ' fechamento(s) de caixa.\nNada do que já existe aqui é alterado ou apagado. O estoque NÃO é modificado.', {titulo: 'Mesclar vendas', ok: 'Mesclar'})) return;
       guardarBackupAnterior('antes de mesclar vendas de outro aparelho');
-      nv.forEach(v => BD.vendas.push(v)); nd.forEach(x => BD.despesas.push(x)); np.forEach(x => BD.perdas.push(x)); nc.forEach(x => BD.compras.push(x)); dias.forEach(k => { BD.caixaDias[k] = d.caixaDias[k]; });
+      nv.forEach(v => BD.vendas.push(v)); nd.forEach(x => BD.despesas.push(x)); np.forEach(x => BD.perdas.push(x)); nc.forEach(x => BD.compras.push(x)); ncp.forEach(x => BD.contasPagar.push(x)); dias.forEach(k => { BD.caixaDias[k] = d.caixaDias[k]; });
       normalizarBD(); salvarTudo(); renderTudo(); toast('Mesclagem concluída: ' + ped + ' pedido(s) adicionados.', 'ok', {ms: 6000});
     }catch(e){ toast('Não foi possível mesclar: ' + e.message, 'erro', {ms: 7000}); }
   };
@@ -5362,10 +5549,10 @@ function mesclarVendasArquivo(event){
    (o mesmo que "Mesclar vendas" já fazia manualmente) — fichas, insumos,
    estoque e configurações continuam só deste aparelho, como sempre.
    ===================================================================== */
-const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras'];
+const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar'];
 const SYNC_CHAVE_LS = 'syncConfig';
 let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null;
-const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, caixaDias: {}};
+const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, caixaDias: {}};
 
 function syncLerConfig(){ try{ return JSON.parse(localStorage.getItem(SYNC_CHAVE_LS)) || {}; }catch(e){ return {}; } }
 function syncGravarConfig(c){ try{ localStorage.setItem(SYNC_CHAVE_LS, JSON.stringify(c)); }catch(e){} }
@@ -5555,8 +5742,12 @@ function renderDashboard(){
   const pend = soma(BD.vendas.filter(v => v.pago === false), v => v.valorTotal);
   const ano = soma(BD.vendas.filter(v => (v.data || '').startsWith(anoAtual())), v => v.valorTotal);
   const limite = BD.config.meiLimite * BD.config.meiMeses / 12;
+  const cpAbertas = BD.contasPagar.filter(c => !c.pago);
+  const cpVencidas = cpAbertas.filter(c => c.vencimento < hoje);
   $('dashSituacao').innerHTML = cardHTML('Vendido hoje', brl(rHoje.fat), rHoje.pedidos + ' pedido(s)') + cardHTML('Recebido hoje', brl(soma(Object.values(recebidoPorForma(hoje)))), '') +
-    cardHTML('A receber (total)', brl(pend), pedidosPendentes().length + ' pedido(s) pendente(s)', pend > 0 ? 'laranja' : '') + cardHTML('Custos fixos estimados', brl(custosFixosMensais()), 'por mês') +
+    cardHTML('A receber (total)', brl(pend), pedidosPendentes().length + ' pedido(s) pendente(s)', pend > 0 ? 'laranja' : '') +
+    cardHTML('A pagar (total)', brl(soma(cpAbertas, c => c.valor)), cpVencidas.length ? cpVencidas.length + ' vencida(s)' : cpAbertas.length + ' conta(s) em aberto', cpVencidas.length ? 'vermelho' : (cpAbertas.length ? 'laranja' : '')) +
+    cardHTML('Custos fixos estimados', brl(custosFixosMensais()), 'por mês') +
     cardHTML('Teto MEI usado', fmt(limite > 0 ? ano / limite * 100 : 0, 1) + '%', brl(ano) + ' de ' + brl(limite), ano / limite >= 0.9 ? 'vermelho' : '');
   const pe = pontoEquilibrio(mes);
   if(pe.fixos <= 0) $('dashPE').innerHTML = '<div class="aviso">📌 Cadastre seus <b>custos fixos mensais</b> (aba Custos) para ver o ponto de equilíbrio: quanto precisa vender no mês para cobrir os custos.</div>';
