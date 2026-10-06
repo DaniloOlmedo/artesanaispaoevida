@@ -3344,6 +3344,8 @@ function perdaContagemDeposito(id){
   }});
 }
 
+let SUGESTOES_COMP_ABERTO = false;
+function alternarSugestoesComponentes(){ SUGESTOES_COMP_ABERTO = !SUGESTOES_COMP_ABERTO; renderEstoque(); }
 function renderEstoque(){
   atualizarDatalistComponentes();
   const lista = BD.estoqueComponentes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
@@ -3353,7 +3355,9 @@ function renderEstoque(){
       '<td class="acoes"><button class="btn cinza pequeno" onclick="ajustarDeposito(\'' + c.id + '\')" title="Somar ou definir a quantidade guardada no depósito">📦 Depósito</button><button class="btn laranja pequeno" onclick="levarParaDia(\'' + c.id + '\')" title="Mover do depósito para o estoque do dia">🚚 Levar</button><button class="btn laranja pequeno" onclick="devolverAoDeposito(\'' + c.id + '\')" title="Mover do estoque do dia de volta pro depósito">↩️ Devolver</button><button class="btn pequeno" onclick="reporEstoque(\'' + c.id + '\')" title="Somar direto no estoque do dia, sem passar pelo depósito">+ Repor (dia)</button><button class="btn cinza pequeno" onclick="definirEstoque(\'' + c.id + '\')" title="Definir a quantidade exata do estoque do dia">Definir (dia)</button><button class="btn laranja pequeno" onclick="registrarPerda(\'' + c.id + '\')">Perda</button><button class="btn cinza pequeno" onclick="verUsosComponente(\'' + c.id + '\')" aria-label="Onde é usado" title="Ver em quais fichas este componente é descontado">🔍</button><button class="btn cinza pequeno" onclick="editarComponenteEstoque(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirComponenteEstoque(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum componente cadastrado. Cadastre o que você leva para vender.</div></td></tr>';
   const pend = nomesComponentesConhecidos().filter(n => !componenteEstoque(n));
-  $('sugestoesComponentes').innerHTML = pend.length ? '<div class="aviso alerta-a">💡 Já cadastrados em Insumos ou vinculados nas fichas, mas <b>sem estoque/depósito controlado</b>: clique pra puxar o nome e cadastrar aqui — ' + pend.map(n => '<button class="btn cinza pequeno" style="margin:2px" onclick="preencherComponente(this.dataset.n)" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>' : '';
+  $('sugestoesComponentes').innerHTML = !pend.length ? '' :
+    '<button class="btn cinza pequeno" type="button" onclick="alternarSugestoesComponentes()" style="margin-bottom:8px">💡 ' + pend.length + ' já cadastrado(s) sem estoque/depósito controlado ' + (SUGESTOES_COMP_ABERTO ? '▲ ocultar' : '▼ ver') + '</button>' +
+    (SUGESTOES_COMP_ABERTO ? '<div class="aviso alerta-a">Já cadastrados em Insumos ou vinculados nas fichas, mas <b>sem estoque/depósito controlado</b>: clique pra puxar o nome e cadastrar aqui — ' + pend.map(n => '<button class="btn cinza pequeno" style="margin:2px" onclick="preencherComponente(this.dataset.n)" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>' : '');
   $('tabelaPerdas').innerHTML = BD.perdas.length ? BD.perdas.slice(0, 60).map(p => {
     const compP = componenteEstoque(p.nome);
     return '<tr><td>' + fmtData(p.data) + '</td><td>' + esc(p.nome) + '</td><td class="n">' + (compP ? fmtCompQtd(compP, p.qtd) : fmt(p.qtd, 2)) + '</td><td>' + esc(p.motivo) + '</td><td class="n">' + (p.valor > 0 ? brl(p.valor) : '—') + '</td><td><button class="btn vermelho pequeno" onclick="removerPerda(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>';
