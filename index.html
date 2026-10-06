@@ -1224,7 +1224,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="linha-form" style="grid-template-columns:2fr 1fr 1fr auto">
       <div><label for="custoDesc">Descrição</label><input type="text" id="custoDesc" placeholder="Descrição"></div>
       <div><label for="custoValor">Valor R$</label><input type="number" step="0.01" id="custoValor" inputmode="decimal" onkeydown="if(event.key==='Enter')adicionarCusto()"></div>
-      <div><label for="custoCat">Categoria</label><input type="text" id="custoCat" list="listaCategoriasCustoDL" placeholder="Ex: Moradia, Serviços..." autocomplete="off"></div>
+      <div><label for="custoCat">Categoria</label><div id="custoCatWrap"></div><button type="button" id="btnNovaCategoriaCusto" class="btn cinza pequeno" style="margin-top:6px" onclick="alternarNovaCategoriaCusto()">🏷️ Nova categoria</button></div>
       <button class="btn" type="button" onclick="adicionarCusto()">+</button>
     </div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Descrição</th><th class="n">Valor R$</th><th>Categoria</th><th>Ação</th></tr></thead><tbody id="tabelaCustos"></tbody>
@@ -2134,21 +2134,27 @@ const CAT_DESPESA = ['Combustível/Transporte', 'Feira/Barraca', 'Equipamento', 
 
 /* ---------- custos fixos ---------- */
 function adicionarCusto(){
-  const desc = $('custoDesc').value.trim(); const val = parseNum($('custoValor').value); const cat = $('custoCat').value;
+  const desc = $('custoDesc').value.trim(); const val = parseNum($('custoValor').value); const cat = ($('custoCat').value || '').trim();
   if(!desc || val <= 0) return toast('Preencha a descrição e um valor maior que zero.', 'alerta');
+  if(!cat) return toast('Escolha ou crie uma categoria.', 'alerta');
   BD.custos.push({id: uid(), desc, val, cat});
   $('custoDesc').value = ''; $('custoValor').value = '';
+  CUSTO_CAT_MODO = 'select';
   salvar('custos'); renderCustos();
 }
 function editarCusto(id){
   const c = BD.custos.find(x => x.id === id); if(!c) return;
+  const cats = categoriasCustoLista(); if(c.cat && !cats.includes(c.cat)) cats.push(c.cat);
   formModal({titulo: 'Editar custo fixo', campos: [
     {id: 'desc', rotulo: 'Descrição', valor: c.desc},
     {id: 'val', rotulo: 'Valor mensal (R$)', tipo: 'numero', valor: c.val},
-    {id: 'cat', rotulo: 'Categoria', valor: c.cat || '', lista: 'listaCategoriasCustoDL', placeholder: 'Ex: Moradia, Serviços...'}
+    {id: 'cat', rotulo: 'Categoria', tipo: 'select', valor: c.cat || '', opcoes: cats.map(x => ({v: x, t: x}))},
+    {id: 'catNova', rotulo: 'Ou crie uma categoria nova (opcional)', placeholder: 'Deixe em branco pra usar a de cima'}
   ], salvar: v => {
     if(!v.desc || !(v.val > 0)) { toast('Informe descrição e valor válido.', 'alerta'); return false; }
-    c.desc = v.desc; c.val = v.val; c.cat = v.cat; salvar('custos'); renderCustos();
+    c.desc = v.desc; c.val = v.val;
+    c.cat = (v.catNova || '').trim() ? v.catNova.trim() : v.cat;
+    salvar('custos'); renderCustos();
   }});
 }
 async function removerCusto(id){
@@ -2157,11 +2163,32 @@ async function removerCusto(id){
 }
 const custosFixosMensais = () => soma(BD.custos, c => c.val);
 const CATEGORIAS_CUSTO_SUGERIDAS = ['Moradia', 'Pessoal', 'Serviços', 'Impostos', 'Outros'];
-function atualizarDatalistCategoriasCusto(){
-  const el = $('listaCategoriasCustoDL'); if(!el) return;
+function categoriasCustoLista(){
   const set = new Set(CATEGORIAS_CUSTO_SUGERIDAS);
   BD.custos.forEach(c => { if(c.cat && c.cat.trim()) set.add(c.cat.trim()); });
-  el.innerHTML = Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR')).map(c => '<option value="' + esc(c) + '"></option>').join('');
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+function atualizarDatalistCategoriasCusto(){
+  const el = $('listaCategoriasCustoDL'); if(!el) return;
+  el.innerHTML = categoriasCustoLista().map(c => '<option value="' + esc(c) + '"></option>').join('');
+}
+let CUSTO_CAT_MODO = 'select';
+function renderCustoCatWrap(valorSelecionado){
+  const wrap = $('custoCatWrap'); if(!wrap) return;
+  const btn = $('btnNovaCategoriaCusto');
+  if(CUSTO_CAT_MODO === 'novo'){
+    wrap.innerHTML = '<input type="text" id="custoCat" placeholder="Nome da nova categoria" autocomplete="off">';
+    const el = $('custoCat'); if(el) el.focus();
+    if(btn) btn.textContent = '↩️ Escolher categoria existente';
+  }else{
+    const cats = categoriasCustoLista();
+    wrap.innerHTML = '<select id="custoCat">' + cats.map(c => '<option value="' + esc(c) + '"' + (c === valorSelecionado ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select>';
+    if(btn) btn.textContent = '🏷️ Nova categoria';
+  }
+}
+function alternarNovaCategoriaCusto(){
+  CUSTO_CAT_MODO = CUSTO_CAT_MODO === 'novo' ? 'select' : 'novo';
+  renderCustoCatWrap();
 }
 function renderCustos(){
   $('tabelaCustos').innerHTML = BD.custos.length ? BD.custos.map(c =>
@@ -2169,6 +2196,7 @@ function renderCustos(){
   ).join('') : '<tr><td colspan="4"><div class="vazio">Nenhum custo fixo cadastrado.</div></td></tr>';
   $('somaCustosFixos').textContent = brl(custosFixosMensais());
   atualizarDatalistCategoriasCusto();
+  renderCustoCatWrap();
   carregarTaxasNaTela(); renderDespesas(); carregarConfigNaTela(); carregarConfigTotemNaTela();
   const mr = $('marcaResumo'); if(mr) mr.innerHTML = cardHTML('Nome', nomeNegocio()) + cardHTML('Logotipo', temLogo() ? '🖼️ imagem enviada' : (BD.config.negocioEmoji || '🍞')) + cardHTML('Cor principal', BD.config.corPrimaria || '#006644');
 }
