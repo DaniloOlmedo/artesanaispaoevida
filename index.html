@@ -462,7 +462,8 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 <section id="dashboard" class="pagina">
   <div id="dashPendencias"></div>
   <div class="painel">
-    <div class="cab-painel"><h2 id="dashTituloMes">📊 Resumo do mês</h2></div>
+    <div class="cab-painel"><h2 id="dashTituloMes">📊 Resumo do mês</h2>
+      <div><input type="month" id="dashMesSel" style="width:auto" onchange="renderDashboard()" aria-label="Mês do resumo"></div></div>
     <div class="grade" id="dashMes"></div>
   </div>
   <div class="painel">
@@ -3057,12 +3058,12 @@ function nomesComponentesConhecidos(){
   return Array.from(set.values()).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
 /* ---------- diagnóstico: onde um componente é usado, e nomes parecidos que podem estar causando estoque errado ---------- */
-const tokenSet = s => new Set(norm(s).split(/\s+/).filter(Boolean));
+const tokenSet = s => new Set(norm(s).replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean));
 function pareceSimilar(a, b){
   if(norm(a) === norm(b)) return false;
   const A = tokenSet(a), B = tokenSet(b); let inter = 0; A.forEach(x => { if(B.has(x)) inter++; });
   const uniao = new Set([...A, ...B]).size;
-  return uniao > 0 && inter / uniao >= 0.5;
+  return uniao > 0 && inter / uniao > 0.5;
 }
 function usosDoComponente(nome){
   const n = norm(nome); const usos = [];
@@ -5454,8 +5455,8 @@ function graficoBarras(titulo, pontos, vazio, fmtV){
   }).join('');
   return '<div class="grafico"><h3>' + esc(titulo) + '</h3><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(titulo) + '"><line class="eixo" x1="0" y1="' + (H - base) + '" x2="' + W + '" y2="' + (H - base) + '"/>' + barras + '</svg></div>';
 }
-function pontoEquilibrio(){
-  const fixos = custosFixosMensais(); const m = resultadoMes(mesAtual());
+function pontoEquilibrio(mes){
+  const fixos = custosFixosMensais(); const m = resultadoMes(mes || mesAtual());
   let mc = 0, fonte = '';
   if(m.fat > 0){ mc = (m.fat - m.custo - m.taxas) / m.fat; fonte = 'margem real das vendas do mês'; }
   else{
@@ -5464,8 +5465,11 @@ function pontoEquilibrio(){
   }
   return {fixos, mc, fonte, pe: (fixos > 0 && mc > 0) ? fixos / mc : null, fat: m.fat};
 }
+let DASH_PEND_ABERTO = false;
+function alternarPendenciasDash(){ DASH_PEND_ABERTO = !DASH_PEND_ABERTO; renderDashboard(); }
 function renderDashboard(){
-  const mes = mesAtual(); const m = resultadoMes(mes), ant = resultadoMes(mesAnterior(mes));
+  const selMes = $('dashMesSel'); if(selMes && !selMes.value) selMes.value = mesAtual();
+  const mes = (selMes && selMes.value) || mesAtual(); const m = resultadoMes(mes), ant = resultadoMes(mesAnterior(mes));
   $('dashTituloMes').textContent = '📊 Resumo de ' + fmtMes(mes);
   $('dashMes').innerHTML =
     cardHTML('Faturamento', brl(m.fat), '', '') .replace('</div></div>', '</div>' + (ant.fat > 0 ? '<div class="sub">' + deltaHTML(m.fat, ant.fat) + '</div>' : '') + '</div>') +
@@ -5481,12 +5485,12 @@ function renderDashboard(){
   $('dashSituacao').innerHTML = cardHTML('Vendido hoje', brl(rHoje.fat), rHoje.pedidos + ' pedido(s)') + cardHTML('Recebido hoje', brl(soma(Object.values(recebidoPorForma(hoje)))), '') +
     cardHTML('A receber (total)', brl(pend), pedidosPendentes().length + ' pedido(s) pendente(s)', pend > 0 ? 'laranja' : '') + cardHTML('Custos fixos estimados', brl(custosFixosMensais()), 'por mês') +
     cardHTML('Teto MEI usado', fmt(limite > 0 ? ano / limite * 100 : 0, 1) + '%', brl(ano) + ' de ' + brl(limite), ano / limite >= 0.9 ? 'vermelho' : '');
-  const pe = pontoEquilibrio();
+  const pe = pontoEquilibrio(mes);
   if(pe.fixos <= 0) $('dashPE').innerHTML = '<div class="aviso">📌 Cadastre seus <b>custos fixos mensais</b> (aba Custos) para ver o ponto de equilíbrio: quanto precisa vender no mês para cobrir os custos.</div>';
   else if(!pe.pe) $('dashPE').innerHTML = '<div class="aviso alerta-a">Não foi possível calcular o ponto de equilíbrio: defina preços nas fichas (margem de contribuição precisa ser positiva).</div>';
   else{
     const p = pe.fat / pe.pe * 100;
-    $('dashPE').innerHTML = '<h3>⚖️ Ponto de equilíbrio do mês</h3><div class="linha-kv"><span>Faturamento necessário para cobrir ' + brl(pe.fixos) + ' de custos fixos</span><b>' + brl(pe.pe) + '</b></div><div class="barra ' + (p >= 100 ? '' : 'laranja') + '"><i style="width:' + Math.min(100, p) + '%"></i></div><p class="pequeno-txt suave">' + (p >= 100 ? '🎉 Você já passou do ponto de equilíbrio: cada venda a mais é lucro.' : 'Você faturou ' + brl(pe.fat) + ' (' + fmt(p, 0) + '%). Faltam ' + brl(pe.pe - pe.fat) + '.') + ' Base: ' + esc(pe.fonte) + ' (' + fmt(pe.mc * 100, 1) + '% de margem de contribuição).</p>';
+    $('dashPE').innerHTML = '<h3>⚖️ Ponto de equilíbrio de ' + fmtMes(mes) + '</h3><div class="linha-kv"><span>Faturamento necessário para cobrir ' + brl(pe.fixos) + ' de custos fixos</span><b>' + brl(pe.pe) + '</b></div><div class="barra ' + (p >= 100 ? '' : 'laranja') + '"><i style="width:' + Math.min(100, p) + '%"></i></div><p class="pequeno-txt suave">' + (p >= 100 ? '🎉 Você já passou do ponto de equilíbrio: cada venda a mais é lucro.' : 'Você faturou ' + brl(pe.fat) + ' (' + fmt(p, 0) + '%). Faltam ' + brl(pe.pe - pe.fat) + '.') + ' Base: ' + esc(pe.fonte) + ' (' + fmt(pe.mc * 100, 1) + '% de margem de contribuição).</p>';
   }
   // gráficos
   const dias = []; for(let i = 13; i >= 0; i--){ const d = new Date(); d.setDate(d.getDate() - i); const s = dataLocal(d); dias.push({rot: s.slice(8), v: soma(BD.vendas.filter(v => v.data === s), v => v.valorTotal), hoje: i === 0}); }
@@ -5507,7 +5511,9 @@ function renderDashboard(){
   $('topLucrativos').innerHTML = lista(Array.from(agr.entries()).filter(a => a[1].lucro > 0).sort((a, b) => b[1].lucro - a[1].lucro).slice(0, 5), x => x.lucro, brl);
   // pendências
   const diag = diagnosticar().filter(d => d.n !== 'info').slice(0, 4);
-  $('dashPendencias').innerHTML = diag.length ? '<div class="painel"><h2>🩺 Pendências no cadastro</h2>' + diag.map(diagHTML).join('') + '<button class="btn cinza pequeno" onclick="irPara(\'dados\')">Ver diagnóstico completo</button></div>' : '';
+  $('dashPendencias').innerHTML = !diag.length ? '' :
+    '<button class="btn ' + (DASH_PEND_ABERTO ? 'cinza' : 'laranja') + ' pequeno" type="button" onclick="alternarPendenciasDash()" style="margin-bottom:10px">🩺 ' + diag.length + ' pendência(s) no cadastro ' + (DASH_PEND_ABERTO ? '▲ ocultar' : '▼ ver') + '</button>' +
+    (DASH_PEND_ABERTO ? '<div class="painel">' + diag.map(diagHTML).join('') + '<button class="btn cinza pequeno" onclick="irPara(\'dados\')">Ver diagnóstico completo</button></div>' : '');
 }
 
 /* ---------- diagnóstico ---------- */
