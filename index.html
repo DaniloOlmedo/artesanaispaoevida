@@ -193,6 +193,9 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 .modal .rodape{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 .modal .rodape .btn{margin-top:0}
 #toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:column;gap:8px;align-items:center;width:min(92vw,520px);pointer-events:none}
+.botao-flutuante-inicio{position:fixed;right:16px;bottom:16px;z-index:300;width:52px;height:52px;border-radius:50%;border:none;background:var(--verde);color:#fff;font-size:1.4rem;box-shadow:var(--sombra);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.botao-flutuante-inicio:hover{background:var(--verde2)}
+@media(min-width:700px){.botao-flutuante-inicio{width:60px;height:60px;font-size:1.6rem;right:22px;bottom:22px}}
 .toast{pointer-events:auto;background:#1f2a25;color:#fff;padding:11px 16px;border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:.92rem;display:flex;gap:12px;align-items:center;width:100%;justify-content:space-between}
 .toast.erro-t{background:#b71c1c}.toast.ok-t{background:#1b5e20}.toast.alerta-t{background:#8a5300}
 .toast button{width:auto;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer}
@@ -206,6 +209,7 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 .etiqueta-prev .etq-produto{text-align:center;font-weight:bold;font-size:1.05rem;margin-bottom:6px;line-height:1.3}
 .etiqueta-prev .etq-linha{border-bottom:1px dashed #999;margin:4px 0}
 .etiqueta-prev .etq-kv{display:flex;justify-content:space-between;font-size:.85rem;padding:1px 0}
+.etiqueta-prev .etq-ingred{font-size:.68rem;line-height:1.3;margin-top:4px;border-top:1px dashed #999;padding-top:4px}
 .nutri-quadro{background:#fff;color:#111;border:2px solid #111;padding:8px 10px 6px;font-family:Arial,Helvetica,sans-serif;font-size:.86rem;max-width:420px}
 .nutri-quadro h4{margin:0 0 2px;font-size:1.05rem;font-weight:800}
 .nutri-quadro p{margin:0;font-size:.78rem;line-height:1.3}
@@ -229,6 +233,7 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
   .comanda-impressao .etq-produto{text-align:center;font-size:18px;font-weight:bold;margin:4px 0;line-height:1.3}
   .comanda-impressao .etq-linha{border-bottom:2px dashed #666;margin:4px 0}
   .comanda-impressao .etq-kv{display:flex;justify-content:space-between;font-size:13px;font-weight:bold;padding:1px 0}
+  .comanda-impressao .etq-ingred{font-size:10px;font-weight:normal;line-height:1.3;margin-top:4px;border-top:1px dashed #666;padding-top:4px}
   .comanda-impressao .marca{text-align:center;font-size:14px;font-weight:bold;margin-bottom:3px}
   .comanda-impressao .senha-c{text-align:center;font-size:36px;font-weight:bold;line-height:1.1;margin:3px 0}
   .comanda-impressao .data-hora{text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px}
@@ -1007,6 +1012,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       <div><input type="text" id="etqNovoSabor" placeholder="Novo sabor... Ex: Copa Lombo" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarSaborEtiqueta();}"></div>
       <button class="btn cinza" type="button" onclick="adicionarSaborEtiqueta()">+ Sabor</button>
     </div>
+    <div class="dica">🔗 Clique num sabor acima (depois de cadastrado) pra vincular a ficha dele — os ingredientes entram sozinhos na etiqueta.</div>
     <div class="bloco-calc">
       <div><label for="etqUnidade">Quantidade</label>
         <div class="qtd-ctl"><button type="button" onclick="alterarQtdEtiqueta(-1)" aria-label="Diminuir">−</button><b id="etqQtdVal">1</b><button type="button" onclick="alterarQtdEtiqueta(1)" aria-label="Aumentar">+</button></div></div>
@@ -1063,6 +1069,11 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
       </div>
       <div><label for="nutriNome">Nome da receita</label><input type="text" id="nutriNome" maxlength="40" placeholder="Ex: Empanada de frango"></div>
     </div>
+    <div class="linha-form" style="grid-template-columns:2fr auto">
+      <div><label for="nutriFichaLink">Ficha vinculada (opcional)</label><select id="nutriFichaLink"></select></div>
+      <div class="fixo"><label>&nbsp;</label><button class="btn cinza pequeno" type="button" onclick="importarIngredientesFichaNutri()">📥 Importar ingredientes da ficha</button></div>
+    </div>
+    <div class="dica">Vincule a ficha desse sabor/tipo e clique em "Importar" pra trazer os ingredientes e os pesos direto da ficha, sem digitar tudo de novo. Dá pra importar quantas vezes quiser — sempre substitui a lista atual pela da ficha.</div>
     <h3>Ingredientes da receita <span id="nutriSomaTxt" class="suave"></span></h3>
     <div id="nutriLinhas"></div>
     <button class="btn cinza" type="button" onclick="adicionarLinhaNutri()">+ Adicionar ingrediente</button>
@@ -1329,6 +1340,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 <div id="totemRoot" class="oculto"><div id="totemTela"></div><div id="ttIdle" class="tt-idle oculto"><div><h2>Ainda está aí?</h2><p>Seu pedido será cancelado em <b id="ttIdleSeg">10</b> segundos.</p><button class="tt-btn grande" onclick="totemAtividade()">👍 Continuar pedindo</button></div></div></div>
 <div id="painelRoot" class="oculto"></div>
 <div id="toasts" aria-live="polite"></div>
+<button id="btnFlutuanteInicio" class="botao-flutuante-inicio oculto" type="button" onclick="irPara('inicio')" title="Voltar ao Início" aria-label="Voltar ao Início">🏠</button>
 <div id="areaImpressao" class="comanda-impressao"></div>
 <div id="areaRelatorio"></div>
 
@@ -4752,11 +4764,25 @@ function renderSaboresEtiqueta(){
     ETQ_SABOR = null;
   }else{
     if(!ETQ_SABOR || !sabores.some(s => s.id === ETQ_SABOR)) ETQ_SABOR = sabores[0].id;
-    $('etqSabores').innerHTML = sabores.map(s => '<button type="button" class="tt-chip' + (s.id === ETQ_SABOR ? ' on' : '') + '" onclick="selecionarSaborEtiqueta(\'' + s.id + '\')">' + esc(s.nome) + ' <span onclick="event.stopPropagation();removerSaborEtiqueta(\'' + s.id + '\')" title="Remover sabor" style="opacity:.7">✕</span></button>').join('');
+    $('etqSabores').innerHTML = sabores.map(s => '<button type="button" class="tt-chip' + (s.id === ETQ_SABOR ? ' on' : '') + '" onclick="selecionarSaborEtiqueta(\'' + s.id + '\')">' + esc(s.nome) +
+      ' <span onclick="event.stopPropagation();vincularFichaSabor(\'' + s.id + '\')" title="' + (s.fichaId ? 'Ficha vinculada — clique pra trocar' : 'Vincular a uma ficha (puxa os ingredientes pra etiqueta)') + '" style="opacity:' + (s.fichaId ? '1' : '.6') + '">🔗</span>' +
+      ' <span onclick="event.stopPropagation();removerSaborEtiqueta(\'' + s.id + '\')" title="Remover sabor" style="opacity:.7">✕</span></button>').join('');
   }
   atualizarPreviaEtiqueta();
 }
 function selecionarSaborEtiqueta(id){ ETQ_SABOR = id; renderSaboresEtiqueta(); }
+function vincularFichaSabor(id){
+  const s = BD.etiquetaSabores.find(x => x.id === id); if(!s) return;
+  const opcoes = [{v: '', t: '(nenhuma — não mostra ingredientes na etiqueta)'}].concat(
+    BD.fichas.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(f => ({v: f.id, t: f.nome}))
+  );
+  formModal({titulo: 'Vincular ficha — ' + s.nome, campos: [
+    {id: 'fichaId', rotulo: 'Ficha (puxa os ingredientes pra etiqueta)', tipo: 'select', valor: s.fichaId || '', opcoes}
+  ], salvar: v => {
+    s.fichaId = v.fichaId || null; salvar('etiquetaSabores'); renderSaboresEtiqueta();
+    toast(s.fichaId ? 'Ficha vinculada.' : 'Vínculo removido.', 'ok');
+  }});
+}
 function adicionarSaborEtiqueta(){
   const nome = $('etqNovoSabor').value.trim(); if(!nome) return;
   if(BD.etiquetaSabores.some(s => s.tipo === ETQ_TIPO && norm(s.nome) === norm(nome))) return toast('Esse sabor já existe.', 'erro');
@@ -4795,25 +4821,34 @@ function dadosEtiquetaAtual(){
   const validadeEm = $('etqValidadeTxt').dataset.validade || produzidoEm;
   return {tipo: ETQ_TIPO, sabor, quantidade: ETQ_QTD, unidade, produzidoEm, validadeEm};
 }
+function ingredientesDeFichaTxt(fichaId){
+  const f = fichaId && BD.fichas.find(x => x.id === fichaId);
+  if(!f || !f.itens || !f.itens.length) return '';
+  return f.itens.slice().sort((a, b) => (b.qtdGramas || 0) - (a.qtdGramas || 0)).map(it => it.nome).filter(Boolean).join(', ');
+}
 function textoEtiqueta(d, lote){
   const un = d.unidade === 'unidade' ? (d.quantidade > 1 ? 'unidades' : 'unidade') : (d.quantidade > 1 ? 'pacotes' : 'pacote');
+  const ing = d.sabor && d.sabor.fichaId ? ingredientesDeFichaTxt(d.sabor.fichaId) : '';
   return nomeNegocio().toUpperCase() + '\n' +
     tipoEtiquetaEmoji(d.tipo) + ' ' + tipoEtiquetaLabel(d.tipo).toUpperCase() + (d.sabor ? ' - ' + d.sabor.nome.toUpperCase() : '') + '\n' +
     'Lote: ' + lote + '\n' +
     'Qtd: ' + d.quantidade + ' ' + un + '\n' +
     'Produzido: ' + fmtData(d.produzidoEm) + '\n' +
-    'Validade: ' + fmtData(d.validadeEm);
+    'Validade: ' + fmtData(d.validadeEm) +
+    (ing ? '\nIngredientes: ' + ing + '.' : '');
 }
 function etiquetaHTML(d, lote){
   const un = d.unidade === 'unidade' ? (d.quantidade > 1 ? 'unidades' : 'unidade') : (d.quantidade > 1 ? 'pacotes' : 'pacote');
   const saborNome = d.sabor ? (d.sabor.nome || d.sabor) : '';
+  const ing = d.sabor && d.sabor.fichaId ? ingredientesDeFichaTxt(d.sabor.fichaId) : '';
   return '<div class="etq-marca">' + esc(nomeNegocio().toUpperCase()) + '</div>' +
     '<div class="etq-produto">' + tipoEtiquetaEmoji(d.tipo) + ' ' + esc(tipoEtiquetaLabel(d.tipo).toUpperCase()) + (saborNome ? '<br>' + esc(String(saborNome).toUpperCase()) : '') + '</div>' +
     '<div class="etq-linha"></div>' +
     '<div class="etq-kv"><span>Lote</span><b>' + esc(lote) + '</b></div>' +
     '<div class="etq-kv"><span>Qtd</span><b>' + d.quantidade + ' ' + un + '</b></div>' +
     '<div class="etq-kv"><span>Produzido</span><b>' + fmtData(d.produzidoEm) + '</b></div>' +
-    '<div class="etq-kv"><span>Validade</span><b>' + fmtData(d.validadeEm) + '</b></div>';
+    '<div class="etq-kv"><span>Validade</span><b>' + fmtData(d.validadeEm) + '</b></div>' +
+    (ing ? '<div class="etq-ingred">Ingredientes: ' + esc(ing) + '.</div>' : '');
 }
 function atualizarPreviaEtiqueta(){
   const d = dadosEtiquetaAtual();
@@ -4891,14 +4926,47 @@ async function excluirLoteEtiqueta(id){
 }
 function reimprimirLoteEtiqueta(id){
   const l = BD.etiquetaLotes.find(x => x.id === id); if(!l) return;
-  const html = etiquetaHTML({tipo: l.tipo, sabor: {nome: l.sabor}, quantidade: l.quantidade, unidade: l.unidade, produzidoEm: l.produzidoEm, validadeEm: l.validadeEm}, l.lote);
+  const saborAtual = (l.saborId && BD.etiquetaSabores.find(s => s.id === l.saborId)) || {nome: l.sabor};
+  const html = etiquetaHTML({tipo: l.tipo, sabor: saborAtual, quantidade: l.quantidade, unidade: l.unidade, produzidoEm: l.produzidoEm, validadeEm: l.validadeEm}, l.lote);
   imprimirEtiquetaHTML(html, l.tamanhoPapel || '80');
 }
 function nutriIngById(id){ return BD.nutriIngredientes.find(i => i.id === id); }
+function nutriIngPorNome(nome){
+  const n = norm(nome); if(!n) return null;
+  return BD.nutriIngredientes.find(i => norm(i.nome) === n) || null;
+}
+function renderFichaLinkNutri(selecionado){
+  const sel = $('nutriFichaLink'); if(!sel) return;
+  const fichas = BD.fichas.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  sel.innerHTML = '<option value="">(nenhuma)</option>' + fichas.map(f => '<option value="' + f.id + '"' + (f.id === (selecionado || '') ? ' selected' : '') + '>' + esc(f.nome) + '</option>').join('');
+}
+async function importarIngredientesFichaNutri(){
+  const fichaId = $('nutriFichaLink') ? $('nutriFichaLink').value : '';
+  if(!fichaId) return toast('Escolha uma ficha para importar.', 'alerta');
+  const f = BD.fichas.find(x => x.id === fichaId);
+  if(!f || !f.itens || !f.itens.length) return toast('Essa ficha não tem ingredientes cadastrados.', 'erro');
+  const temConteudo = NUTRI_ROWS.some(r => r.ing || parseNum(r.g, 0));
+  if(temConteudo && !await confirmar('Isso substitui os ingredientes já preenchidos nesta receita pelos da ficha "' + f.nome + '". Continuar?')) return;
+  let achados = 0, naoAchados = 0;
+  const itens = f.itens.slice().sort((a, b) => (b.qtdGramas || 0) - (a.qtdGramas || 0));
+  NUTRI_ROWS = itens.filter(it => (it.qtdGramas || 0) > 0).map(it => {
+    const ing = nutriIngPorNome(it.nome);
+    if(ing) achados++; else naoAchados++;
+    return {ing: ing ? ing.id : '', g: String(it.qtdGramas || 0)};
+  });
+  if(!NUTRI_ROWS.length) NUTRI_ROWS = [{ing: '', g: ''}];
+  if(!$('nutriPesoFinal').value){
+    const soma = itens.reduce((s, it) => s + (it.qtdGramas || 0), 0);
+    if(soma) $('nutriPesoFinal').value = soma;
+  }
+  renderLinhasNutri(); renderResultadoNutri();
+  toast('Importado da ficha "' + f.nome + '": ' + achados + ' ingrediente(s) reconhecido(s)' + (naoAchados ? ', ' + naoAchados + ' sem cadastro nutricional ainda — escolha manualmente na lista ou cadastre em "Ingredientes"' : '') + '.', naoAchados ? 'alerta' : 'ok', {ms: 8000});
+}
 function renderNutricional(){
   renderAbasNutri();
   renderTipoNutri();
   renderSelReceitaNutri();
+  renderFichaLinkNutri(NUTRI_REC && BD.nutriReceitas.find(x => x.id === NUTRI_REC) ? BD.nutriReceitas.find(x => x.id === NUTRI_REC).fichaId : '');
   renderLinhasNutri();
   renderResultadoNutri();
   renderListaIngNutri();
@@ -5056,12 +5124,12 @@ function carregarReceitaNutri(id){
   $('nutriNome').value = r.nome || '';
   NUTRI_ROWS = (r.rows && r.rows.length ? r.rows : [{ing: '', g: ''}]).map(x => ({ing: x.ing || '', g: x.g == null ? '' : String(x.g)}));
   $('nutriPesoFinal').value = r.pesoFinal || ''; $('nutriPorcao').value = r.porcao || ''; $('nutriMedida').value = r.medida || ''; $('nutriPacote').value = r.pacote || '';
-  renderTipoNutri(); renderLinhasNutri(); renderResultadoNutri(); renderSelReceitaNutri();
+  renderTipoNutri(); renderFichaLinkNutri(r.fichaId || ''); renderLinhasNutri(); renderResultadoNutri(); renderSelReceitaNutri();
 }
 function novaReceitaNutri(){
   NUTRI_REC = null; NUTRI_ROWS = [{ing: '', g: ''}]; NUTRI_TIPO = 'empanada';
   $('nutriNome').value = ''; $('nutriPesoFinal').value = ''; $('nutriPorcao').value = ''; $('nutriMedida').value = ''; $('nutriPacote').value = '';
-  renderTipoNutri(); renderLinhasNutri(); renderResultadoNutri(); renderSelReceitaNutri();
+  renderTipoNutri(); renderFichaLinkNutri(''); renderLinhasNutri(); renderResultadoNutri(); renderSelReceitaNutri();
 }
 function salvarReceitaNutri(){
   const nome = $('nutriNome').value.replace(/\s+/g, ' ').trim();
@@ -5074,7 +5142,8 @@ function salvarReceitaNutri(){
     pesoFinal: parseNum($('nutriPesoFinal').value, 0) || null,
     porcao: parseNum($('nutriPorcao').value, 0) || null,
     medida: ($('nutriMedida').value || '').trim(),
-    pacote: parseNum($('nutriPacote').value, 0) || null
+    pacote: parseNum($('nutriPacote').value, 0) || null,
+    fichaId: ($('nutriFichaLink') && $('nutriFichaLink').value) || null
   });
   NUTRI_REC = r.id; salvar('nutriReceitas'); renderSelReceitaNutri();
   toast('Receita "' + nome + '" salva.', 'ok');
@@ -6753,6 +6822,7 @@ function irPara(id){
     const on = b.dataset.p === id; b.classList.toggle('ativo', on);
     if(on && b.scrollIntoView) b.scrollIntoView({block: 'nearest', inline: 'center'});
   });
+  if($('btnFlutuanteInicio')) $('btnFlutuanteInicio').classList.toggle('oculto', id === 'inicio');
   if(location.hash !== '#' + id){ try{ history.replaceState(null, '', '#' + id); }catch(e){} }
   renderPagina(id);
   window.scrollTo(0, 0);
