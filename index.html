@@ -475,6 +475,7 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <h2>💳 Situação financeira</h2>
     <div class="grade" id="dashSituacao"></div>
     <div id="dashPE"></div>
+    <div id="dashProLabore"></div>
   </div>
   <div class="painel">
     <h2>📈 Movimento</h2>
@@ -833,6 +834,11 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
         <div><label for="tempoPreparo">⏱ Tempo de preparo (min por unidade)</label><input type="number" id="tempoPreparo" step="0.5" min="0" inputmode="decimal" oninput="recalcularFichaAtual()"><div class="dica">Vazio = usa o padrão (Custos → Totem). Alimenta a previsão de espera.</div></div>
         <div><label class="linha" style="margin-top:26px"><input type="checkbox" id="fichaTotem" onchange="recalcularFichaAtual()"> Mostrar no totem</label><label class="linha"><input type="checkbox" id="fichaSugerir" onchange="recalcularFichaAtual()"> Sugerir como complemento no totem</label></div>
       </div>
+
+      <h3>📝 Modo de preparo</h3>
+      <div class="aviso">Anotações só para referência sua (tempo de forno, tempo de descanso/fermentação, temperatura, ordem dos passos...). Não entra no cálculo de custo nem aparece para o cliente.</div>
+      <textarea id="fichaModoPreparo" rows="4" placeholder="Ex: Deixar a massa descansar 1h. Assar a 220°C por 25 min, virando na metade do tempo." oninput="salvarModoPreparoFicha()" style="width:100%"></textarea>
+
       <div class="resultado" id="resultadoFicha"></div>
       <div class="bloco-calc">
         <div><label for="precoPraticado">💲 Preço praticado (o que você cobra) R$</label><input type="number" id="precoPraticado" step="0.01" inputmode="decimal" oninput="mudarPrecoPraticado()"></div>
@@ -2176,7 +2182,8 @@ function usosDoInsumo(ins){
 /* =====================================================================
    CUSTOS, TAXAS, PREFERÊNCIAS, DESPESAS  e  INSUMOS
    ===================================================================== */
-const CAT_DESPESA = ['Combustível/Transporte', 'Feira/Barraca', 'Equipamento', 'Insumos avulsos', 'Moradia', 'Pessoal', 'Impostos/MEI', 'Outros'];
+const CAT_DESPESA = ['Combustível/Transporte', 'Feira/Barraca', 'Equipamento', 'Insumos avulsos', 'Moradia', 'Pessoal', 'Retirada/Pró-labore', 'Impostos/MEI', 'Outros'];
+const CAT_PROLABORE = 'Retirada/Pró-labore';
 
 /* ---------- custos fixos ---------- */
 function adicionarCusto(){
@@ -2457,7 +2464,7 @@ async function criarFicha(){
   let f = BD.fichas.find(x => norm(x.nome) === norm(nome));
   if(!f){
     f = {id: uid(), nome, itens: [], qtdPorcao: 1, custoFixo: 0, perdaPerc: 0, markupDesejado: null, precoPraticado: 0,
-      componentes: [], embalagemViagem: [], embalagemLocal: [], ativo: true, custoUnitario: 0, precoSugerido: 0, margemReal: 0, categoria: inferirCategoria(nome)};
+      componentes: [], embalagemViagem: [], embalagemLocal: [], ativo: true, custoUnitario: 0, precoSugerido: 0, margemReal: 0, categoria: inferirCategoria(nome), modoPreparo: ''};
     BD.fichas.push(f); salvar('fichas');
     toast('Ficha criada. Adicione os ingredientes.', 'ok');
   }
@@ -2467,7 +2474,7 @@ async function criarFicha(){
 /* ---------- assistente: fichas de massa congelada (combos) + panuozzo, a partir de uma receita de Massa já publicada como insumo ---------- */
 function novaFichaBase(nome, categoria){
   return {id: uid(), nome, itens: [], qtdPorcao: 1, custoFixo: 0, perdaPerc: 0, markupDesejado: null, precoPraticado: 0,
-    componentes: [], embalagemViagem: [], embalagemLocal: [], ativo: true, custoUnitario: 0, precoSugerido: 0, margemReal: 0, categoria: categoria || 'Pizza Pré-assada'};
+    componentes: [], embalagemViagem: [], embalagemLocal: [], ativo: true, custoUnitario: 0, precoSugerido: 0, margemReal: 0, categoria: categoria || 'Pizza Pré-assada', modoPreparo: ''};
 }
 function candidatasMassaInsumo(){
   return BD.formulasMassa.filter(m => m.sinc).map(m => { const ins = achaInsumoDerivado('massa', m.id); return ins ? {m, ins} : null; }).filter(Boolean);
@@ -2564,7 +2571,12 @@ function renderFichas(){
   $('fichaTotem').checked = f.totem !== false; $('fichaSugerir').checked = !!f.sugerir;
   $('precoPraticado').value = f.precoPraticado || '';
   atualizarDatalistCategorias(); $('fichaCategoria').value = f.categoria || '';
+  $('fichaModoPreparo').value = f.modoPreparo || '';
   renderSeletoresEmbalagem(); renderCorpoFicha(f);
+}
+function salvarModoPreparoFicha(){
+  const f = fichaObj(); if(!f) return;
+  f.modoPreparo = $('fichaModoPreparo').value; salvar('fichas');
 }
 function salvarCategoriaFicha(){
   const f = fichaObj(); if(!f) return;
@@ -5725,6 +5737,16 @@ function pontoEquilibrio(mes){
   }
   return {fixos, mc, fonte, pe: (fixos > 0 && mc > 0) ? fixos / mc : null, fat: m.fat};
 }
+const FATOR_RESERVA_RETIRADA = 0.7; // retira no máximo 70% do lucro do mês, guarda 30% de reserva
+function limiteRetiradaSegura(mes){
+  const m = resultadoMes(mes);
+  const jaRetirado = soma(BD.despesas.filter(d => (d.data || '').startsWith(mes) && d.categoria === CAT_PROLABORE), d => d.valor);
+  const liquidoAntesRetirada = m.liquido + jaRetirado; // o líquido do mês já descontou a retirada lançada como despesa
+  const reservaContasPagar = soma(BD.contasPagar.filter(c => !c.pago), c => c.valor);
+  const disponivel = Math.max(0, liquidoAntesRetirada - reservaContasPagar);
+  const limite = disponivel * FATOR_RESERVA_RETIRADA;
+  return {liquidoAntesRetirada, reservaContasPagar, disponivel, limite, jaRetirado, aindaPode: Math.max(0, limite - jaRetirado), sangrando: jaRetirado > limite};
+}
 let DASH_PEND_ABERTO = false;
 function alternarPendenciasDash(){ DASH_PEND_ABERTO = !DASH_PEND_ABERTO; renderDashboard(); }
 function renderDashboard(){
@@ -5756,6 +5778,17 @@ function renderDashboard(){
     const p = pe.fat / pe.pe * 100;
     $('dashPE').innerHTML = '<h3>⚖️ Ponto de equilíbrio de ' + fmtMes(mes) + '</h3><div class="linha-kv"><span>Faturamento necessário para cobrir ' + brl(pe.fixos) + ' de custos fixos</span><b>' + brl(pe.pe) + '</b></div><div class="barra ' + (p >= 100 ? '' : 'laranja') + '"><i style="width:' + Math.min(100, p) + '%"></i></div><p class="pequeno-txt suave">' + (p >= 100 ? '🎉 Você já passou do ponto de equilíbrio: cada venda a mais é lucro.' : 'Você faturou ' + brl(pe.fat) + ' (' + fmt(p, 0) + '%). Faltam ' + brl(pe.pe - pe.fat) + '.') + ' Base: ' + esc(pe.fonte) + ' (' + fmt(pe.mc * 100, 1) + '% de margem de contribuição).</p>';
   }
+  const rl = limiteRetiradaSegura(mes);
+  const barraRl = rl.limite > 0 ? Math.min(100, rl.jaRetirado / rl.limite * 100) : (rl.jaRetirado > 0 ? 100 : 0);
+  $('dashProLabore').innerHTML = '<h3>🧑‍🍳 Pró-labore — quanto dá pra retirar de ' + fmtMes(mes) + '</h3>' +
+    '<div class="linha-kv"><span>Lucro do mês antes da retirada</span><b>' + brl(rl.liquidoAntesRetirada) + '</b></div>' +
+    '<div class="linha-kv"><span>(−) Reserva p/ contas a pagar em aberto</span><b>' + brl(rl.reservaContasPagar) + '</b></div>' +
+    '<div class="linha-kv"><span>Limite seguro de retirada (' + fmt(FATOR_RESERVA_RETIRADA * 100, 0) + '% do que sobra)</span><b>' + brl(rl.limite) + '</b></div>' +
+    '<div class="linha-kv"><span>Já retirado este mês</span><b class="' + (rl.sangrando ? 'erro' : '') + '">' + brl(rl.jaRetirado) + '</b></div>' +
+    '<div class="barra ' + (rl.sangrando ? 'vermelho' : '') + '"><i style="width:' + barraRl + '%"></i></div>' +
+    (rl.sangrando
+      ? '<div class="aviso alerta-a">⚠️ Você já retirou ' + brl(rl.jaRetirado - rl.limite) + ' além do limite seguro este mês. Isso está sangrando o caixa da empresa — ou tem contas a pagar que podem atrasar.</div>'
+      : '<p class="pequeno-txt suave">Ainda pode retirar com segurança: <b>' + brl(rl.aindaPode) + '</b>. Lance cada retirada em Despesas, categoria "' + CAT_PROLABORE + '", pra esse cálculo ficar sempre atualizado.</p>');
   // gráficos
   const dias = []; for(let i = 13; i >= 0; i--){ const d = new Date(); d.setDate(d.getDate() - i); const s = dataLocal(d); dias.push({rot: s.slice(8), v: soma(BD.vendas.filter(v => v.data === s), v => v.valorTotal), hoje: i === 0}); }
   const linhasMes = BD.vendas.filter(v => (v.data || '').startsWith(mes));
