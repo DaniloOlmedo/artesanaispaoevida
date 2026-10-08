@@ -729,6 +729,24 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
   </div>
 
   <div class="painel">
+    <div class="cab-painel"><h2>💳 Conferência do cartão</h2></div>
+    <div class="aviso">Confere se a taxa que a maquininha realmente descontou bate com a taxa configurada em "Custos". Escolha o período e a forma, e informe o valor que caiu de fato na conta (do extrato do Santander/Infinipay).</div>
+    <div class="bloco-calc">
+      <div><label for="ccForma">Maquininha / forma</label><select id="ccForma" onchange="renderConferenciaCartao()"><option value="debito">💳 Débito — Get Net</option><option value="credito">💳 Crédito — Infinit Pay</option></select></div>
+      <div><label for="ccDe">De</label><input type="date" id="ccDe" onchange="renderConferenciaCartao()"></div>
+      <div><label for="ccAte">Até</label><input type="date" id="ccAte" onchange="renderConferenciaCartao()"></div>
+      <div><label for="ccRecebido">Valor que caiu na conta (R$)</label><input type="number" step="0.01" id="ccRecebido" inputmode="decimal" oninput="renderConferenciaCartao()"></div>
+    </div>
+    <div class="resultado" id="ccResultado"></div>
+    <div class="flex-linha" style="margin-top:8px">
+      <div style="flex:3"><label for="ccObs">Observação</label><input type="text" id="ccObs" placeholder="Ex: extrato de 01 a 07/10"></div>
+      <div class="fixo"><button class="btn" type="button" onclick="salvarConferenciaCartao()">💾 Salvar conferência</button></div>
+    </div>
+    <h3>Histórico de conferências</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Período</th><th>Maquininha</th><th class="n">Vendido</th><th class="n">Taxa esperada</th><th class="n">Líquido esperado</th><th class="n">Caiu na conta</th><th class="n">Diferença</th><th>Obs.</th><th></th></tr></thead><tbody id="tabelaConferenciasCartao"></tbody></table></div>
+  </div>
+
+  <div class="painel">
     <div class="cab-painel"><h2>📅 Resumo mensal — resultado real</h2>
       <div><input type="month" id="mesResumo" style="width:auto" onchange="renderResumoMensal()" aria-label="Mês do resumo"></div></div>
     <div class="resultado" id="resumoMensal"></div>
@@ -1535,10 +1553,10 @@ const CHAVES = {
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
   config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores', clientes:'clientes',
   etiquetaSabores:'etiquetaSabores', etiquetaLotes:'etiquetaLotes',
-  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas', contasPagar:'contasPagar'
+  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas', contasPagar:'contasPagar', conferenciasCartao:'conferenciasCartao'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[]};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
   valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem', rodapeComanda:'',
@@ -1563,7 +1581,7 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0, categoria:'Bebidas'},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0, categoria:'Bebidas'}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[]};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
@@ -1835,7 +1853,7 @@ function acharInsumo(ref){ // ref: {insumoId, nome}
   return acharInsumoPorNome(ref.nome);
 }
 function normalizarBD(){
-  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar'];
+  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao'];
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
@@ -1843,11 +1861,12 @@ function normalizarBD(){
   const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
-  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar'].forEach(k => {
+  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao'].forEach(k => {
     BD[k].forEach(x => { if(x && typeof x === 'object' && !x.id) x.id = uid(); });
   });
   BD.custos.forEach(c => { c.val = parseNum(c.val); });
   BD.contasPagar.forEach(c => { c.valor = parseNum(c.valor); if(c.pago === undefined) c.pago = false; });
+  BD.conferenciasCartao.forEach(c => { c.vendido = parseNum(c.vendido); c.percTaxa = parseNum(c.percTaxa); c.taxaValor = parseNum(c.taxaValor); c.esperado = parseNum(c.esperado); c.recebido = parseNum(c.recebido); c.diferenca = parseNum(c.diferenca); });
 
   // taxas
   const t = BD.taxas;
@@ -4255,9 +4274,74 @@ function renderCaixa(){
   $('tabelaCaixaPendentes').innerHTML = pend.length ? pend.map(p =>
     '<tr><td>' + fmtData(p.data) + '<br><small class="suave">' + esc(p.horario) + '</small></td><td>' + (p.senha ? '<span class="senha">' + p.senha + '</span>' : '—') + '</td><td>' + esc(p.cliente) + '</td><td>' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</td><td class="n"><b>' + brl(p.total) + '</b></td><td class="acoes"><button class="btn pequeno" onclick="receberPedido(\'' + p.pedidoId + '\')">💰 Receber</button>' + (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + p.pedidoId + '\')" aria-label="Avisar no WhatsApp">💬</button>' : '') + '</td></tr>'
   ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum pedido pendente. 👍</div></td></tr>';
-  renderProdutosDoDia(); renderResumoMensal(); renderMei(); atualizarBadges();
+  renderProdutosDoDia(); renderResumoMensal(); renderMei(); atualizarBadges(); renderConferenciaCartao(); renderConferenciasCartaoLista();
 }
 function cardHTML(titulo, valor, sub, cls){ return '<div class="card ' + (cls || '') + '"><h3>' + esc(titulo) + '</h3><div class="valor">' + valor + '</div>' + (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') + '</div>'; }
+/* ---------- Conferência do cartão: confere se a taxa descontada pela maquininha bate com a configurada ---------- */
+function vendidoPorFormaPeriodo(forma, di, df){
+  let total = 0;
+  BD.vendas.filter(v => v.pago !== false && recebidoData(v) >= di && recebidoData(v) <= df).forEach(v => {
+    pagamentosDaLinha(v).forEach(p => { if(p.forma === forma) total += p.valor; });
+  });
+  return r2(total);
+}
+function renderConferenciaCartao(){
+  if(!$('ccForma')) return;
+  if(!$('ccDe').value) $('ccDe').value = dataHoje();
+  if(!$('ccAte').value) $('ccAte').value = dataHoje();
+  const forma = $('ccForma').value, di = $('ccDe').value, df = $('ccAte').value;
+  const vendido = vendidoPorFormaPeriodo(forma, di, df);
+  const percTaxa = parseNum(BD.taxas[forma]);
+  const taxaValor = r2(vendido * percTaxa / 100);
+  const esperado = r2(vendido - taxaValor);
+  let html = '<div class="linha-kv"><span>Vendido no período (' + esc(rotForma[forma]) + ')</span><b>' + brl(vendido) + '</b></div>' +
+    '<div class="linha-kv"><span>Taxa configurada (' + fmtPerc(percTaxa) + ')</span><b class="laranja">− ' + brl(taxaValor) + '</b></div>' +
+    '<div class="linha-kv"><span>Líquido esperado na conta</span><b>' + brl(esperado) + '</b></div>';
+  const recTxt = $('ccRecebido').value.trim();
+  if(recTxt !== ''){
+    const recebido = parseNum(recTxt);
+    const dif = r2(recebido - esperado);
+    const cls = Math.abs(dif) < 0.01 ? 'ok' : (dif < 0 ? 'erro' : 'alerta');
+    const msg = Math.abs(dif) < 0.01 ? '✅ Bate certinho com a taxa configurada.' : (dif < 0 ? '⚠️ Caiu ' + brl(-dif) + ' a menos do que o esperado — a maquininha pode estar descontando uma taxa maior do que a configurada em Custos.' : 'ℹ️ Caiu ' + brl(dif) + ' a mais do que o esperado.');
+    html += '<div class="linha-kv"><span>Caiu na conta</span><b>' + brl(recebido) + '</b></div>' +
+      '<div class="linha-kv"><span>Diferença</span><b class="' + cls + '">' + (dif > 0 ? '+' : '') + brl(dif) + '</b></div>' +
+      '<p class="dica ' + cls + '">' + msg + '</p>';
+  }
+  $('ccResultado').innerHTML = html;
+}
+function salvarConferenciaCartao(){
+  const forma = $('ccForma').value, di = $('ccDe').value, df = $('ccAte').value;
+  if(!di || !df){ toast('Preencha o período.', 'alerta'); return; }
+  if(df < di){ toast('"Até" não pode ser antes de "De".', 'alerta'); return; }
+  const recebido = parseNum($('ccRecebido').value);
+  if(!(recebido > 0)){ toast('Informe o valor que caiu na conta.', 'alerta'); return; }
+  const vendido = vendidoPorFormaPeriodo(forma, di, df);
+  const percTaxa = parseNum(BD.taxas[forma]);
+  const taxaValor = r2(vendido * percTaxa / 100);
+  const esperado = r2(vendido - taxaValor);
+  BD.conferenciasCartao.unshift({id: uid(), forma, dataIni: di, dataFim: df, vendido, percTaxa, taxaValor, esperado, recebido, diferenca: r2(recebido - esperado), observacao: $('ccObs').value.trim(), criadoEm: new Date().toISOString()});
+  salvarAgora('conferenciasCartao');
+  $('ccRecebido').value = ''; $('ccObs').value = '';
+  renderConferenciaCartao(); renderConferenciasCartaoLista();
+  toast('Conferência salva.', 'ok');
+}
+function renderConferenciasCartaoLista(){
+  const tb = $('tabelaConferenciasCartao'); if(!tb) return;
+  const lista = (BD.conferenciasCartao || []).slice().sort((a, b) => (b.criadoEm || '').localeCompare(a.criadoEm || ''));
+  tb.innerHTML = lista.length ? lista.map(c => {
+    const dif = parseNum(c.diferenca);
+    const cls = Math.abs(dif) < 0.01 ? 'ok' : (dif < 0 ? 'erro' : 'alerta');
+    return '<tr><td>' + fmtData(c.dataIni) + (c.dataIni !== c.dataFim ? ' a ' + fmtData(c.dataFim) : '') + '</td><td>' + esc((rotForma[c.forma] || c.forma).replace(/^\S+\s/, '')) + '</td>' +
+      '<td class="n">' + brl(c.vendido) + '</td><td class="n">' + brl(c.taxaValor) + ' <small class="suave">(' + fmtPerc(c.percTaxa) + ')</small></td><td class="n">' + brl(c.esperado) + '</td><td class="n">' + brl(c.recebido) + '</td>' +
+      '<td class="n ' + cls + '"><b>' + (dif > 0 ? '+' : '') + brl(dif) + '</b></td><td>' + esc(c.observacao || '') + '</td>' +
+      '<td><button class="btn vermelho pequeno" onclick="excluirConferenciaCartao(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+  }).join('') : '<tr><td colspan="9"><div class="vazio">Nenhuma conferência salva ainda.</div></td></tr>';
+}
+function excluirConferenciaCartao(id){
+  BD.conferenciasCartao = BD.conferenciasCartao.filter(c => c.id !== id);
+  salvarAgora('conferenciasCartao'); renderConferenciasCartaoLista();
+  toast('Conferência removida.', 'ok');
+}
 function salvarConferencia(){
   const d = $('caixaData').value || dataHoje();
   const cx = BD.caixaDias[d] || (BD.caixaDias[d] = {});
@@ -5581,10 +5665,10 @@ function mesclarVendasArquivo(event){
    (o mesmo que "Mesclar vendas" já fazia manualmente) — fichas, insumos,
    estoque e configurações continuam só deste aparelho, como sempre.
    ===================================================================== */
-const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar'];
+const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao'];
 const SYNC_CHAVE_LS = 'syncConfig';
 let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null;
-const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, caixaDias: {}};
+const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}};
 
 function syncLerConfig(){ try{ return JSON.parse(localStorage.getItem(SYNC_CHAVE_LS)) || {}; }catch(e){ return {}; } }
 function syncGravarConfig(c){ try{ localStorage.setItem(SYNC_CHAVE_LS, JSON.stringify(c)); }catch(e){} }
