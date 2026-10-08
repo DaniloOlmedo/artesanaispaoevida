@@ -5673,8 +5673,14 @@ function syncAssinarColecoes(codigo){
     const unsub = ref.onSnapshot(snap => {
       let mudou = false; const tocados = [];
       snap.docChanges().forEach(ch => {
-        if(ch.type === 'removed') return;
-        const dados = ch.doc.data(); const id = ch.doc.id; const atualTxt = JSON.stringify(dados);
+        const id = ch.doc.id;
+        if(ch.type === 'removed'){
+          delete _syncUltimoEnviado[tipo][id];
+          if(tipo === 'caixaDias'){ if(BD.caixaDias[id] !== undefined){ delete BD.caixaDias[id]; mudou = true; } }
+          else{ const arr = BD[tipo]; const idx = arr.findIndex(x => String(x.id) === id); if(idx !== -1){ arr.splice(idx, 1); mudou = true; } }
+          return;
+        }
+        const dados = ch.doc.data(); const atualTxt = JSON.stringify(dados);
         if(_syncUltimoEnviado[tipo][id] === atualTxt) return; // já era o que enviamos
         tocados.push(id);
         if(tipo === 'caixaDias'){
@@ -5710,7 +5716,18 @@ function syncEmpurrarTudo(){
     lote.set(ref, dados, {merge: true}); n++;
     if(n >= 400){ lote.commit().catch(() => {}); lote = _syncDb.batch(); n = 0; }
   }
+  function del(ref){
+    lote.delete(ref); n++;
+    if(n >= 400){ lote.commit().catch(() => {}); lote = _syncDb.batch(); n = 0; }
+  }
   SYNC_TIPOS.forEach(tipo => {
+    // Itens que a gente já tinha enviado/recebido antes, mas que sumiram do BD local
+    // (excluídos aqui) precisam ser apagados também na nuvem — senão o próximo
+    // "pull" (ou outro aparelho sincronizando) traz o item de volta.
+    const idsAtuais = new Set((BD[tipo] || []).filter(it => it && it.id).map(it => String(it.id)));
+    Object.keys(_syncUltimoEnviado[tipo]).forEach(id => {
+      if(!idsAtuais.has(id)){ del(base.collection(tipo).doc(id)); delete _syncUltimoEnviado[tipo][id]; }
+    });
     (BD[tipo] || []).forEach(item => {
       if(!item || !item.id) return;
       const id = String(item.id), txt = JSON.stringify(item);
