@@ -4101,15 +4101,35 @@ function renderVendas(reset){
   $('resumoVendasPeriodo').innerHTML = '<h4>Resumo do filtro</h4><div class="linha-kv"><span>Pedidos / itens</span><b>' + pedidos.length + ' / ' + soma(linhas, l => l.quantidade) + '</b></div><div class="linha-kv"><span>Faturamento</span><b>' + brl(fat) + '</b></div><div class="linha-kv"><span>A receber (pendente)</span><b class="' + (pend > 0 ? 'alerta' : '') + '">' + brl(pend) + '</b></div><div class="linha-kv"><span>Lucro estimado (após custos e taxas)</span><b>' + brl(soma(linhas, lucroVenda)) + '</b></div>';
   $('senhaAtual').textContent = proximaSenha();
 }
+function atualizarRecebimentoDinheiro(total){
+  const formaEl = $('rp_forma'); if(!formaEl) return;
+  const dinheiro = formaEl.value === 'dinheiro';
+  const bloco = $('rp_blocoDinheiro'); if(bloco) bloco.classList.toggle('oculto', !dinheiro);
+  const trocoDiv = $('rp_troco'); if(!trocoDiv) return;
+  trocoDiv.className = ''; trocoDiv.innerHTML = '';
+  if(!dinheiro) return;
+  const rec = parseNum($('rp_recebido').value);
+  if(rec > 0){
+    if(rec + 1e-9 >= total){ trocoDiv.className = 'aviso ok-a'; trocoDiv.innerHTML = '💵 <b>Troco: ' + brl(r2(rec - total)) + '</b> (recebido ' + brl(rec) + ' − ' + brl(total) + ')'; }
+    else { trocoDiv.className = 'aviso erro-a'; trocoDiv.innerHTML = '⚠️ Faltam <b>' + brl(r2(total - rec)) + '</b> em dinheiro.'; }
+  }
+}
 function receberPedido(pid, formaPadrao, aoConcluir){
   const linhas = linhasDoPedido(pid); if(!linhas.length) return;
   const total = r2(soma(linhas, l => l.valorTotal));
-  formModal({titulo: 'Receber pagamento — ' + brl(total), aviso: (linhas[0].cliente ? esc(linhas[0].cliente) + ' • ' : '') + 'pedido de ' + fmtData(linhas[0].data), campos: [
-    {id: 'forma', rotulo: 'Forma de pagamento', tipo: 'select', valor: formaPadrao || 'pix', opcoes: FORMAS.map(f => ({v: f, t: rotForma[f]}))}
-  ], textoSalvar: 'Confirmar recebimento', salvar: v => {
-    aplicarPagamento(linhas, [{forma: v.forma, valor: total}], dataHoje());
-    salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); refreshFila(); toast('Pagamento de ' + brl(total) + ' registrado.', 'ok'); if(aoConcluir) aoConcluir();
-  }});
+  const forma0 = formaPadrao || 'pix';
+  const html = '<div class="aviso">' + (linhas[0].cliente ? esc(linhas[0].cliente) + ' • ' : '') + 'pedido de ' + fmtData(linhas[0].data) + '</div>' +
+    '<label for="rp_forma">Forma de pagamento</label><select id="rp_forma" onchange="atualizarRecebimentoDinheiro(' + total + ')">' +
+    FORMAS.map(f => '<option value="' + f + '"' + (f === forma0 ? ' selected' : '') + '>' + rotForma[f] + '</option>').join('') + '</select>' +
+    '<div id="rp_blocoDinheiro" class="oculto"><label for="rp_recebido">Valor recebido (R$)</label><input id="rp_recebido" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" oninput="atualizarRecebimentoDinheiro(' + total + ')"><div id="rp_troco"></div></div>';
+  abrirModal({titulo: 'Receber pagamento — ' + brl(total), html, botoes: [
+    {rotulo: 'Cancelar', classe: 'cinza'},
+    {rotulo: 'Confirmar recebimento', fn: ctl => {
+      const forma = ctl.el.querySelector('#rp_forma').value;
+      aplicarPagamento(linhas, [{forma, valor: total}], dataHoje());
+      salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); refreshFila(); toast('Pagamento de ' + brl(total) + ' registrado.', 'ok'); if(aoConcluir) aoConcluir();
+    }}
+  ], aoAbrir: () => atualizarRecebimentoDinheiro(total)});
 }
 function editarPedido(pid){
   const linhas = linhasDoPedido(pid); if(!linhas.length) return;
