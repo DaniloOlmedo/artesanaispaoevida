@@ -709,16 +709,24 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="grade" id="caixaCards"></div>
     <h3>Recebido por forma de pagamento</h3>
     <div class="grade" id="caixaForma"></div>
+    <h3>📊 Vendido por categoria</h3>
+    <div class="grade" id="caixaCategorias"></div>
     <h3>📦 Produtos vendidos no dia</h3>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Faturamento</th><th class="n">Lucro</th></tr></thead><tbody id="tabelaProdutosDia"></tbody></table></div>
     <div class="grupo-botoes"><button class="btn cinza" type="button" onclick="imprimirRelatorioDia()">🖨️ Imprimir relatório do dia</button></div>
     <h3>🧮 Conferência do dinheiro</h3>
     <div class="bloco-calc">
       <div><label for="caixaFundo">Fundo de troco inicial (R$)</label><input type="number" step="0.01" id="caixaFundo" inputmode="decimal" oninput="salvarConferencia()"></div>
-      <div><label for="caixaRetiradas">Retiradas / sangria (R$)</label><input type="number" step="0.01" id="caixaRetiradas" inputmode="decimal" oninput="salvarConferencia()"></div>
       <div><label for="caixaContado">Dinheiro contado na gaveta (R$)</label><input type="number" step="0.01" id="caixaContado" inputmode="decimal" oninput="salvarConferencia()"></div>
       <div><label for="caixaObs">Observação do dia</label><input type="text" id="caixaObs" oninput="salvarConferencia()" placeholder="Ex: choveu, feira fraca"></div>
     </div>
+    <h4>💸 Retiradas / sangria do dia</h4>
+    <div class="flex-linha">
+      <div style="flex:1"><label for="retiradaValor">Valor (R$)</label><input type="number" step="0.01" id="retiradaValor" inputmode="decimal" placeholder="0,00" onkeydown="if(event.key==='Enter')adicionarRetirada()"></div>
+      <div style="flex:3"><label for="retiradaMotivo">Motivo</label><input type="text" id="retiradaMotivo" placeholder="Ex: troco pra feira, comprar gás, pagamento a fornecedor" onkeydown="if(event.key==='Enter')adicionarRetirada()"></div>
+      <div class="fixo"><button class="btn cinza" type="button" onclick="adicionarRetirada()">+ Adicionar</button></div>
+    </div>
+    <div class="tabela-wrap" style="margin-top:8px"><table class="tabela"><thead><tr><th>Valor</th><th>Motivo</th><th></th></tr></thead><tbody id="tabelaRetiradas"></tbody></table></div>
     <div class="resultado" id="caixaConferencia"></div>
     <div class="grupo-botoes">
       <button class="btn" type="button" onclick="fecharDia()">🔒 Fechar o dia</button>
@@ -730,11 +738,12 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
 
   <div class="painel">
     <div class="cab-painel"><h2>💳 Conferência do cartão</h2></div>
-    <div class="aviso">Confere se a taxa que a maquininha realmente descontou bate com a taxa configurada em "Custos". Escolha o período e a forma, e informe o valor que caiu de fato na conta (do extrato do Santander/Infinipay).</div>
+    <div class="aviso">Confere se a taxa que a maquininha realmente descontou bate com a taxa configurada em "Custos". O campo "Vendido" vem pré-preenchido com o que o sistema tem registrado nesse período, mas <b>pode ser substituído</b> pelo total que a própria Getnet/Infinipay informam (mais confiável se alguma venda foi marcada com a forma de pagamento errada).</div>
     <div class="bloco-calc">
-      <div><label for="ccForma">Maquininha / forma</label><select id="ccForma" onchange="renderConferenciaCartao()"><option value="debito">💳 Débito — Get Net</option><option value="credito">💳 Crédito — Infinit Pay</option></select></div>
-      <div><label for="ccDe">De</label><input type="date" id="ccDe" onchange="renderConferenciaCartao()"></div>
-      <div><label for="ccAte">Até</label><input type="date" id="ccAte" onchange="renderConferenciaCartao()"></div>
+      <div><label for="ccForma">Maquininha / forma</label><select id="ccForma" onchange="renderConferenciaCartao(true)"><option value="debito">💳 Débito — Get Net</option><option value="credito">💳 Crédito — Infinit Pay</option></select></div>
+      <div><label for="ccDe">De</label><input type="date" id="ccDe" onchange="renderConferenciaCartao(true)"></div>
+      <div><label for="ccAte">Até</label><input type="date" id="ccAte" onchange="renderConferenciaCartao(true)"></div>
+      <div><label for="ccVendido">Vendido no período (R$)</label><input type="number" step="0.01" id="ccVendido" inputmode="decimal" oninput="renderConferenciaCartao()"><div class="dica">Pré-preenchido pelo sistema — ajuste se a Getnet/Infinipay informar outro total.</div></div>
       <div><label for="ccRecebido">Valor que caiu na conta (R$)</label><input type="number" step="0.01" id="ccRecebido" inputmode="decimal" oninput="renderConferenciaCartao()"></div>
     </div>
     <div class="resultado" id="ccResultado"></div>
@@ -2201,7 +2210,7 @@ function usosDoInsumo(ins){
 /* =====================================================================
    CUSTOS, TAXAS, PREFERÊNCIAS, DESPESAS  e  INSUMOS
    ===================================================================== */
-const CAT_DESPESA = ['Combustível/Transporte', 'Feira/Barraca', 'Equipamento', 'Insumos avulsos', 'Moradia', 'Pessoal', 'Retirada/Pró-labore', 'Impostos/MEI', 'Outros'];
+const CAT_DESPESA = ['Combustível/Transporte', 'Feira/Barraca', 'Equipamento', 'Insumos avulsos', 'Diversos', 'Moradia', 'Pessoal', 'Retirada/Pró-labore', 'Impostos/MEI', 'Outros'];
 const CAT_PROLABORE = 'Retirada/Pró-labore';
 
 /* ---------- custos fixos ---------- */
@@ -4268,8 +4277,8 @@ function renderCaixa(){
     cardHTML('Lucro estimado do dia', brl(r.lucro), 'após custos e taxas', r.lucro < 0 ? 'vermelho' : '');
   $('caixaForma').innerHTML = FORMAS.map(f => cardHTML(rotForma[f], brl(rec[f]), f === 'dinheiro' ? 'sem taxa' : fmtPerc(taxaPercForma(f)) + ' de dedução')).join('');
   const cx = BD.caixaDias[d] || {};
-  $('caixaFundo').value = cx.fundo ?? ''; $('caixaRetiradas').value = cx.retiradas ?? ''; $('caixaContado').value = cx.contado ?? ''; $('caixaObs').value = cx.obs || '';
-  renderConferencia();
+  $('caixaFundo').value = cx.fundo ?? ''; $('caixaContado').value = cx.contado ?? ''; $('caixaObs').value = cx.obs || '';
+  renderConferencia(); renderRetiradas();
   const pend = pedidosPendentes();
   $('tabelaCaixaPendentes').innerHTML = pend.length ? pend.map(p =>
     '<tr><td>' + fmtData(p.data) + '<br><small class="suave">' + esc(p.horario) + '</small></td><td>' + (p.senha ? '<span class="senha">' + p.senha + '</span>' : '—') + '</td><td>' + esc(p.cliente) + '</td><td>' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</td><td class="n"><b>' + brl(p.total) + '</b></td><td class="acoes"><button class="btn pequeno" onclick="receberPedido(\'' + p.pedidoId + '\')">💰 Receber</button>' + (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + p.pedidoId + '\')" aria-label="Avisar no WhatsApp">💬</button>' : '') + '</td></tr>'
@@ -4285,24 +4294,27 @@ function vendidoPorFormaPeriodo(forma, di, df){
   });
   return r2(total);
 }
-function renderConferenciaCartao(){
+function renderConferenciaCartao(repreencher){
   if(!$('ccForma')) return;
   if(!$('ccDe').value) $('ccDe').value = dataHoje();
   if(!$('ccAte').value) $('ccAte').value = dataHoje();
   const forma = $('ccForma').value, di = $('ccDe').value, df = $('ccAte').value;
-  const vendido = vendidoPorFormaPeriodo(forma, di, df);
+  // Só repreenche o campo "Vendido" quando o período/forma mudou (não a cada tecla), pra não atrapalhar
+  // quem já substituiu pelo valor real informado pela Getnet/Infinipay.
+  if(repreencher || $('ccVendido').value.trim() === '') $('ccVendido').value = vendidoPorFormaPeriodo(forma, di, df) || '';
+  const vendido = parseNum($('ccVendido').value);
   const percTaxa = parseNum(BD.taxas[forma]);
   const taxaValor = r2(vendido * percTaxa / 100);
   const esperado = r2(vendido - taxaValor);
-  let html = '<div class="linha-kv"><span>Vendido no período (' + esc(rotForma[forma]) + ')</span><b>' + brl(vendido) + '</b></div>' +
-    '<div class="linha-kv"><span>Taxa configurada (' + fmtPerc(percTaxa) + ')</span><b class="laranja">− ' + brl(taxaValor) + '</b></div>' +
+  let html = '<div class="linha-kv"><span>Taxa configurada (' + fmtPerc(percTaxa) + ')</span><b class="laranja">− ' + brl(taxaValor) + '</b></div>' +
     '<div class="linha-kv"><span>Líquido esperado na conta</span><b>' + brl(esperado) + '</b></div>';
   const recTxt = $('ccRecebido').value.trim();
-  if(recTxt !== ''){
+  if(recTxt !== '' && vendido > 0){
     const recebido = parseNum(recTxt);
     const dif = r2(recebido - esperado);
+    const percRealFalta = vendido > 0 ? r2((vendido - recebido) / vendido * 100) : 0;
     const cls = Math.abs(dif) < 0.01 ? 'ok' : (dif < 0 ? 'erro' : 'alerta');
-    const msg = Math.abs(dif) < 0.01 ? '✅ Bate certinho com a taxa configurada.' : (dif < 0 ? '⚠️ Caiu ' + brl(-dif) + ' a menos do que o esperado — a maquininha pode estar descontando uma taxa maior do que a configurada em Custos.' : 'ℹ️ Caiu ' + brl(dif) + ' a mais do que o esperado.');
+    const msg = Math.abs(dif) < 0.01 ? '✅ Bate certinho com a taxa configurada.' : (dif < 0 ? '⚠️ Caiu ' + brl(-dif) + ' a menos do que o esperado — a taxa real parece ser de ' + fmtPerc(percRealFalta) + ' (configurado: ' + fmtPerc(percTaxa) + ').' : 'ℹ️ Caiu ' + brl(dif) + ' a mais do que o esperado.');
     html += '<div class="linha-kv"><span>Caiu na conta</span><b>' + brl(recebido) + '</b></div>' +
       '<div class="linha-kv"><span>Diferença</span><b class="' + cls + '">' + (dif > 0 ? '+' : '') + brl(dif) + '</b></div>' +
       '<p class="dica ' + cls + '">' + msg + '</p>';
@@ -4313,9 +4325,10 @@ function salvarConferenciaCartao(){
   const forma = $('ccForma').value, di = $('ccDe').value, df = $('ccAte').value;
   if(!di || !df){ toast('Preencha o período.', 'alerta'); return; }
   if(df < di){ toast('"Até" não pode ser antes de "De".', 'alerta'); return; }
+  const vendido = parseNum($('ccVendido').value);
+  if(!(vendido > 0)){ toast('Informe o valor vendido no período.', 'alerta'); return; }
   const recebido = parseNum($('ccRecebido').value);
   if(!(recebido > 0)){ toast('Informe o valor que caiu na conta.', 'alerta'); return; }
-  const vendido = vendidoPorFormaPeriodo(forma, di, df);
   const percTaxa = parseNum(BD.taxas[forma]);
   const taxaValor = r2(vendido * percTaxa / 100);
   const esperado = r2(vendido - taxaValor);
@@ -4346,20 +4359,56 @@ function salvarConferencia(){
   const d = $('caixaData').value || dataHoje();
   const cx = BD.caixaDias[d] || (BD.caixaDias[d] = {});
   const n = id => { const v = $(id).value.trim(); return v === '' ? null : parseNum(v); };
-  cx.fundo = n('caixaFundo'); cx.retiradas = n('caixaRetiradas'); cx.contado = n('caixaContado'); cx.obs = $('caixaObs').value.trim();
+  cx.fundo = n('caixaFundo'); cx.contado = n('caixaContado'); cx.obs = $('caixaObs').value.trim();
   salvar('caixaDias'); renderConferencia();
+}
+// Total de retiradas do dia: soma da lista com motivo (retiradasLista). Mantém compatibilidade com dias
+// antigos que só tinham o número solto em cx.retiradas (de antes desta função existir).
+function totalRetiradas(cx){
+  if(Array.isArray(cx.retiradasLista)) return soma(cx.retiradasLista, r => r.valor);
+  return cx.retiradas || 0;
+}
+function adicionarRetirada(){
+  const d = $('caixaData').value || dataHoje();
+  const cx = BD.caixaDias[d] || (BD.caixaDias[d] = {});
+  const valor = parseNum($('retiradaValor').value);
+  const motivo = $('retiradaMotivo').value.trim();
+  if(!(valor > 0)){ toast('Informe o valor retirado.', 'alerta'); return; }
+  if(!motivo){ toast('Informe o motivo da retirada.', 'alerta'); return; }
+  if(!Array.isArray(cx.retiradasLista)) cx.retiradasLista = [];
+  cx.retiradasLista.push({id: uid(), valor: r2(valor), motivo});
+  cx.retiradas = totalRetiradas(cx); // mantém o campo antigo em sincronia, por compatibilidade
+  salvar('caixaDias');
+  $('retiradaValor').value = ''; $('retiradaMotivo').value = '';
+  renderRetiradas(); renderConferencia();
+  $('retiradaValor').focus();
+}
+function excluirRetirada(id){
+  const d = $('caixaData').value || dataHoje();
+  const cx = BD.caixaDias[d]; if(!cx || !Array.isArray(cx.retiradasLista)) return;
+  cx.retiradasLista = cx.retiradasLista.filter(r => r.id !== id);
+  cx.retiradas = totalRetiradas(cx);
+  salvar('caixaDias'); renderRetiradas(); renderConferencia();
+}
+function renderRetiradas(){
+  const d = $('caixaData').value || dataHoje(); const cx = BD.caixaDias[d] || {};
+  const lista = Array.isArray(cx.retiradasLista) ? cx.retiradasLista : (cx.retiradas ? [{id: null, valor: cx.retiradas, motivo: '(retirada antiga, sem motivo registrado)'}] : []);
+  $('tabelaRetiradas').innerHTML = lista.length ? lista.map(r =>
+    '<tr><td>' + brl(r.valor) + '</td><td>' + esc(r.motivo || '—') + '</td><td>' + (r.id ? '<button class="btn vermelho pequeno" onclick="excluirRetirada(\'' + r.id + '\')" aria-label="Excluir">✕</button>' : '') + '</td></tr>'
+  ).join('') : '<tr><td colspan="3"><div class="vazio">Nenhuma retirada registrada neste dia.</div></td></tr>';
 }
 function renderConferencia(){
   const d = $('caixaData').value || dataHoje(); const cx = BD.caixaDias[d] || {};
   const din = recebidoPorForma(d).dinheiro;
-  const esperado = (cx.fundo || 0) + din - (cx.retiradas || 0);
+  const ret = totalRetiradas(cx);
+  const esperado = (cx.fundo || 0) + din - ret;
   let dif = '';
   if(cx.contado !== null && cx.contado !== undefined){
     const x = cx.contado - esperado;
     dif = '<div class="linha-kv"><span>Diferença (contado − esperado)</span><b class="' + (Math.abs(x) < 0.005 ? 'ok' : (x < 0 ? 'erro' : 'alerta')) + '">' + (Math.abs(x) < 0.005 ? '✅ Caixa bateu' : (x < 0 ? 'Faltam ' : 'Sobram ') + brl(Math.abs(x))) + '</b></div>';
   }
   $('caixaConferencia').innerHTML = '<h4>Dinheiro esperado na gaveta</h4>' +
-    '<div class="linha-kv"><span>Fundo de troco</span><b>' + brl(cx.fundo || 0) + '</b></div><div class="linha-kv"><span>+ Recebido em dinheiro</span><b>' + brl(din) + '</b></div><div class="linha-kv"><span>− Retiradas</span><b>' + brl(cx.retiradas || 0) + '</b></div>' +
+    '<div class="linha-kv"><span>Fundo de troco</span><b>' + brl(cx.fundo || 0) + '</b></div><div class="linha-kv"><span>+ Recebido em dinheiro</span><b>' + brl(din) + '</b></div><div class="linha-kv"><span>− Retiradas</span><b>' + brl(ret) + '</b></div>' +
     '<div class="linha-kv"><span><b>= Esperado</b></span><b>' + brl(esperado) + '</b></div>' + dif + (cx.fechado ? '<p class="dica">🔒 Dia fechado em ' + new Date(cx.fechadoEm).toLocaleString('pt-BR') + '.</p>' : '');
 }
 async function fecharDia(){
@@ -4412,12 +4461,32 @@ function produtosResumo(linhas){
 function linhaProdutoResumoHTML(n, x){
   return '<tr><td>' + esc(n) + '</td><td class="n"><b>' + x.qtd + '</b></td><td class="n">' + brl(x.fat) + '</td><td class="n ' + (x.lucro < 0 ? 'erro' : '') + '">' + brl(x.lucro) + '</td></tr>';
 }
+// Acha a categoria de uma venda pelo nome do produto (cadastro atual), com fallback por palavra-chave —
+// cobre também combinações tipo "½ Pizza X + ½ Pizza Y" que não batem exatamente com nenhum item do catálogo.
+function categoriaDoNomeVenda(nome){
+  const item = catalogoVenda().find(it => it.nome === nome);
+  return item ? categoriaDoItem(item) : inferirCategoria(nome);
+}
+function resumoPorCategoria(linhas){
+  const map = new Map();
+  linhas.forEach(l => {
+    const cat = categoriaDoNomeVenda(l.produto);
+    if(!map.has(cat)) map.set(cat, {qtd: 0, fat: 0});
+    const x = map.get(cat); x.qtd += l.quantidade; x.fat += l.valorTotal;
+  });
+  return ordenarCategorias(Array.from(map.keys())).map(c => [c, map.get(c)]);
+}
 function renderProdutosDoDia(){
   const d = $('caixaData').value || dataHoje();
   const linhas = BD.vendas.filter(v => v.data === d);
   const arr = produtosResumo(linhas);
   const el = $('tabelaProdutosDia'); if(!el) return;
   el.innerHTML = arr.length ? arr.map(([n, x]) => linhaProdutoResumoHTML(n, x)).join('') : '<tr><td colspan="4"><div class="vazio">Sem vendas neste dia.</div></td></tr>';
+  const elCat = $('caixaCategorias');
+  if(elCat){
+    const cats = resumoPorCategoria(linhas);
+    elCat.innerHTML = cats.length ? cats.map(([c, x]) => cardHTML(c, x.qtd + ' un.', brl(x.fat))).join('') : cardHTML('Sem vendas', '—', '');
+  }
 }
 
 /* ---------- MEI ---------- */
@@ -4545,6 +4614,7 @@ function imprimirRelatorioDia(){
     '<tr><td>A receber (pendente)</td><td class="n">' + brl(r.pendente) + '</td></tr>' +
     '</tbody></table>' +
     '<h3>Recebido por forma de pagamento</h3><table><tbody>' + FORMAS.map(f => '<tr><td>' + esc(rotForma[f]) + '</td><td class="n">' + brl(rec[f]) + '</td></tr>').join('') + '</tbody></table>' +
+    '<h3>Vendido por categoria</h3><table><tbody>' + resumoPorCategoria(linhas).map(([c, x]) => '<tr><td>' + esc(c) + '</td><td class="n">' + x.qtd + ' un.</td><td class="n">' + brl(x.fat) + '</td></tr>').join('') + '</tbody></table>' +
     '<h3>Produtos vendidos</h3>' + tabelaProdutosRelatorioHTML(linhas);
   abrirAreaRelatorioEImprimir(html);
 }
@@ -4582,14 +4652,17 @@ let LINHAS_CUPOM = [];
 function lerLinhasCupom(){
   LINHAS_CUPOM = LINHAS_CUPOM.map((l, i) => ({
     nome: ($('cl_n' + i) ? $('cl_n' + i).value : l.nome), qtd: ($('cl_q' + i) ? $('cl_q' + i).value : l.qtd),
-    unid: ($('cl_u' + i) ? $('cl_u' + i).value : l.unid), valor: ($('cl_v' + i) ? $('cl_v' + i).value : l.valor)}));
+    unid: ($('cl_u' + i) ? $('cl_u' + i).value : l.unid), valor: ($('cl_v' + i) ? $('cl_v' + i).value : l.valor),
+    insumo: ($('cl_i' + i) ? $('cl_i' + i).checked : (l.insumo !== false))}));
 }
-function adicionarLinhaCupom(){ lerLinhasCupom(); LINHAS_CUPOM.push({nome: '', qtd: '', unid: 'kg', valor: ''}); renderLinhasCupom(); const i = LINHAS_CUPOM.length - 1; if($('cl_n' + i)) $('cl_n' + i).focus(); }
+function adicionarLinhaCupom(){ lerLinhasCupom(); LINHAS_CUPOM.push({nome: '', qtd: '', unid: 'kg', valor: '', insumo: true}); renderLinhasCupom(); const i = LINHAS_CUPOM.length - 1; if($('cl_n' + i)) $('cl_n' + i).focus(); }
 function removerLinhaCupom(i){ lerLinhasCupom(); LINHAS_CUPOM.splice(i, 1); renderLinhasCupom(); }
 function renderLinhasCupom(){
   $('cupomItensLista').innerHTML = LINHAS_CUPOM.map((l, i) =>
-    '<div class="linha-form" style="grid-template-columns:2.2fr 1fr 1fr 1fr auto"><div><input id="cl_n' + i + '" list="listaInsumosDL" placeholder="Insumo" value="' + esc(l.nome) + '" aria-label="Insumo"></div><div><input id="cl_q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade"></div>' +
-    '<div><select id="cl_u' + i + '" aria-label="Unidade">' + UNIDADES.map(u => '<option' + (u === l.unid ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div><div><input id="cl_v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total"></div><button class="btn vermelho pequeno" type="button" onclick="removerLinhaCupom(' + i + ')" aria-label="Remover">✕</button></div>').join('');
+    '<div class="linha-form" style="grid-template-columns:2.2fr 1fr 1fr 1fr auto auto"><div><input id="cl_n' + i + '" list="listaInsumosDL" placeholder="Nome do item" value="' + esc(l.nome) + '" aria-label="Item"></div><div><input id="cl_q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade"></div>' +
+    '<div><select id="cl_u' + i + '" aria-label="Unidade">' + UNIDADES.map(u => '<option' + (u === l.unid ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div><div><input id="cl_v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total"></div>' +
+    '<label class="linha" style="white-space:nowrap" title="Desmarque se não for insumo de produção (ex: material de limpeza, uso pessoal) — entra como despesa Diversos, sem mexer no estoque de insumos."><input type="checkbox" id="cl_i' + i + '"' + (l.insumo !== false ? ' checked' : '') + '> 📦 Insumo</label>' +
+    '<button class="btn vermelho pequeno" type="button" onclick="removerLinhaCupom(' + i + ')" aria-label="Remover">✕</button></div>').join('');
 }
 /* ---------- fornecedores ---------- */
 function adicionarFornecedor(){
@@ -4972,41 +5045,70 @@ function cadastrarCupom(){
   const data = $('cupomData').value || dataHoje(); const valor = parseNum($('cupomValor').value);
   if(valor <= 0) return toast('Informe o valor total da compra.', 'alerta');
   if(!numero && !mercado) return toast('Informe o nº do cupom ou o nome do mercado.', 'alerta');
-  const itensLista = LINHAS_CUPOM.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, valor: parseNum(l.valor)})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
+  const itensLista = LINHAS_CUPOM.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
   const compra = {id: uid(), numero, cnpj, mercado, data, valor, itens: $('cupomItens').value.trim(), itensLista};
-  let atualizados = 0; const naoAchados = [];
+  let atualizados = 0, criados = 0; const naoAchados = [];
+  const itensDiversos = itensLista.filter(l => l.insumo === false);
+  const somaDiversos = r2(soma(itensDiversos, l => l.valor));
   if($('cupomAtualizarPrecos').checked){
-    itensLista.forEach(l => {
+    itensLista.filter(l => l.insumo !== false).forEach(l => {
       const ins = acharInsumoPorNome(l.nome);
-      if(!ins){ naoAchados.push(l.nome); return; }
+      if(!ins){
+        const novo = {id: uid(), nome: l.nome, unid: l.unid, qtd: l.qtd, valor: l.valor, precoBase: precoBaseDe(l.unid, l.qtd, l.valor), historicoPreco: []};
+        rotularInsumo(novo); registrarHistorico(novo); BD.insumos.push(novo); criados++;
+        return;
+      }
       if(ins.origem){ naoAchados.push(l.nome + ' (calculado por receita)'); return; }
       ins.unid = l.unid; ins.qtd = l.qtd; ins.valor = l.valor; ins.precoBase = precoBaseDe(l.unid, l.qtd, l.valor); rotularInsumo(ins); registrarHistorico(ins); atualizados++;
     });
   }
+  const valorInsumos = r2(Math.max(0, valor - somaDiversos));
   let parcelasGeradas = 0;
   if(CUPOM_PAGAMENTO === 'prazo'){
     const parcelas = Math.max(1, parseInt($('cupomParcelas').value, 10) || 1);
     const primeiraData = $('cupomPrimeiroVenc').value || data;
     const intervalo = Math.max(1, parseInt($('cupomIntervaloDias').value, 10) || 30);
     const forn = acharFornecedorPorNome(mercado);
-    const grupo = gerarParcelasContaPagar({
-      desc: 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : ''),
-      fornecedorId: forn ? forn.id : null, fornecedorNome: mercado,
-      categoria: 'Insumos avulsos', valorTotal: valor, primeiraData, parcelas, intervaloDias: intervalo,
-      origem: 'compra', compraId: compra.id
-    });
-    parcelasGeradas = grupo.length;
-    compra.contasPagarGrupoId = grupo.length ? grupo[0].grupoId : null;
+    const descBase = 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : '');
+    const grupoIds = [];
+    if(valorInsumos > 0){
+      const grupo = gerarParcelasContaPagar({
+        desc: descBase, fornecedorId: forn ? forn.id : null, fornecedorNome: mercado,
+        categoria: 'Insumos avulsos', valorTotal: valorInsumos, primeiraData, parcelas, intervaloDias: intervalo,
+        origem: 'compra', compraId: compra.id
+      });
+      parcelasGeradas += grupo.length; if(grupo.length) grupoIds.push(grupo[0].grupoId);
+    }
+    if(somaDiversos > 0){
+      const grupo2 = gerarParcelasContaPagar({
+        desc: descBase + ' (diversos)', fornecedorId: forn ? forn.id : null, fornecedorNome: mercado,
+        categoria: 'Diversos', valorTotal: somaDiversos, primeiraData, parcelas, intervaloDias: intervalo,
+        origem: 'compra', compraId: compra.id
+      });
+      parcelasGeradas += grupo2.length; if(grupo2.length) grupoIds.push(grupo2[0].grupoId);
+    }
+    compra.contasPagarGrupoId = grupoIds[0] || null;
+    if(grupoIds.length > 1) compra.contasPagarGrupoIds = grupoIds;
   }else if($('cupomLancarDespesa').checked){
-    const d = {id: uid(), data, desc: 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : ''), valor, categoria: 'Insumos avulsos', compraId: compra.id};
-    BD.despesas.unshift(d); compra.despesaId = d.id;
+    const descBase = 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : '');
+    const despesaIds = [];
+    if(valorInsumos > 0){
+      const d = {id: uid(), data, desc: descBase, valor: valorInsumos, categoria: 'Insumos avulsos', compraId: compra.id};
+      BD.despesas.unshift(d); despesaIds.push(d.id);
+    }
+    if(somaDiversos > 0){
+      const d2 = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: compra.id};
+      BD.despesas.unshift(d2); despesaIds.push(d2.id);
+    }
+    compra.despesaId = despesaIds[0] || null;
+    if(despesaIds.length > 1) compra.despesaIds = despesaIds;
   }
   BD.compras.unshift(compra);
-  if(atualizados){ recalcularTudo(); }
+  if(atualizados || criados){ recalcularTudo(); }
   ['cupomNum', 'cupomCNPJ', 'cupomMercado', 'cupomValor', 'cupomItens'].forEach(i => $(i).value = ''); LINHAS_CUPOM = []; renderLinhasCupom();
   selecionarPagamentoCupom('vista');
   salvar('compras', 'despesas', 'insumos', 'fichas', 'contasPagar'); renderCompras();
-  toast('Cupom salvo.' + (parcelasGeradas ? ' ' + parcelasGeradas + ' parcela(s) criada(s) em Contas a pagar.' : '') + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
+  toast('Cupom salvo.' + (parcelasGeradas ? ' ' + parcelasGeradas + ' parcela(s) criada(s) em Contas a pagar.' : '') + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (criados ? ' ' + criados + ' insumo(s) novo(s) cadastrado(s).' : '') + (somaDiversos ? ' ' + brl(somaDiversos) + ' em "Diversos" (não entrou no estoque de insumos).' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
 }
 function selecionarPagamentoCupom(t){
   CUPOM_PAGAMENTO = t;
