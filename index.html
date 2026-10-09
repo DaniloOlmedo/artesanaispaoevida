@@ -240,9 +240,9 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
   .comanda-impressao .cliente-comanda{text-align:center;font-size:20px;font-weight:bold;margin:4px 0}
   .comanda-impressao .telefone-comanda{text-align:center;font-size:14px;margin-bottom:4px}
   .comanda-impressao .item{margin:8px 0 2px;font-size:20px;font-weight:bold;line-height:1.25}
-  .comanda-impressao .cons{font-size:15px;font-weight:bold;margin-left:12px}
-  .comanda-impressao .corte-item{font-size:15px;font-weight:bold;margin:0 0 4px 12px}
-  .comanda-impressao .obs{font-size:16px;font-weight:bold;margin:2px 0 8px 12px;border-top:1px dashed #999;padding-top:3px}
+  .comanda-impressao .cons{font-size:20px;font-weight:bold;margin-left:12px;line-height:1.25}
+  .comanda-impressao .corte-item{font-size:20px;font-weight:bold;margin:0 0 4px 12px;line-height:1.25}
+  .comanda-impressao .obs{font-size:20px;font-weight:bold;margin:2px 0 8px 12px;border-top:1px dashed #999;padding-top:3px;line-height:1.25}
   .comanda-impressao .total{text-align:center;font-size:17px;font-weight:bold;margin-top:8px;border-top:2px solid #000;padding-top:6px}
   .comanda-impressao .linha{border-bottom:2px dashed #666;margin:6px 0}
   #areaRelatorio{font-family:Arial,sans-serif;font-size:12px;color:#000;padding:10mm}
@@ -5769,8 +5769,28 @@ function mesclarVendasArquivo(event){
    ===================================================================== */
 const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao'];
 const SYNC_CHAVE_LS = 'syncConfig';
-let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null;
+// Guarda, por registro, qual foi a última versão sincronizada com sucesso — e isso
+// precisa SOBREVIVER a um recarregar de página. Sem persistir isso, todo aparelho que
+// reabre a aba esquece o que já estava sincronizado e reenvia TUDO que tem localmente,
+// de uma vez, antes mesmo de puxar as atualizações dos outros aparelhos — e se esse
+// aparelho estava com dados desatualizados (ex: um pedido que outro aparelho já marcou
+// como pago), ele sobrescreve a nuvem com a versão antiga, que depois volta pra todo
+// mundo. É esse o motivo de pedidos "pagos" voltarem a aparecer como "pendentes".
+const SYNC_ULTIMO_CHAVE_LS = 'syncUltimoEnviado';
+let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null, _syncSalvarUltimoTimer = null;
 const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}};
+function syncCarregarUltimoEnviado(){
+  try{
+    const t = JSON.parse(localStorage.getItem(SYNC_ULTIMO_CHAVE_LS));
+    if(t && typeof t === 'object') Object.keys(_syncUltimoEnviado).forEach(tipo => { if(t[tipo]) _syncUltimoEnviado[tipo] = t[tipo]; });
+  }catch(e){}
+}
+function syncSalvarUltimoEnviado(){
+  // debounced: isso pode ser chamado em rajadas (um snapshot inteiro, um push inteiro)
+  clearTimeout(_syncSalvarUltimoTimer);
+  _syncSalvarUltimoTimer = setTimeout(() => { try{ localStorage.setItem(SYNC_ULTIMO_CHAVE_LS, JSON.stringify(_syncUltimoEnviado)); }catch(e){} }, 300);
+}
+syncCarregarUltimoEnviado();
 
 function syncLerConfig(){ try{ return JSON.parse(localStorage.getItem(SYNC_CHAVE_LS)) || {}; }catch(e){ return {}; } }
 function syncGravarConfig(c){ try{ localStorage.setItem(SYNC_CHAVE_LS, JSON.stringify(c)); }catch(e){} }
@@ -5862,6 +5882,7 @@ function syncAssinarColecoes(codigo){
         const id = ch.doc.id;
         if(ch.type === 'removed'){
           delete _syncUltimoEnviado[tipo][id];
+          syncSalvarUltimoEnviado();
           if(tipo === 'caixaDias'){ if(BD.caixaDias[id] !== undefined){ delete BD.caixaDias[id]; mudou = true; } }
           else{ const arr = BD[tipo]; const idx = arr.findIndex(x => String(x.id) === id); if(idx !== -1){ arr.splice(idx, 1); mudou = true; } }
           return;
@@ -5883,6 +5904,7 @@ function syncAssinarColecoes(codigo){
         const atual = tipo === 'caixaDias' ? BD.caixaDias[id] : BD[tipo].find(x => String(x.id) === id);
         if(atual !== undefined) _syncUltimoEnviado[tipo][id] = JSON.stringify(atual);
       });
+      if(tocados.length) syncSalvarUltimoEnviado();
       if(mudou){ salvar(tipo === 'caixaDias' ? 'caixaDias' : tipo); renderTudo(); }
     }, err => syncStatus('⚠️ Sincronização interrompida: ' + err.message));
     _syncListeners.push(() => unsub());
@@ -5929,6 +5951,7 @@ function syncEmpurrarTudo(){
     add(base.collection('caixaDias').doc(dataKey), item);
   });
   if(n > 0) lote.commit().catch(() => {});
+  syncSalvarUltimoEnviado();
 }
 
 /* =====================================================================
