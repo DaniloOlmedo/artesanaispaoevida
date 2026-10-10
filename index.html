@@ -3992,28 +3992,28 @@ function comandaLinhasImagem(pid){
   const L = [];
   const add = (texto, opts) => L.push(Object.assign({texto, tam: 20, negrito: false, centro: true, espacoAntes: 0}, opts || {}));
   const linha = () => L.push({linha: true, espacoAntes: 6});
-  add(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim(), {tam: 26, negrito: true});
-  if(l0.local) add('📍 ' + l0.local.toUpperCase(), {tam: 15});
-  if(totem) add('PEDIDO PELO TOTEM', {tam: 15});
-  if(p.senha) add('Nº ' + p.senha, {tam: 32, negrito: true, espacoAntes: 6});
-  add(fmtData(p.data) + ' - ' + p.horario, {tam: 15});
-  if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 15});
-  if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 15});
+  add(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim(), {tam: 38, negrito: true});
+  if(l0.local) add('📍 ' + l0.local.toUpperCase(), {tam: 22});
+  if(totem) add('PEDIDO PELO TOTEM', {tam: 22});
+  if(p.senha) add('Nº ' + p.senha, {tam: 46, negrito: true, espacoAntes: 6});
+  add(fmtData(p.data) + ' - ' + p.horario, {tam: 22});
+  if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 22});
+  if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 22});
   linha();
-  add(p.cliente.toUpperCase(), {tam: 22, negrito: true});
-  if(p.telefone) add('Tel: ' + p.telefone, {tam: 15});
+  add(p.cliente.toUpperCase(), {tam: 32, negrito: true});
+  if(p.telefone) add('Tel: ' + p.telefone, {tam: 22});
   linha();
   p.linhas.forEach(l => {
-    add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 19, centro: false, negrito: true, espacoAntes: 4});
+    add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 28, centro: false, negrito: true, espacoAntes: 6});
     const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
-    if(cons) add('[' + cons + ']', {tam: 14, centro: false});
-    if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 14, centro: false, negrito: true});
-    if(l.observacao) add('OBS: ' + l.observacao.toUpperCase(), {tam: 14, centro: false});
+    if(cons) add('[' + cons + ']', {tam: 20, centro: false});
+    if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 20, centro: false, negrito: true});
+    if(l.observacao) add('OBS: ' + l.observacao.toUpperCase(), {tam: 20, centro: false});
   });
   linha();
-  add(status, {tam: 19, negrito: true, espacoAntes: 4});
-  if(BD.config.valoresComanda) add('TOTAL ' + brl(p.total), {tam: 22, negrito: true});
-  if(BD.config.rodapeComanda) add(BD.config.rodapeComanda, {tam: 13, espacoAntes: 6});
+  add(status, {tam: 28, negrito: true, espacoAntes: 4});
+  if(BD.config.valoresComanda) add('TOTAL ' + brl(p.total), {tam: 32, negrito: true});
+  if(BD.config.rodapeComanda) add(BD.config.rodapeComanda, {tam: 19, espacoAntes: 6});
   return L;
 }
 function desenharComandaImagem(pid){
