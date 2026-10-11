@@ -149,6 +149,15 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 :root[data-theme="dark"] .tag{color:#7fe0ae}
 .barra{height:12px;background:var(--borda);border-radius:6px;overflow:hidden;margin:6px 0}
 .barra>i{display:block;height:100%;background:var(--verde2);border-radius:6px;transition:width .3s}
+.semaforo{display:flex;align-items:center;gap:14px;padding:12px;border-radius:10px;margin:8px 0;border:2px solid var(--borda)}
+.semaforo .bola{width:44px;height:44px;border-radius:50%;flex:none}
+.semaforo.verde{border-color:#2e7d32;background:rgba(46,125,50,.10)}.semaforo.verde .bola{background:#2e7d32}
+.semaforo.amarelo{border-color:#f9a825;background:rgba(249,168,37,.14)}.semaforo.amarelo .bola{background:#f9a825}
+.semaforo.vermelho{border-color:#c62828;background:rgba(198,40,40,.10)}.semaforo.vermelho .bola{background:#c62828}
+.meta-linha{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;margin:10px 0}
+.meta-linha input{width:110px}
+.sim-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.barra.verde>i{background:#2e7d32}
 .barra.laranja>i{background:var(--laranja)}.barra.vermelho>i{background:var(--erro)}
 
 /* Segmentado */
@@ -476,6 +485,19 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="grade" id="dashSituacao"></div>
     <div id="dashPE"></div>
     <div id="dashProLabore"></div>
+  </div>
+  <div class="painel">
+    <h2>🚦 Saúde do negócio</h2>
+    <div id="dashSemaforo"></div>
+    <div id="dashSaude"></div>
+  </div>
+  <div class="painel">
+    <h2>🎯 Metas do mês (meta × realizado)</h2>
+    <div id="dashMetas"></div>
+  </div>
+  <div class="painel">
+    <h2>🧪 Simulador: e se...?</h2>
+    <div id="dashSim"></div>
   </div>
   <div class="painel">
     <h2>📈 Movimento</h2>
@@ -5993,6 +6015,91 @@ function limiteRetiradaSegura(mes){
   const limite = disponivel * FATOR_RESERVA_RETIRADA;
   return {liquidoAntesRetirada, reservaContasPagar, disponivel, limite, jaRetirado, aindaPode: Math.max(0, limite - jaRetirado), sangrando: jaRetirado > limite};
 }
+
+/* ---------- MELHORIAS DO PAINEL: semáforo, saúde financeira, metas e simulador ---------- */
+const META_MARGEM_VERDE = 15, META_MARGEM_AMARELO = 5; // % de margem líquida
+const MESES_RESERVA_IDEAL = 3;
+function semaforoLucro(mes){
+  const m = resultadoMes(mes);
+  if(!(m.fat > 0)) return '<div class="aviso">Sem vendas em ' + fmtMes(mes) + ' ainda — o semáforo aparece quando houver faturamento.</div>';
+  const marg = m.liquido / m.fat * 100;
+  const cor = marg >= META_MARGEM_VERDE ? 'verde' : (marg >= META_MARGEM_AMARELO ? 'amarelo' : 'vermelho');
+  const msg = {verde: 'Lucro saudável. O negócio sobra dinheiro depois de pagar tudo.',
+    amarelo: 'Atenção: sobra pouco. Qualquer imprevisto pode virar prejuízo. Olhe preços e despesas.',
+    vermelho: marg < 0 ? 'Prejuízo no mês: você gastou mais do que vendeu. Priorize ajustar preço e cortar despesa.' : 'Lucro muito baixo. Revise preços, custos e despesas.'}[cor];
+  return '<div class="semaforo ' + cor + '"><div class="bola"></div><div><b>Margem líquida: ' + fmt(marg, 1) + '%</b> (lucro líquido ' + brl(m.liquido) + ')<div class="pequeno-txt suave">' + msg + ' Verde a partir de ' + META_MARGEM_VERDE + '%, amarelo de ' + META_MARGEM_AMARELO + '% a ' + META_MARGEM_VERDE + '%.</div></div></div>';
+}
+function salvarReservaAtual(v){ BD.config.reservaAtual = Math.max(0, parseNum(v)); salvar('config'); renderDashboard(); }
+function saudeFinanceira(mes){
+  const fixos = custosFixosMensais(); const reserva = Number(BD.config.reservaAtual) || 0;
+  const meses = fixos > 0 ? reserva / fixos : null;
+  const rl = limiteRetiradaSegura(mes);
+  const hoje = dataHoje();
+  const vencidas = BD.contasPagar.filter(c => !c.pago && c.vencimento < hoje);
+  const m = resultadoMes(mes);
+  const itens = [];
+  const sel = (ok, medio) => ok ? '🟢' : (medio ? '🟡' : '🔴');
+  itens.push([meses === null ? '⚪' : sel(meses >= MESES_RESERVA_IDEAL, meses >= 1), 'Reserva de emergência', meses === null ? 'cadastre seus custos fixos (aba Custos)' : fmt(meses, 1) + ' mês(es) de custos fixos (ideal: ' + MESES_RESERVA_IDEAL + ')']);
+  itens.push([sel(!rl.sangrando, false), 'Retirada (pró-labore)', rl.sangrando ? 'acima do limite seguro do mês' : 'dentro do limite seguro']);
+  itens.push([sel(vencidas.length === 0, false), 'Contas em dia', vencidas.length ? vencidas.length + ' conta(s) vencida(s)' : 'nenhuma conta vencida']);
+  itens.push([m.fat <= 0 ? '⚪' : sel(m.liquido > 0, false), 'Resultado do mês', m.fat <= 0 ? 'sem vendas ainda' : (m.liquido > 0 ? 'lucro' : 'prejuízo')]);
+  const verdes = itens.filter(i => i[0] === '🟢').length, avaliados = itens.filter(i => i[0] !== '⚪').length;
+  const barra = meses === null ? 0 : Math.min(100, meses / MESES_RESERVA_IDEAL * 100);
+  return '<h3>💪 Índice de saúde financeira: ' + verdes + ' de ' + avaliados + '</h3>' +
+    itens.map(i => '<div class="linha-kv"><span>' + i[0] + ' ' + i[1] + '</span><b>' + esc(i[2]) + '</b></div>').join('') +
+    '<div class="barra ' + (barra >= 100 ? 'verde' : (barra >= 33 ? 'laranja' : 'vermelho')) + '"><i style="width:' + barra + '%"></i></div>' +
+    '<label for="inpReserva">Quanto você tem guardado como reserva da empresa (R$)</label>' +
+    '<input type="text" inputmode="decimal" id="inpReserva" style="width:140px" value="' + (reserva ? String(reserva).replace('.', ',') : '') + '" placeholder="0,00" onchange="salvarReservaAtual(this.value)">' +
+    '<p class="pequeno-txt suave">Reserva = dinheiro separado que cobre os custos fixos se as vendas caírem. Meta: ' + MESES_RESERVA_IDEAL + ' meses (' + brl(fixos * MESES_RESERVA_IDEAL) + ').</p>';
+}
+function salvarMeta(cat, v){
+  if(!BD.config.metas) BD.config.metas = {};
+  const n = parseNum(v);
+  if(n > 0) BD.config.metas[cat] = n; else delete BD.config.metas[cat];
+  salvar('config'); renderDashboard();
+}
+function metasHTML(mes){
+  const m = resultadoMes(mes); const metas = BD.config.metas || {};
+  const real = {}; BD.despesas.filter(d => (d.data || '').startsWith(mes)).forEach(d => { real[d.categoria] = (real[d.categoria] || 0) + d.valor; });
+  const linha = (nome, chave, atual, tipo) => {
+    const meta = metas[chave] || 0; const p = meta > 0 ? atual / meta * 100 : 0;
+    // faturamento: bom é passar da meta; despesa: bom é ficar abaixo
+    const cor = tipo === 'fat' ? (p >= 100 ? 'verde' : (p >= 70 ? 'laranja' : 'vermelho')) : (p > 100 ? 'vermelho' : (p >= 85 ? 'laranja' : 'verde'));
+    return '<div class="meta-linha"><div><b>' + esc(nome) + '</b><div class="pequeno-txt suave">' + brl(atual) + (meta > 0 ? ' de ' + brl(meta) + ' (' + fmt(p, 0) + '%)' : ' — sem meta definida') + '</div></div>' +
+      '<input type="text" inputmode="decimal" placeholder="meta R$" value="' + (meta ? String(meta).replace('.', ',') : '') + '" onchange="salvarMeta(' + esc(JSON.stringify(chave)).replace(/&quot;/g, "'") + ', this.value)" aria-label="Meta de ' + esc(nome) + '">' +
+      (meta > 0 ? '<div class="barra ' + cor + '" style="grid-column:1/-1"><i style="width:' + Math.min(100, p) + '%"></i></div>' : '') + '</div>';
+  };
+  const cats = CAT_DESPESA.filter(c => c !== CAT_PROLABORE);
+  Object.keys(real).forEach(c => { if(c !== CAT_PROLABORE && !cats.includes(c)) cats.push(c); });
+  return linha('Faturamento (vender pelo menos)', '__fat', m.fat, 'fat') +
+    '<h3 style="margin-top:14px">Teto de gasto por categoria (gastar no máximo)</h3>' +
+    cats.map(c => linha(c, c, real[c] || 0, 'desp')).join('') +
+    '<p class="pequeno-txt suave">Dica: defina o teto olhando o que gastou nos meses anteriores e reduza aos poucos. Vermelho = passou da meta.</p>';
+}
+let SIM = {vendas: 10, preco: 5, insumos: -8};
+function simAtualizar(k, v){ SIM[k] = parseNum(v); const el = $('dashSimRes'); if(el) el.innerHTML = simResultado(); }
+function simResultado(){
+  const mes = ($('dashMesSel') && $('dashMesSel').value) || mesAtual(); const m = resultadoMes(mes);
+  if(!(m.fat > 0)) return '<div class="aviso">Sem vendas em ' + fmtMes(mes) + ' para simular. Escolha outro mês acima.</div>';
+  const fv = 1 + SIM.vendas / 100, fp = 1 + SIM.preco / 100, fi = 1 + SIM.insumos / 100;
+  const fat = m.fat * fv * fp;
+  const custo = m.custo * fv * fi;
+  const taxas = m.taxas * fv * fp; // taxas e impostos acompanham o faturamento
+  const liq = fat - custo - taxas - m.despesas - m.perdas; // despesas e perdas seguem fixas
+  const dif = liq - m.liquido;
+  const l = (r, a, b) => '<div class="linha-kv"><span>' + r + '</span><span>' + brl(a) + ' → <b>' + brl(b) + '</b></span></div>';
+  return l('Faturamento', m.fat, fat) + l('Custo dos produtos', m.custo, custo) + l('Taxas e impostos', m.taxas, taxas) +
+    l('Despesas + perdas (iguais)', m.despesas + m.perdas, m.despesas + m.perdas) +
+    '<div class="linha-kv"><span><b>Lucro líquido</b></span><span>' + brl(m.liquido) + ' → <b class="' + (liq >= 0 ? 'ok' : 'erro') + '">' + brl(liq) + '</b></span></div>' +
+    '<div class="aviso ' + (dif >= 0 ? 'ok-a' : 'erro-a') + '">' + (dif >= 0 ? '📈 Esse cenário daria ' : '📉 Esse cenário daria ') + '<b>' + brl(Math.abs(dif)) + (dif >= 0 ? ' a mais' : ' a menos') + '</b> de lucro por mês' + (fat > 0 ? ' (margem ' + fmt(liq / fat * 100, 1) + '%).' : '.') + '</div>' +
+    '<p class="pequeno-txt suave">Simulação aproximada, baseada em ' + fmtMes(mes) + '. Aumentar preço pode reduzir vendas: teste cenários mais cautelosos também.</p>';
+}
+function simHTML(){
+  const inp = (k, rot) => '<div><label>' + rot + '</label><input type="text" inputmode="decimal" value="' + String(SIM[k]).replace('.', ',') + '" oninput="simAtualizar(\'' + k + '\', this.value)"></div>';
+  return '<p class="pequeno-txt suave">Mude os percentuais e veja o efeito no lucro do mês (use negativo para reduzir).</p>' +
+    '<div class="sim-grade">' + inp('vendas', 'Vender % a mais') + inp('preco', 'Preço % a mais') + inp('insumos', 'Custo dos insumos % (−8 = cortar 8%)') + '</div>' +
+    '<div id="dashSimRes" style="margin-top:10px">' + simResultado() + '</div>';
+}
 let DASH_PEND_ABERTO = false;
 function alternarPendenciasDash(){ DASH_PEND_ABERTO = !DASH_PEND_ABERTO; renderDashboard(); }
 function renderDashboard(){
@@ -6035,6 +6142,10 @@ function renderDashboard(){
     (rl.sangrando
       ? '<div class="aviso alerta-a">⚠️ Você já retirou ' + brl(rl.jaRetirado - rl.limite) + ' além do limite seguro este mês. Isso está sangrando o caixa da empresa — ou tem contas a pagar que podem atrasar.</div>'
       : '<p class="pequeno-txt suave">Ainda pode retirar com segurança: <b>' + brl(rl.aindaPode) + '</b>. Lance cada retirada em Despesas, categoria "' + CAT_PROLABORE + '", pra esse cálculo ficar sempre atualizado.</p>');
+  $('dashSemaforo').innerHTML = semaforoLucro(mes);
+  $('dashSaude').innerHTML = saudeFinanceira(mes);
+  $('dashMetas').innerHTML = metasHTML(mes);
+  if(!document.activeElement || !document.activeElement.closest || !document.activeElement.closest('#dashSim')) $('dashSim').innerHTML = simHTML();
   // gráficos
   const dias = []; for(let i = 13; i >= 0; i--){ const d = new Date(); d.setDate(d.getDate() - i); const s = dataLocal(d); dias.push({rot: s.slice(8), v: soma(BD.vendas.filter(v => v.data === s), v => v.valorTotal), hoje: i === 0}); }
   const linhasMes = BD.vendas.filter(v => (v.data || '').startsWith(mes));
