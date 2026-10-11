@@ -4522,7 +4522,9 @@ function renderMei(){
   if(document.activeElement !== $('meiLimite')) $('meiLimite').value = c.meiLimite;
   if(document.activeElement !== $('meiMeses')) $('meiMeses').value = c.meiMeses;
   const limite = c.meiLimite * c.meiMeses / 12;
-  const fat = soma(BD.vendas.filter(v => (v.data || '').startsWith(ano)), v => v.valorTotal);
+  const arquivadoMes = c.arquivadoMeiMes || {};
+  const arquivadoDoAno = Object.keys(arquivadoMes).filter(ym => ym.startsWith(ano)).reduce((s, ym) => s + arquivadoMes[ym], 0);
+  const fat = soma(BD.vendas.filter(v => (v.data || '').startsWith(ano)), v => v.valorTotal) + arquivadoDoAno;
   const perc = limite > 0 ? fat / limite * 100 : 0;
   const hoje = new Date(); const dias = Math.max(1, Math.floor((hoje - new Date(hoje.getFullYear(), 0, 1)) / 86400000) + 1);
   const proj = fat / dias * 365; const percProj = limite > 0 ? proj / limite * 100 : 0;
@@ -4534,8 +4536,9 @@ function renderMei(){
   let acum = 0; const linhasMei = [];
   for(let m = 1; m <= 12; m++){
     const ym = ano + '-' + pad2(m); const doMes = BD.vendas.filter(v => (v.data || '').startsWith(ym));
-    const tot = soma(doMes, v => v.valorTotal); const hist = soma(doMes.filter(v => v.retroativo), v => v.valorTotal); acum += tot;
-    if(tot > 0) linhasMei.push('<tr><td>' + fmtMes(ym) + '</td><td class="n"><b>' + brl(tot) + '</b></td><td class="n">' + brl(tot - hist) + '</td><td class="n">' + (hist > 0 ? '<b>' + brl(hist) + '</b> <small class="suave">(' + doMes.filter(v => v.retroativo).length + ')</small>' : '—') + '</td><td class="n">' + brl(acum) + ' <small class="suave">(' + fmt(limite > 0 ? acum / limite * 100 : 0, 0) + '%)</small></td><td>' + (hist > 0 ? '<button class="btn cinza pequeno" onclick="verRetro(\'' + ym + '\')">Ver</button>' : '') + '</td></tr>');
+    const arqMes = arquivadoMes[ym] || 0;
+    const tot = soma(doMes, v => v.valorTotal) + arqMes; const hist = soma(doMes.filter(v => v.retroativo), v => v.valorTotal); acum += tot;
+    if(tot > 0) linhasMei.push('<tr><td>' + fmtMes(ym) + '</td><td class="n"><b>' + brl(tot) + '</b></td><td class="n">' + brl(tot - hist) + '</td><td class="n">' + (hist > 0 ? '<b>' + brl(hist) + '</b> <small class="suave">(' + doMes.filter(v => v.retroativo).length + ')</small>' : '—') + '</td><td class="n">' + brl(acum) + ' <small class="suave">(' + fmt(limite > 0 ? acum / limite * 100 : 0, 0) + '%)</small></td><td>' + (arqMes > 0 ? '<small class="suave">arquivado: ' + brl(arqMes) + '</small> ' : '') + (hist > 0 ? '<button class="btn cinza pequeno" onclick="verRetro(\'' + ym + '\')">Ver</button>' : '') + '</td></tr>');
   }
   $('meiMesAMes').innerHTML = linhasMei.length ? linhasMei.join('') : '<tr><td colspan="6"><div class="vazio">Sem vendas em ' + ano + ' ainda.</div></td></tr>';
   $('meiProjecaoTexto').textContent = proj > limite ? 'No ritmo atual você deve ultrapassar o teto em cerca de ' + brl(proj - limite) + ' até o fim do ano.' : 'No ritmo atual você termina o ano dentro do teto.';
@@ -5746,16 +5749,25 @@ async function arquivarDadosAntigos(){
   )) return;
 
   const antes = x => x && x.data && x.data < corte;
+  const vendasArquivadas = BD.vendas.filter(antes);
   const arquivo = {
     versao: APP_VERSAO, app: 'pao-e-vida', criadoEm: new Date().toISOString(), tipo: 'arquivo-historico', corte,
     dados: {
-      vendas: BD.vendas.filter(antes), compras: BD.compras.filter(antes),
+      vendas: vendasArquivadas, compras: BD.compras.filter(antes),
       despesas: BD.despesas.filter(antes), perdas: BD.perdas.filter(antes)
     }
   };
   baixarArquivo(JSON.stringify(arquivo, null, 2), 'arquivo-historico-' + slug(nomeNegocio()) + '-ate-' + corte + '.json', 'application/json;charset=utf-8');
 
   guardarBackupAnterior('antes de arquivar dados de antes de ' + corte);
+  // guarda o faturamento bruto arquivado por mês, pra o teto do MEI continuar contando
+  // o ano inteiro mesmo depois que as vendas somem daqui (ver renderMei)
+  if(!BD.config.arquivadoMeiMes) BD.config.arquivadoMeiMes = {};
+  vendasArquivadas.forEach(v => {
+    if(!v || !v.data) return;
+    const ym = v.data.slice(0, 7);
+    BD.config.arquivadoMeiMes[ym] = (BD.config.arquivadoMeiMes[ym] || 0) + (v.valorTotal || 0);
+  });
   BD.vendas = BD.vendas.filter(x => !antes(x)); BD.compras = BD.compras.filter(x => !antes(x));
   BD.despesas = BD.despesas.filter(x => !antes(x)); BD.perdas = BD.perdas.filter(x => !antes(x));
   salvarTudo(); renderTudo();
@@ -6115,7 +6127,9 @@ function renderDashboard(){
     cardHTML('Lucro líquido', brl(m.liquido), m.fat > 0 ? 'margem ' + fmt(m.liquido / m.fat * 100, 1) + '%' : '', m.liquido < 0 ? 'vermelho' : '');
   const hoje = dataHoje(); const rHoje = resumoLinhas(BD.vendas.filter(v => v.data === hoje));
   const pend = soma(BD.vendas.filter(v => v.pago === false), v => v.valorTotal);
-  const ano = soma(BD.vendas.filter(v => (v.data || '').startsWith(anoAtual())), v => v.valorTotal);
+  const arquivadoMesDash = BD.config.arquivadoMeiMes || {};
+  const arquivadoAnoDash = Object.keys(arquivadoMesDash).filter(ym => ym.startsWith(anoAtual())).reduce((s, ym) => s + arquivadoMesDash[ym], 0);
+  const ano = soma(BD.vendas.filter(v => (v.data || '').startsWith(anoAtual())), v => v.valorTotal) + arquivadoAnoDash;
   const limite = BD.config.meiLimite * BD.config.meiMeses / 12;
   const cpAbertas = BD.contasPagar.filter(c => !c.pago);
   const cpVencidas = cpAbertas.filter(c => c.vencimento < hoje);
