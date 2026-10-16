@@ -5810,7 +5810,8 @@ function cancelarEdicaoIngNutri(){ NUTRI_EDIT_ING = null; renderListaIngNutri();
 function nutriEditorIngHTML(i){
   const val = k => i ? String(i.v[k] ?? 0).replace('.', ',') : '';
   return '<div class="painel" style="margin-bottom:10px;border:2px solid var(--laranja)">' +
-    '<label for="nutriIngNome">Nome</label><input type="text" id="nutriIngNome" maxlength="40" placeholder="Ex: Farinha de trigo" value="' + esc(i ? i.nome : '') + '">' +
+    '<label for="nutriIngNome">Nome</label><input type="text" id="nutriIngNome" list="listaInsumosDL" autocomplete="off" maxlength="40" placeholder="Ex: Farinha de trigo" value="' + esc(i ? i.nome : '') + '">' +
+    '<div class="dica" style="margin-top:4px">Comece a digitar e escolha um dos seus Insumos na lista — usar o mesmo nome garante que a importação da Massa/Ficha reconheça este ingrediente automaticamente.</div>' +
     '<div class="bloco-calc" style="margin-top:10px">' +
     NUTRI_KEYS.map(k => '<div><label for="nutriIng_' + k.k + '">' + esc(k.rotulo) + '</label><input type="text" inputmode="decimal" id="nutriIng_' + k.k + '" placeholder="0" value="' + val(k.k) + '"></div>').join('') +
     '</div>' +
