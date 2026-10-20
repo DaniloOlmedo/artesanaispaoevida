@@ -4530,7 +4530,7 @@ function renderCaixa(){
   $('tabelaCaixaPendentes').innerHTML = pend.length ? pend.map(p =>
     '<tr><td>' + fmtData(p.data) + '<br><small class="suave">' + esc(p.horario) + '</small></td><td>' + (p.senha ? '<span class="senha">' + p.senha + '</span>' : '—') + '</td><td>' + esc(p.cliente) + '</td><td>' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</td><td class="n"><b>' + brl(p.total) + '</b></td><td class="acoes"><button class="btn pequeno" onclick="receberPedido(\'' + p.pedidoId + '\')">💰 Receber</button>' + (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + p.pedidoId + '\')" aria-label="Avisar no WhatsApp">💬</button>' : '') + '</td></tr>'
   ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum pedido pendente. 👍</div></td></tr>';
-  renderProdutosDoDia(); renderResumoMensal(); renderMei(); atualizarBadges(); renderConferenciaCartao(); renderConferenciasCartaoLista();
+  renderProdutosDoDia(); renderResumoMensal(); renderMei(); renderDasMei(); atualizarBadges(); renderConferenciaCartao(); renderConferenciasCartaoLista();
 }
 function cardHTML(titulo, valor, sub, cls){ return '<div class="card ' + (cls || '') + '"><h3>' + esc(titulo) + '</h3><div class="valor">' + valor + '</div>' + (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') + '</div>'; }
 /* ---------- Conferência do cartão: confere se a taxa descontada pela maquininha bate com a configurada ---------- */
