@@ -4781,7 +4781,7 @@ function valorDasMei(ativ){
 }
 function competenciasDasMei(){
   const hoje = new Date(); const lista = [];
-  for(let i = 0; i < 14; i++){
+  for(let i = -2; i <= 13; i++){
     const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
     lista.push(d.getFullYear() + '-' + pad2(d.getMonth() + 1));
   }
