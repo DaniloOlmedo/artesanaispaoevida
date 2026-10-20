@@ -160,6 +160,14 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 .barra.verde>i{background:#2e7d32}
 .barra.laranja>i{background:var(--laranja)}.barra.vermelho>i{background:var(--erro)}
 
+/* Funil financeiro */
+.funil{display:flex;flex-direction:column;gap:3px;align-items:center;margin:8px 0}
+.funil-etapa{min-width:62%;padding:9px 12px;text-align:center;color:#fff;border-radius:3px;line-height:1.25;box-sizing:border-box}
+.funil-etapa small{display:block;font-size:.76rem;opacity:.92}
+.funil-etapa b{display:block;font-size:1.08rem}
+.funil-etapa .pct{font-size:.72rem;opacity:.85}
+.funil-etapa.neg b{color:#ffd0d0}
+.funil-resumo{text-align:center;font-weight:700;margin:10px 0 4px}
 /* Segmentado */
 .seg{display:inline-flex;border:1px solid var(--campo-borda);border-radius:8px;overflow:hidden}
 .seg button{width:auto;border:none;background:var(--campo);padding:10px 16px;cursor:pointer;font-weight:600}
@@ -217,7 +225,6 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 .etiqueta-prev .etq-logo{display:block;max-width:55%;max-height:50px;width:auto;height:auto;margin:0 auto 4px}
 .etiqueta-prev .etq-marca{text-align:center;font-weight:bold;font-size:.78rem;margin-bottom:3px}
 .etiqueta-prev .etq-produto{text-align:center;font-weight:bold;font-size:.78rem;margin-bottom:5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.etiqueta-prev .etq-gluten{text-align:center;font-weight:900;font-size:.8rem;color:#000;border:2px solid #000;padding:2px 4px;margin-bottom:4px;letter-spacing:.03em}
 .etiqueta-prev .etq-linha{border-bottom:1px dashed #999;margin:4px 0}
 .etiqueta-prev .etq-kv{display:flex;justify-content:space-between;font-size:.74rem;padding:1px 0}
 .etiqueta-prev .etq-ingred{font-size:.62rem;line-height:1.3;margin-top:4px;border-top:1px dashed #999;padding-top:4px}
@@ -250,7 +257,6 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
   .comanda-impressao .etq-logo{display:block;max-width:55%;max-height:60px;width:auto;height:auto;margin:0 auto 4px}
   .comanda-impressao .etq-marca{text-align:center;font-size:10px;font-weight:bold;margin-bottom:3px}
   .comanda-impressao .etq-produto{text-align:center;font-size:11px;font-weight:bold;margin:3px 0;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .comanda-impressao .etq-gluten{text-align:center;font-weight:900;font-size:13px;color:#000;border:2px solid #000;padding:2px 4px;margin:3px 0 4px;letter-spacing:.03em}
   .comanda-impressao .etq-linha{border-bottom:2px dashed #666;margin:4px 0}
   .comanda-impressao .etq-kv{display:flex;justify-content:space-between;font-size:10px;font-weight:bold;padding:1px 0}
   .comanda-impressao .etq-ingred{font-size:8px;font-weight:normal;line-height:1.25;margin-top:4px;border-top:1px dashed #666;padding-top:4px}
@@ -497,6 +503,10 @@ body.modo-totem>header,body.modo-totem>#faixaAvisos,body.modo-totem>nav,body.mod
     <div class="cab-painel"><h2 id="dashTituloMes">📊 Resumo do mês</h2>
       <div><input type="month" id="dashMesSel" style="width:auto" onchange="renderDashboard()" aria-label="Mês do resumo"></div></div>
     <div class="grade" id="dashMes"></div>
+  </div>
+  <div class="painel">
+    <h2>🔻 Funil financeiro</h2>
+    <div id="dashFunil"></div>
   </div>
   <div class="painel">
     <h2>💳 Situação financeira</h2>
@@ -5237,7 +5247,6 @@ function renderSaboresEtiqueta(){
     if(!ETQ_SABOR || !sabores.some(s => s.id === ETQ_SABOR)) ETQ_SABOR = sabores[0].id;
     $('etqSabores').innerHTML = sabores.map(s => '<button type="button" class="tt-chip' + (s.id === ETQ_SABOR ? ' on' : '') + '" onclick="selecionarSaborEtiqueta(\'' + s.id + '\')">' + esc(s.nome) +
       ' <span onclick="event.stopPropagation();vincularFichaSabor(\'' + s.id + '\')" title="' + (s.fichaId ? 'Ficha vinculada — clique pra trocar' : 'Vincular a uma ficha (puxa os ingredientes pra etiqueta)') + '" style="opacity:' + (s.fichaId ? '1' : '.6') + '">🔗</span>' +
-      ' <span onclick="event.stopPropagation();definirGlutenSabor(\'' + s.id + '\')" title="' + (s.gluten ? textoGluten(s.gluten) + ' — clique pra trocar' : 'Informar se contém glúten (Lei 10.674/2003)') + '" style="opacity:' + (s.gluten ? '1' : '.6') + '">🌾</span>' +
       ' <span onclick="event.stopPropagation();removerSaborEtiqueta(\'' + s.id + '\')" title="Remover sabor" style="opacity:.7">✕</span></button>').join('');
   }
   atualizarPreviaEtiqueta();
@@ -5271,17 +5280,6 @@ function vincularFichaSabor(id){
   ], salvar: v => {
     s.fichaId = v.fichaId || null; salvar('etiquetaSabores'); renderSaboresEtiqueta();
     toast(s.fichaId ? 'Ficha vinculada.' : 'Vínculo removido.', 'ok');
-  }});
-}
-function definirGlutenSabor(id){
-  const s = BD.etiquetaSabores.find(x => x.id === id); if(!s) return;
-  formModal({titulo: 'Glúten — ' + s.nome, campos: [
-    {id: 'gluten', rotulo: 'Esse sabor contém glúten? (Lei 10.674/2003 — obrigatório em todo alimento industrializado)', tipo: 'select', valor: s.gluten || '', opcoes: [
-      {v: '', t: '(não informado — não imprime nada na etiqueta)'}, {v: 'sim', t: 'Contém glúten'}, {v: 'nao', t: 'Não contém glúten'}
-    ]}
-  ], salvar: v => {
-    s.gluten = v.gluten || null; salvar('etiquetaSabores'); renderSaboresEtiqueta();
-    toast(s.gluten ? textoGluten(s.gluten) + ' marcado pra "' + s.nome + '".' : 'Informação de glúten removida.', 'ok');
   }});
 }
 function adicionarSaborEtiqueta(){
@@ -5367,7 +5365,6 @@ function dadosEtiquetaAtual(){
   const copias = ETQ_COPIAS;
   return {tipo: ETQ_TIPO, sabor, quantidade: ETQ_QTD, unidade, produzidoEm, validadeEm, responsavel, nutriReceita, nutriCalc, nutriModo, copias};
 }
-function textoGluten(g){ return g === 'sim' ? 'CONTÉM GLÚTEN' : (g === 'nao' ? 'NÃO CONTÉM GLÚTEN' : ''); }
 function ingredientesDeFichaTxt(fichaId){
   const f = fichaId && BD.fichas.find(x => x.id === fichaId);
   if(!f || !f.itens || !f.itens.length) return '';
@@ -5409,10 +5406,8 @@ function nutriMiniHTML(r, c){
 function textoEtiqueta(d, lote){
   const un = d.unidade === 'unidade' ? (d.quantidade > 1 ? 'unidades' : 'unidade') : (d.quantidade > 1 ? 'pacotes' : 'pacote');
   const ing = d.sabor && d.sabor.fichaId ? ingredientesDeFichaTxt(d.sabor.fichaId) : '';
-  const gluten = d.sabor ? textoGluten(d.sabor.gluten) : '';
   return nomeNegocio().toUpperCase() + '\n' +
     tipoEtiquetaEmoji(d.tipo) + ' ' + tipoEtiquetaLabel(d.tipo).toUpperCase() + (d.sabor ? ' - ' + d.sabor.nome.toUpperCase() : '') + '\n' +
-    (gluten ? gluten + '\n' : '') +
     'Lote: ' + lote + '\n' +
     'Qtd: ' + d.quantidade + ' ' + un + '\n' +
     'Produzido: ' + fmtData(d.produzidoEm) + '\n' +
@@ -5429,7 +5424,6 @@ function etiquetaIdentHTML(d, lote){
   return (temLogo() ? '<img class="etq-logo" src="' + BD.config.negocioLogo + '" alt="">' : '') +
     '<div class="etq-marca">' + esc(nomeNegocio().toUpperCase()) + '</div>' +
     '<div class="etq-produto">' + tipoEtiquetaEmoji(d.tipo) + ' ' + esc(tipoEtiquetaLabel(d.tipo).toUpperCase()) + (saborNome ? ' ' + esc(String(saborNome).toUpperCase()) : '') + '</div>' +
-    (d.sabor && textoGluten(d.sabor.gluten) ? '<div class="etq-gluten">' + esc(textoGluten(d.sabor.gluten)) + '</div>' : '') +
     '<div class="etq-linha"></div>' +
     '<div class="etq-kv"><span>Lote</span><b>' + esc(lote) + '</b></div>' +
     '<div class="etq-kv"><span>Qtd</span><b>' + d.quantidade + ' ' + un + '</b></div>' +
@@ -5468,7 +5462,7 @@ function registrarEtiqueta(){
   const lote = gerarNumeroLoteEtiqueta(d.produzidoEm);
   // "Cópias" = quantos pacotes iguais saíram dessa fornada; o estoque do lote soma tudo (copias × quantidade por pacote).
   BD.etiquetaLotes.push({
-    id: uid(), tipo: d.tipo, saborId: d.sabor.id, sabor: d.sabor.nome, gluten: d.sabor.gluten || null,
+    id: uid(), tipo: d.tipo, saborId: d.sabor.id, sabor: d.sabor.nome,
     lote, quantidade: d.quantidade * d.copias, unidade: d.unidade,
     produzidoEm: d.produzidoEm, validadeEm: d.validadeEm, responsavel: d.responsavel || '',
     nutriReceitaId: d.nutriReceita ? d.nutriReceita.id : null,
@@ -5541,7 +5535,7 @@ async function excluirLoteEtiqueta(id){
 }
 function reimprimirLoteEtiqueta(id){
   const l = BD.etiquetaLotes.find(x => x.id === id); if(!l) return;
-  const saborAtual = (l.saborId && BD.etiquetaSabores.find(s => s.id === l.saborId)) || {nome: l.sabor, gluten: l.gluten};
+  const saborAtual = (l.saborId && BD.etiquetaSabores.find(s => s.id === l.saborId)) || {nome: l.sabor};
   const nutriReceita = l.nutriReceitaId ? BD.nutriReceitas.find(r => r.id === l.nutriReceitaId) : null;
   const nutriCalc = nutriReceita ? nutriComputeReceita(nutriReceita) : null;
   const html = etiquetaHTML({tipo: l.tipo, sabor: saborAtual, quantidade: l.quantidade, unidade: l.unidade, produzidoEm: l.produzidoEm, validadeEm: l.validadeEm, responsavel: l.responsavel || '', nutriReceita, nutriCalc, nutriModo: 'junto'}, l.lote);
@@ -6333,6 +6327,30 @@ function simHTML(){
 }
 let DASH_PEND_ABERTO = false;
 function alternarPendenciasDash(){ DASH_PEND_ABERTO = !DASH_PEND_ABERTO; renderDashboard(); }
+function funilHTML(mes){
+  const m = resultadoMes(mes);
+  if(!(m.fat > 0)) return '<div class="aviso">Sem vendas em ' + fmtMes(mes) + ' para montar o funil.</div>';
+  const desp = (BD.despesas || []).filter(d => (d.data || '').startsWith(mes));
+  const invest = soma(desp.filter(d => d.categoria === 'Equipamento'), d => d.valor);
+  const naoOp = soma(desp.filter(d => d.categoria === CAT_PROLABORE), d => d.valor);
+  const fixas = m.despesas - invest - naoOp;
+  const varia = m.custo + m.taxas + m.perdas;
+  const mc = m.fat - varia, lucroAntes = mc - fixas, lucroOp = lucroAntes - invest, liq = lucroOp - naoOp;
+  const cores = ['#0b3d6e','#14558f','#1f6faf','#3a88c4','#5aa0d4','#78b4e0','#93c4e8','#aed3ee','#2e7d32'];
+  const et = [
+    ['Faturamento', m.fat], ['(−) Custos variáveis (produtos, taxas, perdas)', -varia], ['(=) Margem de contribuição', mc],
+    ['(−) Despesas fixas/operacionais', -fixas], ['(=) Lucro operacional antes dos investimentos', lucroAntes],
+    ['(−) Investimentos (equipamentos)', -invest], ['(=) Lucro operacional', lucroOp],
+    ['(−) Movimentações não operacionais (retiradas)', -naoOp], ['(=) Resultado líquido', liq]
+  ];
+  const html = et.map((e, i) => {
+    const v = e[1], neg = v < 0 && e[0].indexOf('(=)') === 0 || (e[0].indexOf('(=)') === 0 && v < 0);
+    const w = Math.max(62, Math.min(100, Math.abs(v) / m.fat * 100));
+    return '<div class="funil-etapa' + (neg ? ' neg' : '') + '" style="width:' + w + '%;background:' + cores[i] + '"><small>' + e[0] + '</small><b>' + brl(Math.abs(v)) + (v < 0 && e[0].indexOf('(−)') === 0 ? '' : '') + '</b><span class="pct">' + fmt(v / m.fat * 100, 1) + '% do faturamento</span></div>';
+  }).join('');
+  return '<div class="funil">' + html + '</div><div class="funil-resumo">Entraram ' + brl(m.fat) + ' em vendas. No fim, ' + (liq >= 0 ? 'sobraram ' : 'faltaram ') + brl(Math.abs(liq)) + '.</div>' +
+    '<p class="pequeno-txt suave">Classificação: categoria "Equipamento" = investimento; "' + CAT_PROLABORE + '" = não operacional; demais despesas = fixas/operacionais.' + (Math.abs(liq - m.liquido) > 0.01 ? ' ⚠️ Diferença para o lucro líquido do resumo: ' + brl(liq - m.liquido) : '') + '</p>';
+}
 function renderDashboard(){
   const selMes = $('dashMesSel'); if(selMes && !selMes.value) selMes.value = mesAtual();
   const mes = (selMes && selMes.value) || mesAtual(); const m = resultadoMes(mes), ant = resultadoMes(mesAnterior(mes));
@@ -6376,6 +6394,7 @@ function renderDashboard(){
       ? '<div class="aviso alerta-a">⚠️ Você já retirou ' + brl(rl.jaRetirado - rl.limite) + ' além do limite seguro este mês. Isso está sangrando o caixa da empresa — ou tem contas a pagar que podem atrasar.</div>'
       : '<p class="pequeno-txt suave">Ainda pode retirar com segurança: <b>' + brl(rl.aindaPode) + '</b>. Lance cada retirada em Despesas, categoria "' + CAT_PROLABORE + '", pra esse cálculo ficar sempre atualizado.</p>');
   $('dashSemaforo').innerHTML = semaforoLucro(mes);
+  $('dashFunil').innerHTML = funilHTML(mes);
   $('dashSaude').innerHTML = saudeFinanceira(mes);
   $('dashMetas').innerHTML = metasHTML(mes);
   if(!document.activeElement || !document.activeElement.closest || !document.activeElement.closest('#dashSim')) $('dashSim').innerHTML = simHTML();
