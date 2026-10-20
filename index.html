@@ -525,7 +525,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   <button class="nav-btn" data-p="nutricional" onclick="irPara('nutricional')">🔬 Nutricional</button>
   <span class="nav-titulo">Negócio</span>
   <button class="nav-btn" data-p="compras" onclick="irPara('compras')">🧾 Compras</button>
-  <button class="nav-btn" data-p="conciliacao" onclick="irPara('conciliacao')">🏦 Conciliação</button>
+  <button class="nav-btn" data-p="conciliacao" onclick="irPara('conciliacao')">🏦 Conciliação bancária</button>
   <button class="nav-btn" data-p="custos" onclick="irPara('custos')">💰 Custos</button>
   <button class="nav-btn" data-p="clientes" onclick="irPara('clientes')">👤 Clientes</button>
   <button class="nav-btn" data-p="locais" onclick="irPara('locais')">📍 Locais</button>
@@ -569,7 +569,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <h3>Negócio</h3>
       <div class="inicio-grade">
         <button type="button" class="botao-inicio" data-p="compras" onclick="irPara('compras')"><span class="emoji">🧾</span><span class="rotulo">Compras</span></button>
-        <button type="button" class="botao-inicio" data-p="conciliacao" onclick="irPara('conciliacao')"><span class="emoji">🏦</span><span class="rotulo">Conciliação</span></button>
+        <button type="button" class="botao-inicio" data-p="conciliacao" onclick="irPara('conciliacao')"><span class="emoji">🏦</span><span class="rotulo">Conciliação bancária</span></button>
         <button type="button" class="botao-inicio" data-p="custos" onclick="irPara('custos')"><span class="emoji">💰</span><span class="rotulo">Custos</span></button>
         <button type="button" class="botao-inicio" data-p="clientes" onclick="irPara('clientes')"><span class="emoji">👤</span><span class="rotulo">Clientes</span></button>
         <button type="button" class="botao-inicio" data-p="locais" onclick="irPara('locais')"><span class="emoji">📍</span><span class="rotulo">Locais</span></button>
@@ -629,6 +629,8 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <h2>📥 Importar extrato</h2>
     <div class="aviso">Baixe o extrato no app ou site do seu banco (ou da maquininha) em <b>OFX</b> ou <b>CSV</b> e envie aqui. O sistema compara cada entrada e saída com as vendas e despesas já lançadas, sem apagar nada.</div>
     <div class="grade-form">
+      <div><label for="concConta">Este extrato é de qual conta?</label><select id="concConta"></select>
+        <button class="btn cinza pequeno" type="button" onclick="concNovaConta()">➕ Adicionar conta</button></div>
       <div><label for="concArquivo">Arquivo do extrato (.ofx, .csv, .txt)</label><input type="file" id="concArquivo" accept=".ofx,.csv,.txt,text/csv,application/x-ofx" onchange="concImportarArquivo(event)"></div>
     </div>
     <details style="margin-top:10px"><summary>Ou cole o texto do extrato / lance um item à mão</summary>
@@ -641,10 +643,12 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div class="cab-painel"><h2>🏦 Conciliar</h2>
       <div class="grupo-botoes" style="gap:8px">
         <input type="month" id="concMes" style="width:auto" onchange="renderConciliacao()" aria-label="Mês do extrato">
+        <select id="concContaFiltro" style="width:auto" onchange="renderConciliacao()" aria-label="Conta"></select>
         <select id="concFiltro" style="width:auto" onchange="renderConciliacao()" aria-label="Filtro">
           <option value="pendente">Pendentes</option><option value="conciliado">Conciliados</option><option value="ignorado">Ignorados</option><option value="todos">Todos</option>
         </select>
       </div></div>
+    <div id="concPorConta"></div>
     <div class="grade" id="concResumo"></div>
     <div class="grupo-botoes"><button class="btn" type="button" onclick="concAuto()">⚡ Conciliar automaticamente</button><button class="btn cinza" type="button" onclick="concLimparMes()">🗑️ Apagar extrato do mês</button></div>
     <div id="concLista"></div>
@@ -652,6 +656,51 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   <div class="painel">
     <h2>🔎 Lançado no sistema, mas não apareceu no banco</h2>
     <div id="concFaltando"></div>
+  </div>
+  <div class="painel">
+    <h2>🔍 Auditoria de taxas da maquininha</h2>
+    <p class="suave pequeno-txt">Compara o que você vendeu no cartão com o que a maquininha realmente repassou, e mostra a taxa efetivamente cobrada. Importe antes o extrato onde o repasse cai (ex.: Santander).</p>
+    <div class="grade-form">
+      <div><label for="audMes">Mês final</label><input type="month" id="audMes" onchange="renderAuditoria()"></div>
+      <div><label for="audN">Quantos meses somar</label><select id="audN" onchange="renderAuditoria()"><option value="1">1 mês</option><option value="2">2 meses</option><option value="3">3 meses</option></select></div>
+      <div><label for="audConta">Conta do repasse</label><select id="audConta" onchange="renderAuditoria()"></select></div>
+      <div><label for="audTexto">Descrição contém</label><input type="text" id="audTexto" value="getnet" oninput="renderAuditoria()" placeholder="ex.: getnet (vazio = todas as entradas)"></div>
+      <div><label for="audLag">Repasse chega quantos dias depois</label><input type="text" inputmode="numeric" id="audLag" value="1" oninput="renderAuditoria()"></div>
+    </div>
+    <div id="audRes"></div>
+  </div>
+  <div class="painel">
+    <h2>📖 Manual da conciliação bancária</h2>
+    <p class="suave">Conciliar é conferir se o que está no <b>extrato do banco</b> bate com o que você lançou no sistema (vendas e despesas). Faça uma vez por semana ou ao fim do mês.</p>
+    <h3>Passo 1 — Baixe o extrato</h3>
+    <p>No app ou site do banco/maquininha, procure <b>Extrato → Exportar</b> e escolha <b>OFX</b> (melhor) ou <b>CSV</b>. Baixe o período desejado (um mês é o ideal). Faça isso para cada conta: Santander, Stone/Ton, Infinity Pay, Mercado Pago, Getnet e fatura do cartão.</p>
+    <h3>Passo 2 — Importe no sistema</h3>
+    <p>Vá em <b>Conciliação bancária → Importar</b>. Em <i>Este extrato é de qual conta?</i> escolha a conta certa, depois clique em <i>Escolher arquivo</i> e envie. O sistema avisa quantos lançamentos entraram. Importar o mesmo arquivo de novo não duplica nada. Se a conta não existir na lista, use <i>Adicionar conta</i>.</p>
+    <h3>Passo 3 — Concilie automaticamente</h3>
+    <p>Abra a aba <b>Conciliar</b>, escolha o mês e clique em <b>⚡ Conciliar automaticamente</b>. O sistema liga sozinho as entradas às suas vendas (por pedido ou pelo total do dia) e as saídas às suas despesas, quando o valor e a data batem.</p>
+    <h3>Passo 4 — Resolva o que sobrou (pendentes)</h3>
+    <p>Em cada item pendente use o botão que couber:</p>
+    <ul>
+      <li><b>✔️ Confirmar sugestão</b> — o sistema achou a venda ou despesa parecida; confira e confirme.</li>
+      <li><b>Conciliar com…</b> — escolha você mesmo a venda ou despesa na lista.</li>
+      <li><b>Lançar como despesa</b> — saída que ainda não estava no sistema (ex.: tarifa, compra). Escolha a categoria. Retirada para sua conta pessoal: categoria <i>Retirada/Pró-labore</i>.</li>
+      <li><b>🔁 Transf./repasse</b> — repasse da maquininha para o banco, transferência entre suas contas ou pagamento da fatura do cartão. Não é venda nem despesa nova.</li>
+      <li><b>Ignorar</b> — algo que não é do negócio.</li>
+      <li><b>↩️ Desfazer</b> — corrige um item conciliado por engano.</li>
+    </ul>
+    <h3>Passo 5 — Veja o que não apareceu no banco</h3>
+    <p>Na aba <b>Faltando no banco</b> estão as vendas e despesas lançadas no sistema que não têm correspondência no extrato. Dinheiro vivo nunca aparece no banco; o resto pode ser depósito que ainda não caiu ou lançamento errado.</p>
+    <h3>Passo 6 — Audite a taxa da maquininha</h3>
+    <p>Na aba <b>Auditoria de taxas</b> escolha a conta onde o repasse cai (ex.: Santander), deixe em <i>Descrição contém</i> o nome que aparece nos créditos (ex.: getnet) e some 2–3 meses. O sistema mostra a taxa efetiva cobrada e avisa se passou da taxa cadastrada (ex.: 1,39%).</p>
+    <h3>Como organizar suas contas</h3>
+    <ul>
+      <li><b>Maquininhas com conta (Stone/Ton, Infinity Pay, Mercado Pago):</b> importe o extrato de cada uma.</li>
+      <li><b>Getnet:</b> o dinheiro cai no Santander. Marque esse crédito como <i>Transf./repasse</i> e use a Auditoria para conferir a taxa.</li>
+      <li><b>Cartão de crédito:</b> importe a fatura, lance cada compra como despesa e marque o pagamento da fatura no Santander como <i>Transf./repasse</i>.</li>
+      <li><b>Conta pessoal:</b> não importe. Registre só a retirada como despesa <i>Retirada/Pró-labore</i>.</li>
+    </ul>
+    <div class="aviso">Dica: o quadro <b>por conta</b> no topo de Conciliar mostra entradas, saídas, saldo do mês e pendências de cada conta. O objetivo é zerar os pendentes.</div>
+    <div class="aviso alerta-a">Seus dados ficam apenas neste aparelho. Faça backup em <b>Dados</b> depois de conciliar.</div>
   </div>
 </section>
 
@@ -7783,7 +7832,7 @@ const SUBABAS = {
   estoque: [['📦','Cadastro',['Estoque —']], ['🔢','Contagem',['Contagem','Fechamento do dia']], ['🗑️','Perdas',['Sobras']]],
   vendas: [['🛒','Pedido',['Tirar pedido']], ['📋','Registrados',['Pedidos registrados']], ['📝','Histórico',['retroativa','históricos']]],
   nutricional: [['🔬','Tabela',['Tabela nutricional']], ['📂','Receitas',['Receitas salvas']], ['🧪','Ingredientes',['Ingredientes']]],
-  conciliacao: [['📥','Importar',['Importar extrato']], ['🏦','Conciliar',['Conciliar']], ['🔎','Faltando no banco',['não apareceu']]]
+  conciliacao: [['📥','Importar',['Importar extrato']], ['🏦','Conciliar',['Conciliar']], ['🔎','Faltando no banco',['não apareceu']], ['🔍','Auditoria de taxas',['Auditoria']], ['📖','Manual',['Manual']]]
 };
 const SUBABA_ATUAL = {};
 function aplicarSubAbas(id){
@@ -7812,6 +7861,27 @@ function trocarSubAba(id, i){
 /* =====================================================================
    CONCILIAÇÃO BANCÁRIA — extrato (OFX/CSV) × vendas e despesas
    ===================================================================== */
+const CONC_CONTAS_PADRAO = [
+  {id: 'santander', nome: 'Santander', tipo: 'banco'}, {id: 'stone', nome: 'Stone/Ton', tipo: 'maquininha'},
+  {id: 'infinitepay', nome: 'Infinity Pay', tipo: 'maquininha'}, {id: 'mercadopago', nome: 'Mercado Pago', tipo: 'banco'},
+  {id: 'getnet', nome: 'Getnet (repassa ao Santander)', tipo: 'adquirente'}, {id: 'cartao', nome: 'Cartão de crédito (fatura)', tipo: 'cartao'}
+];
+function concContas(){ if(!Array.isArray(BD.config.contasBanc) || !BD.config.contasBanc.length) BD.config.contasBanc = clona(CONC_CONTAS_PADRAO); return BD.config.contasBanc; }
+function concNomeConta(id){ const c = concContas().find(x => x.id === id); return c ? c.nome : 'Sem conta'; }
+function concPreencherContas(){
+  const op = concContas().map(c => '<option value="' + esc(c.id) + '">' + esc(c.nome) + '</option>').join('');
+  const a = $('concConta'), f = $('concContaFiltro'); if(!a || !f) return;
+  const va = a.value, vf = f.value;
+  a.innerHTML = op; f.innerHTML = '<option value="todas">Todas as contas</option>' + op;
+  if(va && concContas().some(c => c.id === va)) a.value = va; if(vf) f.value = vf;
+}
+function concNovaConta(){
+  formModal({titulo: 'Nova conta', campos: [{id: 'nome', rotulo: 'Nome da conta (ex.: Nubank PJ)', valor: ''}], salvar: v => {
+    if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
+    concContas().push({id: 'c' + uid(), nome: v.nome, tipo: 'banco'}); salvarAgora('config'); concPreencherContas();
+    $('concConta').value = concContas()[concContas().length - 1].id; toast('Conta adicionada.', 'ok');
+  }});
+}
 function concData(s){
   s = String(s || '').trim(); let m;
   if((m = s.match(/^(\d{4})-?(\d{2})-?(\d{2})/))) return m[1] + '-' + m[2] + '-' + m[3];
@@ -7882,13 +7952,15 @@ function concParseCSV(txt){
   });
   return out;
 }
-function concAdicionar(itens, origem){
-  const chave = x => (x.fitid ? 'f|' + x.fitid : 'd|' + x.desc.toLowerCase()) + '|' + x.data + '|' + x.valor;
-  const ja = new Set(BD.conciliacao.map(chave)); let novos = 0, dup = 0;
+function concAdicionar(itens, origem, conta){
+  conta = conta || ($('concConta') && $('concConta').value) || '';
+  const chave = x => (x.conta || '') + '|' + (x.fitid ? 'f|' + x.fitid : 'd|' + x.desc.toLowerCase()) + '|' + x.data + '|' + x.valor;
+  const ja = new Set(BD.conciliacao.map(chave));
+  itens = itens.map(x => ({...x, conta})); let novos = 0, dup = 0;
   itens.forEach(x => {
     if(ja.has(chave(x))){ dup++; return; }
     ja.add(chave(x)); novos++;
-    BD.conciliacao.push({id: uid(), data: x.data, desc: x.desc, valor: x.valor, fitid: x.fitid || '', origem, status: 'pendente', ref: null});
+    BD.conciliacao.push({id: uid(), conta: x.conta, data: x.data, desc: x.desc, valor: x.valor, fitid: x.fitid || '', origem, status: 'pendente', ref: null});
   });
   salvarAgora('conciliacao');
   const datas = itens.map(x => x.data).sort(); if(datas.length && $('concMes')) $('concMes').value = datas[datas.length - 1].slice(0, 7);
@@ -7922,11 +7994,12 @@ function concImportarArquivo(ev){
 function concLancarManual(){
   formModal({titulo: 'Lançar item do extrato', campos: [
     {id: 'data', rotulo: 'Data', tipo: 'data', valor: dataHoje()},
+    {id: 'conta', rotulo: 'Conta', tipo: 'select', valor: $('concConta').value, opcoes: concContas().map(c => ({v: c.id, t: c.nome}))},
     {id: 'desc', rotulo: 'Descrição', valor: ''},
     {id: 'valor', rotulo: 'Valor (R$) — negativo para saída', tipo: 'numero', valor: ''}
   ], salvar: v => {
     if(!v.data || !v.desc || !isFinite(v.valor) || !v.valor){ toast('Preencha data, descrição e valor.', 'alerta'); return false; }
-    concAdicionar([{data: v.data, valor: r2(v.valor), desc: v.desc, fitid: ''}], 'manual');
+    concAdicionar([{data: v.data, valor: r2(v.valor), desc: v.desc, fitid: ''}], 'manual', v.conta);
   }});
 }
 function concUsados(exceto){
@@ -8003,6 +8076,7 @@ function concDespesa(id){
     toast('Despesa lançada e conciliada.', 'ok');
   }});
 }
+function concInterna(id){ const l = BD.conciliacao.find(x => x.id === id); if(!l) return; concConciliar(id, 'interna', 'i' + id, l.valor > 0 ? 'Repasse / transferência entre contas (entrada)' : 'Transferência entre contas / pagamento de fatura (saída)'); }
 function concIgnorar(id){ const l = BD.conciliacao.find(x => x.id === id); if(!l) return; l.status = 'ignorado'; l.ref = null; salvarAgora('conciliacao'); renderConciliacao(); }
 function concDesfazer(id){ const l = BD.conciliacao.find(x => x.id === id); if(!l) return; l.status = 'pendente'; l.ref = null; salvarAgora('conciliacao'); renderConciliacao(); }
 async function concExcluir(id){
@@ -8026,9 +8100,16 @@ async function concLimparMes(){
 }
 function renderConciliacao(){
   if(!$('concMes')) return;
+  concPreencherContas();
   if(!$('concMes').value){ const ult = BD.conciliacao.map(l => l.data).sort().pop(); $('concMes').value = ult ? ult.slice(0, 7) : mesAtual(); }
   const mes = $('concMes').value; const filtro = $('concFiltro').value;
-  const doMes = BD.conciliacao.filter(l => l.data.startsWith(mes)).sort((a, b) => b.data.localeCompare(a.data));
+  const fConta = $('concContaFiltro').value || 'todas';
+  const todosMes = BD.conciliacao.filter(l => l.data.startsWith(mes));
+  const idsConta = Array.from(new Set(todosMes.map(l => l.conta || '')));
+  $('concPorConta').innerHTML = idsConta.length ? '<div class="tabela-wrap"><table class="tabela"><thead><tr><th>Conta</th><th class="n">Entradas</th><th class="n">Saídas</th><th class="n">Saldo do mês</th><th class="n">Pendentes</th></tr></thead><tbody>' +
+    idsConta.map(c => { const ls = todosMes.filter(l => (l.conta || '') === c); const e = soma(ls.filter(l => l.valor > 0), l => l.valor), sa = soma(ls.filter(l => l.valor < 0), l => -l.valor);
+      return '<tr><td>' + esc(concNomeConta(c)) + '</td><td class="n">' + brl(e) + '</td><td class="n">' + brl(sa) + '</td><td class="n"><b class="' + (e - sa >= 0 ? 'ok' : 'erro') + '">' + brl(e - sa) + '</b></td><td class="n">' + ls.filter(l => l.status === 'pendente').length + '</td></tr>'; }).join('') + '</tbody></table></div>' : '';
+  const doMes = todosMes.filter(l => fConta === 'todas' || (l.conta || '') === fConta).sort((a, b) => b.data.localeCompare(a.data));
   const ent = soma(doMes.filter(l => l.valor > 0), l => l.valor), sai = soma(doMes.filter(l => l.valor < 0), l => -l.valor);
   const pend = doMes.filter(l => l.status === 'pendente'), conc = doMes.filter(l => l.status === 'conciliado');
   $('concResumo').innerHTML = cardHTML('Entradas no banco', brl(ent), doMes.filter(l => l.valor > 0).length + ' lançamento(s)') + cardHTML('Saídas no banco', brl(sai), doMes.filter(l => l.valor < 0).length + ' lançamento(s)') +
@@ -8043,15 +8124,48 @@ function renderConciliacao(){
       ? (melhor ? '<button class="btn" type="button" onclick="concConciliar(\'' + l.id + '\',\'' + melhor.tipo + '\',\'' + String(melhor.id).replace(/'/g, '') + '\',' + esc(JSON.stringify(melhor.rotulo)) + ')">✔️ Confirmar sugestão</button>' : '') +
         '<button class="btn cinza" type="button" onclick="concEscolher(\'' + l.id + '\')">Conciliar com…</button>' +
         (l.valor < 0 ? '<button class="btn cinza" type="button" onclick="concDespesa(\'' + l.id + '\')">Lançar como despesa</button>' : '') +
+        '<button class="btn cinza" type="button" title="Repasse da maquininha, transferência entre suas contas ou pagamento de fatura" onclick="concInterna(\'' + l.id + '\')">🔁 Transf./repasse</button>' +
         '<button class="btn cinza" type="button" onclick="concIgnorar(\'' + l.id + '\')">Ignorar</button>'
       : '<button class="btn cinza" type="button" onclick="concDesfazer(\'' + l.id + '\')">↩️ Desfazer</button>';
-    return '<div class="conc-item"><div><div class="conc-desc">' + esc(l.desc) + '<span class="selo-status ' + l.status + '">' + l.status + '</span></div><div class="conc-meta">' + fmtData(l.data) + (l.origem === 'manual' ? ' • manual' : '') + '</div></div>' +
+    return '<div class="conc-item"><div><div class="conc-desc">' + esc(l.desc) + '<span class="selo-status ' + l.status + '">' + l.status + '</span></div><div class="conc-meta">' + fmtData(l.data) + ' • ' + esc(concNomeConta(l.conta || '')) + (l.origem === 'manual' ? ' • manual' : '') + '</div></div>' +
       '<div class="conc-valor ' + (l.valor >= 0 ? 'pos' : 'neg') + '">' + brl(l.valor) + '</div>' +
       (sug.length ? '<div class="conc-sug">💡 ' + (sug.length === 1 ? 'Parece ser: ' : sug.length + ' possibilidades. Melhor: ') + esc((melhor || sug[0]).rotulo) + '</div>' : '') +
       (l.status === 'conciliado' && l.ref ? '<div class="conc-sug">🔗 ' + esc(l.ref.rotulo || l.ref.tipo) + '</div>' : '') +
       '<div class="conc-acoes">' + acoes + '<button class="btn cinza" type="button" title="Remover do extrato" onclick="concExcluir(\'' + l.id + '\')">🗑️</button></div></div>';
   }).join('') + (lista.length > 200 ? '<p class="suave pequeno-txt">Mostrando 200 de ' + lista.length + '. Use os filtros.</p>' : '');
   renderConcFaltando(mes, doMes.length > 0);
+  renderAuditoria();
+}
+function audSomaDias(iso, n){ const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return dataLocal(d); }
+function renderAuditoria(){
+  const el = $('audRes'); if(!el) return;
+  const selC = $('audConta');
+  if(!selC.options.length || selC.dataset.n !== String(concContas().length)){
+    const v = selC.value; selC.innerHTML = '<option value="todas">Todas as contas</option>' + concContas().map(c => '<option value="' + esc(c.id) + '">' + esc(c.nome) + '</option>').join('');
+    selC.dataset.n = String(concContas().length); selC.value = v || (concContas().some(c => c.id === 'santander') ? 'santander' : 'todas');
+  }
+  if(!$('audMes').value) $('audMes').value = $('concMes').value || mesAtual();
+  const mes = $('audMes').value; const n = +$('audN').value || 1; const lag = Math.round(parseNum($('audLag').value, 0));
+  const [y, m] = mes.split('-').map(Number);
+  const ini = dataLocal(new Date(y, m - n, 1)), fim = dataLocal(new Date(y, m, 0));
+  const bruto = {debito: 0, credito: 0};
+  BD.vendas.filter(v => v.pago !== false && recebidoData(v) >= ini && recebidoData(v) <= fim).forEach(v => pagamentosDaLinha(v).forEach(x => { if(bruto[x.forma] !== undefined) bruto[x.forma] += x.valor; }));
+  const vendido = r2(bruto.debito + bruto.credito);
+  if(vendido <= 0){ el.innerHTML = '<div class="aviso">Nenhuma venda em débito/crédito entre ' + fmtData(ini) + ' e ' + fmtData(fim) + '.</div>'; return; }
+  const taxaEsp = r2(bruto.debito * taxaPercForma('debito') / 100 + bruto.credito * taxaPercForma('credito') / 100);
+  const liqEsp = r2(vendido - taxaEsp); const percCad = taxaEsp / vendido * 100;
+  const di = audSomaDias(ini, lag), df = audSomaDias(fim, lag); const txt = $('audTexto').value.trim().toLowerCase(); const cf = selC.value;
+  const creds = BD.conciliacao.filter(l => l.valor > 0 && l.data >= di && l.data <= df && (cf === 'todas' || (l.conta || '') === cf) && (!txt || l.desc.toLowerCase().includes(txt))).sort((a, b) => a.data.localeCompare(b.data));
+  const recebido = r2(soma(creds, l => l.valor));
+  if(!creds.length){ el.innerHTML = '<div class="aviso">Nenhum crédito encontrado' + (txt ? ' com "' + esc(txt) + '" na descrição' : '') + ' entre ' + fmtData(di) + ' e ' + fmtData(df) + '. Importe o extrato desse período ou ajuste o filtro.</div>'; return; }
+  const efet = (vendido - recebido) / vendido * 100; const dif = r2(recebido - liqEsp);
+  const ruim = dif < -Math.max(1, vendido * 0.001);
+  el.innerHTML = '<div class="grade">' + cardHTML('Vendido no cartão', brl(vendido), fmtData(ini) + ' a ' + fmtData(fim)) + cardHTML('Taxa cadastrada', fmt(percCad, 2) + '%', 'esperado descontar ' + brl(taxaEsp)) +
+    cardHTML('Líquido esperado', brl(liqEsp), '') + cardHTML('Recebido no banco', brl(recebido), creds.length + ' crédito(s)') +
+    cardHTML('Taxa efetiva', fmt(efet, 2) + '%', 'descontado ' + brl(vendido - recebido), ruim ? 'vermelho' : '') + cardHTML('Diferença', brl(dif), dif >= 0 ? 'a seu favor / em dia' : 'a menos que o esperado', ruim ? 'vermelho' : '') + '</div>' +
+    '<div class="aviso ' + (ruim ? 'erro-a' : 'ok-a') + '">' + (ruim ? '⚠️ A taxa efetiva (' + fmt(efet, 2) + '%) está acima da cadastrada (' + fmt(percCad, 2) + '%). Pode haver taxa de antecipação, mensalidade ou tarifa descontada; confira os repasses abaixo.' : '✅ O repasse está de acordo com a taxa cadastrada (' + fmt(percCad, 2) + '%).') + '</div>' +
+    '<p class="suave pequeno-txt">Parcelas do crédito caem em meses seguintes, então a conta fecha melhor somando 2–3 meses. Ajuste os dias de atraso se o repasse cair mais tarde.</p>' +
+    '<div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Descrição</th><th class="n">Valor</th></tr></thead><tbody>' + creds.map(l => '<tr><td>' + fmtData(l.data) + '</td><td>' + esc(l.desc) + '</td><td class="n">' + brl(l.valor) + '</td></tr>').join('') + '</tbody></table></div>';
 }
 function renderConcFaltando(mes, temExtrato){
   const el = $('concFaltando'); if(!el) return;
