@@ -6261,11 +6261,12 @@ function mesclarVendasArquivo(event){
 
 /* =====================================================================
    SINCRONIZAÇÃO AUTOMÁTICA ENTRE APARELHOS (opcional, via Firebase)
-   Só sincroniza vendas, despesas, perdas, compras e fechamentos de caixa
-   (o mesmo que "Mesclar vendas" já fazia manualmente) — fichas, insumos,
-   estoque e configurações continuam só deste aparelho, como sempre.
+   Sincroniza vendas, despesas, perdas, compras, fechamentos de caixa e
+   estoque (o mesmo que "Mesclar vendas" já fazia manualmente, mais o
+   estoque) — fichas, insumos e configurações continuam só deste
+   aparelho, como sempre.
    ===================================================================== */
-const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao', 'dasMei'];
+const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao', 'dasMei', 'estoqueComponentes'];
 const SYNC_CHAVE_LS = 'syncConfig';
 // Guarda, por registro, qual foi a última versão sincronizada com sucesso — e isso
 // precisa SOBREVIVER a um recarregar de página. Sem persistir isso, todo aparelho que
@@ -6276,7 +6277,7 @@ const SYNC_CHAVE_LS = 'syncConfig';
 // mundo. É esse o motivo de pedidos "pagos" voltarem a aparecer como "pendentes".
 const SYNC_ULTIMO_CHAVE_LS = 'syncUltimoEnviado';
 let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null, _syncSalvarUltimoTimer = null;
-const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}, dasMei: {}};
+const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}, dasMei: {}, estoqueComponentes: {}};
 function syncCarregarUltimoEnviado(){
   try{
     const t = JSON.parse(localStorage.getItem(SYNC_ULTIMO_CHAVE_LS));
@@ -7914,9 +7915,9 @@ function verDetalheLocal(i){
    ===================================================================== */
 const SUBABAS = {
   dashboard: [['📊','Visão geral',['Resumo','Funil']], ['💳','Finanças',['Situação']], ['🚦','Saúde e metas',['Saúde','Metas']], ['🧪','Simulador',['Simulador']], ['📈','Movimento',['Movimento','Estoque acabando','Top 5']]],
-  caixa: [['💵','Fechamento',['Fechamento de caixa']], ['💳','Cartão',['Conferência']], ['📅','Mês',['Resumo mensal']], ['📊','Limite MEI',['limite MEI']], ['🧾','Recibo',['Recibo']]],
+  caixa: [['💵','Fechamento',['Fechamento de caixa']], ['💳','Cartão',['Conferência']], ['📅','Mês',['Resumo mensal']], ['📊','Limite MEI',['limite MEI']], ['🧾','DAS-MEI',['DAS-MEI']], ['🧾','Recibo',['Recibo']]],
   compras: [['💳','Contas a pagar',['Contas a pagar']], ['🚚','Fornecedores',['Fornecedores']], ['🧾','Compras e cupons',['Compras e cupons','Cupons cadastrados']]],
-  custos: [['📉','Despesas reais',['Despesas reais']], ['💰','Custos fixos',['Custos fixos']], ['💳','Taxas',['Taxas de pagamento']], ['⚙️','Ajustes',['Preferências','Identidade','Totem']]],
+  custos: [['📉','Despesas reais',['Despesas reais']], ['💰','Custos fixos',['Custos fixos']], ['💳','Taxas',['Taxas de pagamento']], ['⚙️','Preferências',['Preferências']], ['🏷️','Identidade',['Identidade']], ['🖥️','Totem',['Totem']]],
   estoque: [['📦','Cadastro',['Estoque —']], ['🔢','Contagem',['Contagem','Fechamento do dia']], ['🗑️','Perdas',['Sobras']]],
   vendas: [['🛒','Pedido',['Tirar pedido']], ['📋','Registrados',['Pedidos registrados']], ['📝','Histórico',['retroativa','históricos']]],
   nutricional: [['🔬','Tabela',['Tabela nutricional']], ['📂','Receitas',['Receitas salvas']], ['🧪','Ingredientes',['Ingredientes']]],
