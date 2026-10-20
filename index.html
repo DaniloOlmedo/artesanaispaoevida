@@ -1009,6 +1009,23 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Faturamento</th><th class="n">Vendas normais</th><th class="n">Históricos lançados</th><th class="n">Acumulado</th><th></th></tr></thead><tbody id="meiMesAMes"></tbody></table></div>
     <div class="dica">"Históricos" são os lançamentos retroativos. Clique em <b>Ver</b> para abrir a lista daquele mês e conferir/corrigir cada um.</div>
   </div>
+
+  <div class="painel">
+    <h2>🧾 Controle do DAS-MEI</h2>
+    <div class="aviso">Isso aqui é só um controle de pagamento, pra não perder o prazo — a emissão e o pagamento real do boleto são sempre feitos no <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" target="_blank" rel="noopener">Portal do Empreendedor (gov.br)</a>, que exige login com CPF/senha gov.br ou certificado digital. Não é possível gerar o boleto oficial por aqui.</div>
+    <div class="bloco-calc">
+      <div><label for="dasMeiAtividade">Atividade do MEI</label>
+        <select id="dasMeiAtividade" onchange="salvarAtividadeDasMei()">
+          <option value="comercio">Comércio/Indústria (ICMS)</option>
+          <option value="servico">Serviços (ISS)</option>
+          <option value="ambos">Comércio e Serviços</option>
+        </select>
+      </div>
+      <div class="fixo" style="align-self:flex-end"><button class="btn cinza" type="button" onclick="window.open('https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao','_blank')">🔗 Emitir/pagar no Portal do Empreendedor</button></div>
+    </div>
+    <div class="dica">Valores de referência 2026 (INSS 5% do salário mínimo + ICMS/ISS fixo): Comércio/Indústria R$ 82,05 · Serviços R$ 86,05 · Comércio e Serviços R$ 87,05. Confira sempre o valor exato no Portal antes de pagar — ele pode mudar com o salário mínimo.</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Competência</th><th>Vencimento</th><th class="n">Valor</th><th>Status</th><th></th></tr></thead><tbody id="dasMeiCorpo"></tbody></table></div>
+  </div>
 </section>
 
 <!-- ============ FICHAS ============ -->
@@ -1789,14 +1806,14 @@ const CHAVES = {
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
   config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores', clientes:'clientes',
   etiquetaSabores:'etiquetaSabores', etiquetaLotes:'etiquetaLotes',
-  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas', contasPagar:'contasPagar', conferenciasCartao:'conferenciasCartao', conciliacao:'conciliacao'
+  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas', contasPagar:'contasPagar', conferenciasCartao:'conferenciasCartao', conciliacao:'conciliacao', dasMei:'dasMei'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[], conciliacao:[]};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[], conciliacao:[], dasMei:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
   valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem', rodapeComanda:'',
-  etiquetaValidadeDias: {massa: 60, pizza: 60, empanada: 60},
+  etiquetaValidadeDias: {massa: 60, pizza: 60, empanada: 60}, dasMeiAtividade: 'comercio',
   // atendimento / totem
   pdvNaFila:false, capacidade:2, tempoBase:2, tempoPadraoFicha:8, calibrar:true, voz:true,
   totemPin:'', totemNome:'', totemMensagem:'Retire seu pedido no balcão quando chamarem a sua senha.', totemExigePagamento:true, totemImprimir:true, totemVias:2,
@@ -1817,7 +1834,7 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0, categoria:'Bebidas'},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0, categoria:'Bebidas'}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[], conciliacao:[]};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[], conciliacao:[], dasMei:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
@@ -2092,7 +2109,7 @@ function acharInsumo(ref){ // ref: {insumoId, nome}
   return acharInsumoPorNome(ref.nome);
 }
 function normalizarBD(){
-  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao'];
+  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei'];
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
@@ -2100,7 +2117,7 @@ function normalizarBD(){
   const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
-  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao'].forEach(k => {
+  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei'].forEach(k => {
     BD[k].forEach(x => { if(x && typeof x === 'object' && !x.id) x.id = uid(); });
   });
   BD.custos.forEach(c => { c.val = parseNum(c.val); });
@@ -2508,7 +2525,7 @@ function renderCustos(){
   $('somaCustosFixos').textContent = brl(custosFixosMensais());
   atualizarDatalistCategoriasCusto();
   renderCustoCatWrap();
-  carregarTaxasNaTela(); renderDespesas(); carregarConfigNaTela(); carregarConfigTotemNaTela();
+  carregarTaxasNaTela(); renderDespesas(); carregarConfigNaTela(); carregarConfigTotemNaTela(); renderDasMei();
   const mr = $('marcaResumo'); if(mr) mr.innerHTML = cardHTML('Nome', nomeNegocio()) + cardHTML('Logotipo', temLogo() ? '🖼️ imagem enviada' : (BD.config.negocioEmoji || '🍞')) + cardHTML('Cor principal', BD.config.corPrimaria || '#4f46e5');
 }
 
@@ -4752,6 +4769,58 @@ function renderMei(){
   $('meiProjecaoTexto').textContent = proj > limite ? 'No ritmo atual você deve ultrapassar o teto em cerca de ' + brl(proj - limite) + ' até o fim do ano.' : 'No ritmo atual você termina o ano dentro do teto.';
 }
 
+/* ---------- DAS-MEI (controle de pagamento mensal) ----------
+   Não gera boleto nenhum — isso só existe dentro do sistema da Receita (login gov.br/certificado).
+   Aqui é só um check-list pra não perder o prazo, com o valor de referência calculado pela atividade. */
+function valorDasMei(ativ){
+  const a = ativ || BD.config.dasMeiAtividade || 'comercio';
+  const inss = 81.05; // INSS = 5% do salário mínimo 2026 (R$1.621,00)
+  if(a === 'servico') return inss + 5; // + ISS fixo
+  if(a === 'ambos') return inss + 1 + 5; // + ICMS + ISS
+  return inss + 1; // comércio/indústria: + ICMS fixo
+}
+function competenciasDasMei(){
+  const hoje = new Date(); const lista = [];
+  for(let i = 0; i < 14; i++){
+    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+    lista.push(d.getFullYear() + '-' + pad2(d.getMonth() + 1));
+  }
+  return lista;
+}
+function vencimentoDasMei(competencia){
+  const [ano, mes] = competencia.split('-').map(Number);
+  let vAno = ano, vMes = mes + 1;
+  if(vMes > 12){ vMes = 1; vAno++; }
+  return vAno + '-' + pad2(vMes) + '-20';
+}
+function nomeCompetenciaDasMei(c){
+  const [ano, mes] = c.split('-').map(Number);
+  const nomes = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  return nomes[mes - 1] + '/' + ano;
+}
+function registroDasMei(competencia){ return BD.dasMei.find(x => x.competencia === competencia); }
+function salvarAtividadeDasMei(){
+  BD.config.dasMeiAtividade = $('dasMeiAtividade').value; salvar('config'); renderDasMei();
+}
+function alternarPagoDasMei(competencia){
+  let r = registroDasMei(competencia);
+  if(!r){ r = {id: uid(), competencia}; BD.dasMei.push(r); }
+  r.pago = !r.pago; r.pagoEm = r.pago ? dataHoje() : null;
+  salvar('dasMei'); renderDasMei();
+}
+function renderDasMei(){
+  const sel = $('dasMeiAtividade'); if(!sel) return;
+  if(document.activeElement !== sel) sel.value = BD.config.dasMeiAtividade || 'comercio';
+  const valor = valorDasMei(); const hoje = dataHoje();
+  $('dasMeiCorpo').innerHTML = competenciasDasMei().map(c => {
+    const r = registroDasMei(c); const pago = !!(r && r.pago); const venc = vencimentoDasMei(c);
+    const atrasado = !pago && venc < hoje;
+    const status = pago ? '<span class="tag">✅ Pago' + (r.pagoEm ? ' em ' + fmtData(r.pagoEm) : '') + '</span>' : (atrasado ? '<span class="tag vermelho">⚠️ Atrasado</span>' : '<span class="tag laranja">Pendente</span>');
+    return '<tr' + (atrasado ? ' class="alerta-l"' : '') + '><td>' + esc(nomeCompetenciaDasMei(c)) + '</td><td>' + fmtData(venc) + '</td><td class="n">' + brl(valor) + '</td><td>' + status + '</td>' +
+      '<td><button class="btn ' + (pago ? 'cinza' : '') + ' pequeno" type="button" onclick="alternarPagoDasMei(\'' + c + '\')">' + (pago ? 'Desmarcar' : 'Marcar pago') + '</button></td></tr>';
+  }).join('');
+}
+
 /* ---------- exportações ---------- */
 function csvEscape(v){ const s = String(v === null || v === undefined ? '' : v); return /[";\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
 const numCSV = n => (Number(n) || 0).toFixed(2).replace('.', ',');
@@ -6196,7 +6265,7 @@ function mesclarVendasArquivo(event){
    (o mesmo que "Mesclar vendas" já fazia manualmente) — fichas, insumos,
    estoque e configurações continuam só deste aparelho, como sempre.
    ===================================================================== */
-const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao'];
+const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao', 'dasMei'];
 const SYNC_CHAVE_LS = 'syncConfig';
 // Guarda, por registro, qual foi a última versão sincronizada com sucesso — e isso
 // precisa SOBREVIVER a um recarregar de página. Sem persistir isso, todo aparelho que
@@ -6207,7 +6276,7 @@ const SYNC_CHAVE_LS = 'syncConfig';
 // mundo. É esse o motivo de pedidos "pagos" voltarem a aparecer como "pendentes".
 const SYNC_ULTIMO_CHAVE_LS = 'syncUltimoEnviado';
 let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null, _syncSalvarUltimoTimer = null;
-const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}};
+const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}, dasMei: {}};
 function syncCarregarUltimoEnviado(){
   try{
     const t = JSON.parse(localStorage.getItem(SYNC_ULTIMO_CHAVE_LS));
