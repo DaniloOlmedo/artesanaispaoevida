@@ -277,7 +277,7 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
   .comanda-impressao .item{margin:8px 0 2px;font-size:20px;font-weight:bold;line-height:1.25}
   .comanda-impressao .cons{font-size:20px;font-weight:bold;margin-left:12px;line-height:1.25}
   .comanda-impressao .corte-item{font-size:20px;font-weight:bold;margin:0 0 4px 12px;line-height:1.25}
-  .comanda-impressao .obs{font-size:20px;font-weight:bold;margin:2px 0 8px 12px;border-top:1px dashed #999;padding-top:3px;line-height:1.25}
+  .comanda-impressao .obs-caixa{font-size:20px;font-weight:bold;margin:4px 0 8px 12px;line-height:1.25;border:2px solid #000;padding:4px 6px;display:inline-block}
   .comanda-impressao .total{text-align:center;font-size:17px;font-weight:bold;margin-top:8px;border-top:2px solid #000;padding-top:6px}
   .comanda-impressao .linha{border-bottom:2px dashed #666;margin:6px 0}
   #areaRelatorio{font-family:Arial,sans-serif;font-size:12px;color:#000;padding:10mm}
@@ -514,8 +514,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   <button class="nav-btn" data-p="inicio" onclick="irPara('inicio')">🏠 Início</button>
   <button class="nav-btn" data-p="dashboard" onclick="irPara('dashboard')">📊 Painel</button>
   <span class="nav-titulo">Operação</span>
-  <button class="nav-btn" data-p="vendas" onclick="irPara('vendas')">🛒 Vendas</button>
-  <button class="nav-btn" data-p="fila" onclick="irPara('fila')">👨‍🍳 Fila<span class="selo" id="seloFila">0</span></button>
+  <button class="nav-btn" data-p="vendas" onclick="irPara('vendas')">🛒 Vendas<span class="selo" id="seloFila">0</span></button>
   <button class="nav-btn" data-p="caixa" onclick="irPara('caixa')">💵 Caixa<span class="selo" id="seloCaixa">0</span></button>
   <button class="nav-btn" data-p="atendimento" onclick="irPara('atendimento')">⏱️ Atendimento</button>
   <span class="nav-titulo">Produção</span>
@@ -4193,7 +4192,7 @@ function comandaHTML(pid){
   let h = '<div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div>' + (l0.local ? '<div class="telefone-comanda">📍 ' + esc(l0.local.toUpperCase()) + '</div>' : '') + (totem ? '<div class="telefone-comanda">PEDIDO PELO TOTEM</div>' : '') + (p.senha ? '<div class="senha-c">Nº ' + p.senha + '</div>' : '') +
     '<div class="data-hora">' + fmtData(p.data) + ' - ' + esc(p.horario) + '</div>' + prev + retirar + '<div class="linha"></div>' +
     '<div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + (p.telefone ? '<div class="telefone-comanda">Tel: ' + esc(p.telefone) + '</div>' : '') + '<div class="linha"></div>' +
-    p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.corte ? '<div class="corte-item">✂ CORTE: ' + esc(l.corte.toUpperCase()) + '</div>' : '') + (l.observacao ? '<div class="obs">OBS: ' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
+    p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.corte ? '<div class="corte-item">✂ CORTE: ' + esc(l.corte.toUpperCase()) + '</div>' : '') + (l.observacao ? '<div class="obs-caixa">' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
     '<div class="linha"></div><div class="total">' + status + (BD.config.valoresComanda ? '<br>TOTAL ' + brl(p.total) : '') + '</div>';
   if(BD.config.totemVias === 2){
     h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div><div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div><div class="senha-c">Nº ' + p.senha + '</div><div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + prev + retirar +
@@ -4255,7 +4254,7 @@ function comandaLinhasImagem(pid){
     const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
     if(cons) add('[' + cons + ']', {tam: 20, centro: false});
     if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 20, centro: false, negrito: true});
-    if(l.observacao) add('OBS: ' + l.observacao.toUpperCase(), {tam: 20, centro: false});
+    if(l.observacao) add(l.observacao.toUpperCase(), {tam: 22, centro: false, negrito: true, espacoAntes: 4, caixa: true});
   });
   linha();
   add(status, {tam: 28, negrito: true, espacoAntes: 4});
@@ -4267,20 +4266,36 @@ function desenharComandaImagem(pid){
   const linhas = comandaLinhasImagem(pid); if(!linhas) return null;
   const largura = 576, pad = 26, maxTextoW = largura - pad * 2;
   const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
-  function wrap(texto, tam, negrito){
+  function wrap(texto, tam, negrito, larguraMax){
     ctx.font = (negrito ? 'bold ' : '') + tam + 'px "Courier New", monospace';
     const palavras = String(texto).split(' '); const out = []; let atual = '';
     palavras.forEach(w => {
       const teste = atual ? atual + ' ' + w : w;
-      if(ctx.measureText(teste).width > maxTextoW && atual){ out.push(atual); atual = w; } else atual = teste;
+      if(ctx.measureText(teste).width > (larguraMax || maxTextoW) && atual){ out.push(atual); atual = w; } else atual = teste;
     });
     if(atual) out.push(atual);
     return out;
   }
+  // Observação (ex.: "sem cebola") vira uma caixinha com borda, pra se destacar dos outros itens
+  // e não passar batido na hora de montar o pedido (impressão térmica não imprime fundo colorido,
+  // só borda/preto — por isso é um retângulo contornado, não preenchido).
+  const caixaPad = 10, caixaMargem = 6;
   let y = pad; const finais = [];
   linhas.forEach(l => {
     y += (l.espacoAntes || 0);
     if(l.linha){ finais.push({tracejado: true, y: y + 6}); y += 16; return; }
+    if(l.caixa){
+      const yTopo = y;
+      y += caixaPad;
+      const linhasTexto = wrap(l.texto, l.tam, l.negrito, maxTextoW - caixaPad * 2).map(txt => {
+        y += Math.round(l.tam * 1.35);
+        return {texto: txt, y, tam: l.tam, negrito: l.negrito};
+      });
+      y += caixaPad;
+      finais.push({caixa: true, x0: pad, x1: largura - pad, yTopo, yBase: y, linhasTexto});
+      y += caixaMargem;
+      return;
+    }
     wrap(l.texto, l.tam, l.negrito).forEach(txt => {
       y += Math.round(l.tam * 1.35);
       finais.push({texto: txt, y, tam: l.tam, negrito: l.negrito, centro: l.centro});
@@ -4292,6 +4307,13 @@ function desenharComandaImagem(pid){
   ctx.fillStyle = '#000'; ctx.textBaseline = 'alphabetic';
   finais.forEach(f => {
     if(f.tracejado){ ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(pad, f.y); ctx.lineTo(largura - pad, f.y); ctx.stroke(); ctx.setLineDash([]); return; }
+    if(f.caixa){
+      ctx.setLineDash([]); ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5;
+      ctx.strokeRect(f.x0, f.yTopo, f.x1 - f.x0, f.yBase - f.yTopo);
+      ctx.fillStyle = '#000'; ctx.textAlign = 'left';
+      f.linhasTexto.forEach(t => { ctx.font = (t.negrito ? 'bold ' : '') + t.tam + 'px "Courier New", monospace'; ctx.fillText(t.texto, f.x0 + caixaPad, t.y); });
+      return;
+    }
     ctx.font = (f.negrito ? 'bold ' : '') + f.tam + 'px "Courier New", monospace';
     ctx.textAlign = f.centro ? 'center' : 'left';
     ctx.fillText(f.texto, f.centro ? largura / 2 : pad, f.y);
@@ -4528,7 +4550,7 @@ function renderCaixa(){
   renderConferencia(); renderRetiradas();
   const pend = pedidosPendentes();
   $('tabelaCaixaPendentes').innerHTML = pend.length ? pend.map(p =>
-    '<tr><td>' + fmtData(p.data) + '<br><small class="suave">' + esc(p.horario) + '</small></td><td>' + (p.senha ? '<span class="senha">' + p.senha + '</span>' : '—') + '</td><td>' + esc(p.cliente) + '</td><td>' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</td><td class="n"><b>' + brl(p.total) + '</b></td><td class="acoes"><button class="btn pequeno" onclick="receberPedido(\'' + p.pedidoId + '\')">💰 Receber</button>' + (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + p.pedidoId + '\')" aria-label="Avisar no WhatsApp">💬</button>' : '') + '</td></tr>'
+    '<tr><td>' + fmtData(p.data) + '<br><small class="suave">' + esc(p.horario) + '</small></td><td>' + (p.senha ? '<span class="senha">' + p.senha + '</span>' : '—') + '</td><td>' + esc(p.cliente) + (p.linhas[0].cobrarDepois ? ' <span class="tag cinza">📒 cobrar depois</span>' : '') + '</td><td>' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto)).join('<br>') + '</td><td class="n"><b>' + brl(p.total) + '</b></td><td class="acoes"><button class="btn pequeno" onclick="receberPedido(\'' + p.pedidoId + '\')">💰 Receber</button>' + (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + p.pedidoId + '\')" aria-label="Avisar no WhatsApp">💬</button>' : '') + '</td></tr>'
   ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum pedido pendente. 👍</div></td></tr>';
   renderProdutosDoDia(); renderResumoMensal(); renderMei(); renderDasMei(); atualizarBadges(); renderConferenciaCartao(); renderConferenciasCartaoLista();
 }
@@ -6761,9 +6783,19 @@ const aguardandoPagamento = p => !p.pago && (statusPedido(p) === 'entregue' || (
 // Agrupa por pedidoId inteiro (não corta linhas já entregues) sempre que pelo menos uma linha ainda estiver ativa
 // OU o pedido inteiro já foi entregue mas ainda não foi pago — pra não sumir da fila enquanto ninguém recebe o pagamento.
 const pedidosAtivos = () => {
-  const idsAtivos = new Set(BD.vendas.filter(v => v.status && !v.retroativo && (v.status !== 'entregue' || v.pago === false)).map(v => v.pedidoId));
+  const idsAtivos = new Set(BD.vendas.filter(v => v.status && !v.retroativo && !v.cobrarDepois && (v.status !== 'entregue' || v.pago === false)).map(v => v.pedidoId));
   return agruparPedidos(BD.vendas.filter(v => v.status && !v.retroativo && idsAtivos.has(v.pedidoId)));
 };
+// Pedido entregue e não pago que o dono decidiu cobrar depois (ex.: cliente antigo, fiado) — sai da Fila
+// (pra não ficar acumulando lá) mas continua "pago: false" em BD.vendas, então segue aparecendo normalmente
+// em "Pedidos pendentes de pagamento" na aba Caixa → Fechamento, até alguém clicar em "Receber".
+function cobrarDepoisPedido(pid){
+  const linhas = linhasDoPedido(pid); if(!linhas.length) return;
+  const p = agruparPedidos(linhas)[0];
+  linhas.forEach(l => l.cobrarDepois = true);
+  salvarAgora('vendas'); renderCaixa(); refreshFila(); atualizarBadges();
+  toast('Pedido nº ' + (p.senha || '') + ' de ' + esc(p.cliente) + ' (' + brl(p.total) + ') saiu da fila. Ele continua em aberto em Caixa → Fechamento, em "Pedidos pendentes de pagamento" — clique em "💰 Receber" lá quando ele pagar.', 'ok', {ms: 12000});
+}
 let FILA_MODAL = null;
 
 /* ---------- tempo de preparo e estimativa de espera ---------- */
@@ -6888,7 +6920,7 @@ function acoesFila(p){
   if(aguardandoPagamento(p)){
     const receber = b('💰 Receber' + (pixPrev ? ' (PIX)' : ''), "receberPedido('" + pid + "','" + (pixPrev ? 'pix' : 'dinheiro') + "')");
     // Já entregue: o estoque já foi consumido de verdade, então NÃO pode voltar — "Perda" em vez de "Cancelar".
-    if(st === 'entregue') return receber + b('🗑️ Perda (não recebeu)', "perderPedido('" + pid + "')", 'vermelho');
+    if(st === 'entregue') return receber + b('📒 Cobrar depois', "cobrarDepoisPedido('" + pid + "')", 'cinza') + b('🗑️ Perda (não recebeu)', "perderPedido('" + pid + "')", 'vermelho');
     return receber + b('✕ Cancelar', "excluirPedido('" + pid + "')", 'vermelho');
   }
   if(st === 'novo') return b('🔥 Iniciar', "iniciarPedido('" + pid + "')") + b('✏️', "editarPedido('" + pid + "')", 'cinza') + b('✕', "excluirPedido('" + pid + "')", 'vermelho');
@@ -7919,7 +7951,7 @@ const SUBABAS = {
   compras: [['💳','Contas a pagar',['Contas a pagar']], ['🚚','Fornecedores',['Fornecedores']], ['🧾','Compras e cupons',['Compras e cupons','Cupons cadastrados']]],
   custos: [['📉','Despesas reais',['Despesas reais']], ['💰','Custos fixos',['Custos fixos']], ['💳','Taxas',['Taxas de pagamento']], ['⚙️','Preferências',['Preferências']], ['🏷️','Identidade',['Identidade']], ['🖥️','Totem',['Totem']]],
   estoque: [['📦','Cadastro',['Estoque —']], ['🔢','Contagem',['Contagem','Fechamento do dia']], ['🗑️','Perdas',['Sobras']]],
-  vendas: [['🛒','Pedido',['Tirar pedido']], ['📋','Registrados',['Pedidos registrados']], ['📝','Histórico',['retroativa','históricos']]],
+  vendas: [['🛒','Pedido',['Tirar pedido']], ['👨‍🍳','Fila',[],'fila'], ['📋','Registrados',['Pedidos registrados']], ['📝','Histórico',['retroativa','históricos']]],
   nutricional: [['🔬','Tabela',['Tabela nutricional']], ['📂','Receitas',['Receitas salvas']], ['🧪','Ingredientes',['Ingredientes']]],
   conciliacao: [['📥','Importar',['Importar extrato']], ['🏦','Conciliar',['Conciliar']], ['🔎','Faltando no banco',['não apareceu']], ['🔍','Auditoria de taxas',['Auditoria']], ['📖','Manual',['Manual']]]
 };
@@ -7942,6 +7974,8 @@ function aplicarSubAbas(id){
   filhos.forEach(c => { if(grupoDe.has(c)) c.classList.toggle('sub-oculto', grupoDe.get(c) !== atual); });
 }
 function trocarSubAba(id, i){
+  const cfgAba = SUBABAS[id] && SUBABAS[id][i];
+  if(cfgAba && cfgAba[3]){ irPara(cfgAba[3]); return; } // aba-atalho: em vez de trocar painel aqui, navega pra outra página
   SUBABA_ATUAL[id] = i; aplicarSubAbas(id);
   if(id === 'dashboard' || id === 'conciliacao') renderPagina(id);
   window.scrollTo({top: 0, behavior: 'smooth'});
