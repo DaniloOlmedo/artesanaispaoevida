@@ -1038,6 +1038,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div class="flex-linha" style="margin-top:8px">
       <button class="btn laranja" type="button" onclick="abrirCriarFichasMassaCongelada()">🧊 Criar fichas de massa pré-assada + panuozzo</button>
       <button class="btn laranja" type="button" onclick="organizarFichasEmpanada()">🥟 Organizar fichas de empanada (massa + estoque por sabor)</button>
+      <button class="btn laranja" type="button" onclick="conferirComponentesSuspeitos()">⚠️ Conferir quantidades suspeitas nas fichas</button>
     </div>
     <div id="semFicha" class="vazio" style="margin-top:12px">Digite o nome e clique para criar, ou escolha uma ficha na lista abaixo.</div>
     <div id="conteudoFicha" class="oculto">
@@ -2821,6 +2822,28 @@ function organizarFichasEmpanada(){
     titulo: '🥟 Fichas de empanada organizadas',
     html: '<ul style="margin:0;padding-left:20px;line-height:1.7">' + relatorio.join('') + '</ul>' +
       '<p class="dica" style="margin-top:12px">O que eu não mexi: o recheio de cada sabor e a quantidade de gás — confira se já estão lá em cada ficha. Se não estiverem cadastrados como insumo, o "Massa Empanada" antiga ainda pode ser excluída em Insumos depois que todas as fichas passarem a usar a "Crua".</p>',
+    botoes: [{rotulo: 'Fechar', classe: ''}]
+  });
+}
+// Diagnóstico: aponta componentes de estoque medidos em peso/volume (g, kg, ml, l) ligados a uma ficha
+// com "quantidade por unidade vendida" = 1 — quase sempre sinal de que o campo ficou no padrão e
+// ninguém trocou pelo peso real usado em cada venda (ex.: recheio consumindo só 1g em vez de ~200g).
+// Isso faz o "dá pra vender" (disponivelProduto) e o desconto de estoque ficarem completamente errados
+// pra esse ingrediente, sem avisar nada — o item só "desaparece" devagar demais do estoque.
+function conferirComponentesSuspeitos(){
+  const achados = [];
+  BD.fichas.forEach(f => {
+    (f.componentes || []).forEach(c => {
+      const comp = componenteEstoque(c.nome);
+      if(comp && comp.unid !== 'un' && Math.abs((c.qtd || 0) - 1) < 1e-9) achados.push({ficha: f.nome, componente: comp.nome, unid: comp.unid});
+    });
+  });
+  if(!achados.length) return toast('Não achei nenhuma ficha com quantidade suspeita (1 g/kg/ml/l por unidade vendida). 👍', 'ok', {ms: 7000});
+  abrirModal({
+    titulo: '⚠️ Quantidades suspeitas nas fichas (' + achados.length + ')',
+    html: '<p class="suave pequeno-txt">Esses componentes de estoque estão vinculados com "quantidade por unidade vendida" = <b>1</b> — e como são medidos em peso/volume, isso quase sempre está errado (1 grama ou 1 ml raramente é a receita real). Provavelmente ficou no valor padrão do campo "+ Vincular" e ninguém trocou pelo peso de verdade usado em cada venda. Abra a ficha em <b>Fichas técnicas</b>, role até "Componentes de estoque" e corrija o número de cada linha.</p>' +
+      '<ul style="margin:10px 0 0;padding-left:20px;line-height:1.8">' + achados.map(a => '<li><b>' + esc(a.ficha) + '</b> → ' + esc(a.componente) + ' <span class="suave">(1 ' + esc(a.unid) + ' por unidade vendida)</span></li>').join('') + '</ul>',
+    largo: true,
     botoes: [{rotulo: 'Fechar', classe: ''}]
   });
 }
