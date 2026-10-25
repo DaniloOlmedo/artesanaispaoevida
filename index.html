@@ -1403,24 +1403,30 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   </div>
   <div class="painel">
     <h2>🚚 Fornecedores</h2>
-    <div class="aviso">Cadastre seus fornecedores para escolher rápido na hora de lançar um cupom, e ter o contato sempre à mão.</div>
-    <div class="linha-form" style="grid-template-columns:1.6fr 1.2fr 1.6fr 1.6fr auto">
+    <div class="aviso">Cadastre seus fornecedores para escolher rápido na hora de lançar um cupom, e ter o contato sempre à mão. Informe o CNPJ e clique em "🔎 Buscar dados" pra preencher nome, endereço e telefone sozinho (consulta a Receita Federal).</div>
+    <div class="linha-form" style="grid-template-columns:1.3fr 1fr auto">
+      <div><label for="fornCNPJ">CNPJ</label><input type="text" id="fornCNPJ" placeholder="00.000.000/0000-00" inputmode="numeric" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarDadosCNPJ('forn');}"></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn cinza" type="button" onclick="buscarDadosCNPJ('forn', this)" style="width:100%">🔎 Buscar dados</button></div>
+      <div></div>
       <div><label for="fornNome">Nome / razão social</label><input type="text" id="fornNome" placeholder="Ex: Distribuidora Queijos Serra" autocomplete="off" onkeydown="if(event.key==='Enter')adicionarFornecedor()"></div>
+      <div><label for="fornContatoNome">Nome do contato</label><input type="text" id="fornContatoNome" placeholder="Ex: Sr. João"></div>
       <div><label for="fornContato">Telefone / WhatsApp</label><input type="text" id="fornContato" placeholder="(00) 00000-0000" inputmode="tel"></div>
       <div><label for="fornFornece">O que fornece</label><input type="text" id="fornFornece" placeholder="Ex: queijo, presunto, embalagens"></div>
+      <div><label for="fornEndereco">Endereço</label><input type="text" id="fornEndereco" placeholder="Rua, número, bairro, cidade"></div>
       <div><label for="fornObs">Observação (opcional)</label><input type="text" id="fornObs" placeholder="Ex: entrega às terças, pedido mínimo..."></div>
-      <button class="btn" type="button" onclick="adicionarFornecedor()">+</button>
+      <button class="btn" type="button" onclick="adicionarFornecedor()">+ Adicionar fornecedor</button>
     </div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Fornecedor</th><th>Contato</th><th>Fornece</th><th>Observação</th><th>Ações</th></tr></thead><tbody id="tabelaFornecedores"></tbody></table></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Fornecedor</th><th>CNPJ</th><th>Contato</th><th>Fornece</th><th>Endereço</th><th>Ações</th></tr></thead><tbody id="tabelaFornecedores"></tbody></table></div>
     <datalist id="listaFornecedoresSugeridos"></datalist>
+    <datalist id="listaFornecedoresCNPJ"></datalist>
   </div>
   <div class="painel">
     <h2>🧾 Compras e cupons fiscais</h2>
     <div class="aviso">Cadastre seus cupons. Você pode lançar a compra como despesa e atualizar o preço dos insumos automaticamente.</div>
     <div class="bloco-calc">
       <div><label for="cupomNum">Nº cupom / NF</label><input type="text" id="cupomNum" placeholder="Número"></div>
-      <div><label for="cupomCNPJ">CNPJ do fornecedor</label><input type="text" id="cupomCNPJ" placeholder="Deixe vazio se não tiver" inputmode="numeric"></div>
-      <div><label for="cupomMercado">Mercado / loja / fornecedor</label><input type="text" id="cupomMercado" list="listaFornecedoresSugeridos" placeholder="Nome do estabelecimento" autocomplete="off"></div>
+      <div><label for="cupomCNPJ">CNPJ do fornecedor</label><input type="text" id="cupomCNPJ" list="listaFornecedoresCNPJ" placeholder="Deixe vazio se não tiver" inputmode="numeric" onblur="preencherMercadoDoCNPJ()"></div>
+      <div><label for="cupomMercado">Mercado / loja / fornecedor</label><input type="text" id="cupomMercado" list="listaFornecedoresSugeridos" placeholder="Nome do estabelecimento" autocomplete="off" oninput="preencherCNPJDoFornecedor()" onblur="preencherCNPJDoFornecedor()"></div>
       <div><label for="cupomData">Data da compra</label><input type="date" id="cupomData"></div>
       <div><label for="cupomValor">Valor total R$</label><input type="number" step="0.01" id="cupomValor" placeholder="0,00" inputmode="decimal"></div>
     </div>
@@ -2102,6 +2108,62 @@ function acharInsumoPorNome(nome){
 function acharFornecedorPorNome(nome){
   const n = norm(nome); if(!n) return null;
   return BD.fornecedores.find(f => norm(f.nome) === n) || null;
+}
+const somenteDigitos = s => String(s || '').replace(/\D/g, '');
+function formatarCNPJ(v){
+  const d = somenteDigitos(v).slice(0, 14);
+  if(d.length < 14) return v || '';
+  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+}
+function acharFornecedorPorCNPJ(cnpj){
+  const d = somenteDigitos(cnpj); if(d.length !== 14) return null;
+  return BD.fornecedores.find(f => somenteDigitos(f.cnpj) === d) || null;
+}
+/* ---------- preenchimento automático: fornecedor ↔ CNPJ na tela de compras ---------- */
+function preencherCNPJDoFornecedor(){
+  const mercado = $('cupomMercado') ? $('cupomMercado').value.trim() : '';
+  if(!mercado) return;
+  const f = acharFornecedorPorNome(mercado);
+  if(f && f.cnpj && $('cupomCNPJ') && !$('cupomCNPJ').value.trim()) $('cupomCNPJ').value = formatarCNPJ(f.cnpj);
+}
+function preencherMercadoDoCNPJ(){
+  const cnpj = $('cupomCNPJ') ? $('cupomCNPJ').value.trim() : '';
+  if(!cnpj) return;
+  const f = acharFornecedorPorCNPJ(cnpj);
+  if(f){
+    if($('cupomCNPJ')) $('cupomCNPJ').value = formatarCNPJ(f.cnpj);
+    if($('cupomMercado') && !$('cupomMercado').value.trim()) $('cupomMercado').value = f.nome;
+  }
+}
+/* ---------- busca de CNPJ na Receita Federal (via BrasilAPI, gratuito e sem login) ---------- */
+async function buscarDadosCNPJ(prefixo, btn){
+  const campoCnpj = $(prefixo + 'CNPJ'); if(!campoCnpj) return;
+  const d = somenteDigitos(campoCnpj.value);
+  if(d.length !== 14) return toast('Digite um CNPJ válido (14 números).', 'alerta');
+  campoCnpj.value = formatarCNPJ(d);
+  const txtOrig = btn ? btn.textContent : null; if(btn){ btn.disabled = true; btn.textContent = '🔎 Buscando...'; }
+  try{
+    const resp = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + d);
+    if(!resp.ok) throw new Error(resp.status === 404 ? 'CNPJ não encontrado.' : 'Falha na consulta (' + resp.status + ').');
+    const j = await resp.json();
+    const nome = j.nome_fantasia && j.nome_fantasia.trim() ? j.nome_fantasia.trim() : (j.razao_social || '');
+    const partesEnd = [
+      [j.descricao_tipo_de_logradouro, j.logradouro].filter(Boolean).join(' '),
+      j.numero, j.bairro,
+      [j.municipio, j.uf].filter(Boolean).join('/')
+    ].filter(Boolean);
+    const endereco = partesEnd.join(', ');
+    const tel = j.ddd_telefone_1 ? j.ddd_telefone_1 : '';
+    if($(prefixo + 'Nome') && !$(prefixo + 'Nome').value.trim()) $(prefixo + 'Nome').value = nome;
+    if($(prefixo + 'Endereco')) $(prefixo + 'Endereco').value = endereco;
+    if($(prefixo + 'Contato') && tel && !$(prefixo + 'Contato').value.trim()) $(prefixo + 'Contato').value = tel;
+    if($(prefixo + 'Fornece') && !$(prefixo + 'Fornece').value.trim() && j.cnae_fiscal_descricao) $(prefixo + 'Fornece').value = j.cnae_fiscal_descricao;
+    toast('Dados encontrados: ' + (j.razao_social || nome) + '.', 'ok', {ms: 6000});
+  }catch(e){
+    toast('Não foi possível buscar esse CNPJ: ' + e.message, 'erro', {ms: 7000});
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = txtOrig; }
+  }
 }
 function acharInsumo(ref){ // ref: {insumoId, nome}
   if(!ref) return null;
@@ -5026,24 +5088,32 @@ function renderLinhasCupom(){
 function adicionarFornecedor(){
   const nome = $('fornNome').value.trim(); const contato = $('fornContato').value.trim();
   const fornece = $('fornFornece').value.trim(); const obs = $('fornObs').value.trim();
+  const cnpj = somenteDigitos($('fornCNPJ').value); const contatoNome = $('fornContatoNome').value.trim();
+  const endereco = $('fornEndereco').value.trim();
   if(!nome) return toast('Informe o nome do fornecedor.', 'alerta');
   if(BD.fornecedores.some(f => norm(f.nome) === norm(nome))) return toast('Já existe um fornecedor com esse nome.', 'alerta');
-  BD.fornecedores.push({id: uid(), nome, contato, fornece, obs});
-  ['fornNome', 'fornContato', 'fornFornece', 'fornObs'].forEach(i => $(i).value = '');
+  if(cnpj && cnpj.length !== 14) return toast('CNPJ inválido: precisa ter 14 números (ou deixe vazio).', 'alerta');
+  BD.fornecedores.push({id: uid(), nome, contato, contatoNome, fornece, endereco, cnpj, obs});
+  ['fornCNPJ', 'fornNome', 'fornContatoNome', 'fornContato', 'fornFornece', 'fornEndereco', 'fornObs'].forEach(i => $(i).value = '');
   salvar('fornecedores'); renderFornecedores(); toast('Fornecedor cadastrado.', 'ok');
 }
 function editarFornecedor(id){
   const f = BD.fornecedores.find(x => x.id === id); if(!f) return;
   formModal({titulo: 'Editar fornecedor', campos: [
     {id: 'nome', rotulo: 'Nome / razão social', valor: f.nome},
+    {id: 'cnpj', rotulo: 'CNPJ', valor: formatarCNPJ(f.cnpj)},
+    {id: 'contatoNome', rotulo: 'Nome do contato', valor: f.contatoNome},
     {id: 'contato', rotulo: 'Telefone / WhatsApp', valor: f.contato},
     {id: 'fornece', rotulo: 'O que fornece', valor: f.fornece},
+    {id: 'endereco', rotulo: 'Endereço', valor: f.endereco},
     {id: 'obs', rotulo: 'Observação', valor: f.obs}
   ], salvar: v => {
     if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
     if(BD.fornecedores.some(x => x.id !== f.id && norm(x.nome) === norm(v.nome))){ toast('Já existe outro fornecedor com esse nome.', 'alerta'); return false; }
+    const cnpjD = somenteDigitos(v.cnpj);
+    if(cnpjD && cnpjD.length !== 14){ toast('CNPJ inválido: precisa ter 14 números (ou deixe vazio).', 'alerta'); return false; }
     const antigo = f.nome;
-    f.nome = v.nome; f.contato = v.contato; f.fornece = v.fornece; f.obs = v.obs;
+    f.nome = v.nome; f.cnpj = cnpjD; f.contatoNome = v.contatoNome; f.contato = v.contato; f.fornece = v.fornece; f.endereco = v.endereco; f.obs = v.obs;
     if(norm(antigo) !== norm(v.nome)) BD.compras.forEach(c => { if(norm(c.mercado) === norm(antigo)) c.mercado = v.nome; });
     salvar('fornecedores', 'compras'); renderFornecedores(); renderCompras();
   }});
@@ -5058,11 +5128,13 @@ function renderFornecedores(){
   const lista = BD.fornecedores.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   const tbl = $('tabelaFornecedores');
   if(tbl) tbl.innerHTML = lista.length ? lista.map(f =>
-    '<tr><td><b>' + esc(f.nome) + '</b></td><td>' + esc(f.contato || '—') + '</td><td>' + esc(f.fornece || '—') + '</td><td>' + esc(f.obs || '—') + '</td>' +
+    '<tr><td><b>' + esc(f.nome) + '</b>' + (f.contatoNome ? '<br><small class="suave">' + esc(f.contatoNome) + '</small>' : '') + '</td><td>' + (f.cnpj ? esc(formatarCNPJ(f.cnpj)) : '—') + '</td><td>' + esc(f.contato || '—') + '</td><td>' + esc(f.fornece || '—') + '</td><td>' + esc(f.endereco || '—') + '</td>' +
     '<td class="acoes"><button class="btn cinza pequeno" onclick="editarFornecedor(\'' + f.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirFornecedor(\'' + f.id + '\')" aria-label="Excluir">✕</button></td></tr>'
-  ).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum fornecedor cadastrado.</div></td></tr>';
+  ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum fornecedor cadastrado.</div></td></tr>';
   const dl = $('listaFornecedoresSugeridos');
   if(dl) dl.innerHTML = lista.map(f => '<option value="' + esc(f.nome) + '"></option>').join('');
+  const dlc = $('listaFornecedoresCNPJ');
+  if(dlc) dlc.innerHTML = lista.filter(f => f.cnpj).map(f => '<option value="' + esc(formatarCNPJ(f.cnpj)) + '"></option>').join('');
 }
 
 /* ---------- contas a pagar ---------- */
@@ -5405,6 +5477,12 @@ function cadastrarCupom(){
   if(!numero && !mercado) return toast('Informe o nº do cupom ou o nome do mercado.', 'alerta');
   const itensLista = LINHAS_CUPOM.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
   const compra = {id: uid(), numero, cnpj, mercado, data, valor, itens: $('cupomItens').value.trim(), itensLista};
+  // se o fornecedor já está cadastrado mas ainda não tem CNPJ salvo, aproveita o que foi digitado aqui pra completar o cadastro
+  if(mercado && cnpj){
+    const fExistente = acharFornecedorPorNome(mercado);
+    const cnpjD = somenteDigitos(cnpj);
+    if(fExistente && !fExistente.cnpj && cnpjD.length === 14){ fExistente.cnpj = cnpjD; salvar('fornecedores'); }
+  }
   let atualizados = 0, criados = 0; const naoAchados = [];
   const itensDiversos = itensLista.filter(l => l.insumo === false);
   const somaDiversos = r2(soma(itensDiversos, l => l.valor));
@@ -6705,6 +6783,7 @@ function renderDashboard(){
     cardHTML('A receber (total)', brl(pend), pedidosPendentes().length + ' pedido(s) pendente(s)', pend > 0 ? 'laranja' : '') +
     cardHTML('A pagar (total)', brl(soma(cpAbertas, c => c.valor)), cpVencidas.length ? cpVencidas.length + ' vencida(s)' : cpAbertas.length + ' conta(s) em aberto', cpVencidas.length ? 'vermelho' : (cpAbertas.length ? 'laranja' : '')) +
     cardHTML('Custos fixos estimados', brl(custosFixosMensais()), 'por mês') +
+    cardHTML('Faturamento do ano (' + anoAtual() + ')', brl(ano), arquivadoAnoDash > 0 ? 'inclui ' + brl(arquivadoAnoDash) + ' já arquivado' : 'todas as vendas do ano') +
     cardHTML('Teto MEI usado', fmt(limite > 0 ? ano / limite * 100 : 0, 1) + '%', brl(ano) + ' de ' + brl(limite), ano / limite >= 0.9 ? 'vermelho' : '');
   const pe = pontoEquilibrio(mes);
   if(pe.fixos <= 0) $('dashPE').innerHTML = '<div class="aviso">📌 Cadastre seus <b>custos fixos mensais</b> (aba Custos) para ver o ponto de equilíbrio: quanto precisa vender no mês para cobrir os custos.</div>';
