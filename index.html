@@ -4720,6 +4720,16 @@ function resultadoMes(mes){
   const r = resumoLinhas(linhas);
   const desp = soma(BD.despesas.filter(d => (d.data || '').startsWith(mes)), d => d.valor);
   const perdas = soma(BD.perdas.filter(p => (p.data || '').startsWith(mes)), p => p.valor);
+  // soma o resumo arquivado desse mês (se algum dado desse mês já foi arquivado), pra o total
+  // continuar certo mesmo sem o histórico completo de linhas de venda (ver arquivarDadosAntigos)
+  const arq = (BD.config.resumoArquivadoMes || {})[mes];
+  if(arq){
+    const fat = r2(r.fat + arq.fat), custo = r2(r.custo + arq.custo), taxas = r2(r.taxas + arq.taxas);
+    const despTot = r2(desp + arq.despesas), perdasTot = r2(perdas + arq.perdas);
+    return {...r, fat, custo, taxas, lucro: fat - custo - taxas, itens: r.itens + arq.itens, pedidos: r.pedidos + arq.pedidos,
+      linhas, despesas: despTot, perdas: perdasTot, liquido: fat - custo - taxas - despTot - perdasTot,
+      temArquivado: true};
+  }
   return {...r, linhas, despesas: desp, perdas, liquido: r.fat - r.custo - r.taxas - desp - perdas};
 }
 function deltaHTML(atual, anterior){
@@ -4740,7 +4750,8 @@ function renderResumoMensal(){
     linha('<b>= LUCRO LÍQUIDO</b> ' + deltaHTML(m.liquido, ant.liquido), brl(m.liquido), m.liquido >= 0 ? 'ok' : 'erro', true) +
     linha('Margem líquida', m.fat > 0 ? fmt(m.liquido / m.fat * 100, 1) + '%' : '—') +
     linha('A receber (pendente)', brl(m.pendente), m.pendente > 0 ? 'alerta' : '') +
-    (semTaxas && m.fat > 0 ? '<div class="aviso alerta-a">Taxas de pagamento não cadastradas: o lucro acima está sem descontar taxas de cartão/PIX e impostos.</div>' : '');
+    (semTaxas && m.fat > 0 ? '<div class="aviso alerta-a">Taxas de pagamento não cadastradas: o lucro acima está sem descontar taxas de cartão/PIX e impostos.</div>' : '') +
+    (m.temArquivado ? '<div class="aviso">📦 Este mês tem dados arquivados (Dados → Arquivar dados antigos). Os totais acima já somam o arquivado, mas a tabela de produtos abaixo mostra só o que ainda está aqui — pra ver tudo, mescle o arquivo de volta.</div>' : '');
   const arr = produtosResumo(m.linhas);
   $('tabelaResumoMensal').innerHTML = arr.length ? arr.map(([n, x]) => '<tr><td>' + esc(n) + '</td><td class="n">' + x.qtd + '</td><td class="n">' + brl(x.fat) + '</td><td class="n ' + (x.lucro < 0 ? 'erro' : '') + '">' + brl(x.lucro) + '</td></tr>').join('') : '<tr><td colspan="4"><div class="vazio">Sem vendas neste mês.</div></td></tr>';
 }
@@ -6277,6 +6288,29 @@ async function arquivarDadosAntigos(){
     const ym = v.data.slice(0, 7);
     BD.config.arquivadoMeiMes[ym] = (BD.config.arquivadoMeiMes[ym] || 0) + (v.valorTotal || 0);
   });
+  // guarda um RESUMO (só os valores: faturamento, custo, taxas, despesas, perdas, itens, pedidos)
+  // por mês do que for arquivado, pra o Painel/Resumo mensal continuarem corretos pra sempre,
+  // sem precisar manter o histórico completo de linhas de venda aqui dentro (ver resultadoMes)
+  if(!BD.config.resumoArquivadoMes) BD.config.resumoArquivadoMes = {};
+  const despesasArquivadas = BD.despesas.filter(antes), perdasArquivadas = BD.perdas.filter(antes);
+  const porMesArq = {};
+  const mesArq = ym => porMesArq[ym] || (porMesArq[ym] = {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, itens: 0, pedidosSet: new Set()});
+  vendasArquivadas.forEach(v => {
+    if(!v || !v.data) return;
+    const m = mesArq(v.data.slice(0, 7));
+    m.fat += (v.valorTotal || 0); m.custo += (v.custoTotal || 0); m.taxas += taxaVenda(v);
+    m.itens += (v.quantidade || 0); m.pedidosSet.add(String(v.pedidoId));
+  });
+  despesasArquivadas.forEach(d => { if(d && d.data) mesArq(d.data.slice(0, 7)).despesas += (d.valor || 0); });
+  perdasArquivadas.forEach(p => { if(p && p.data) mesArq(p.data.slice(0, 7)).perdas += (p.valor || 0); });
+  Object.keys(porMesArq).forEach(ym => {
+    const novo = porMesArq[ym], atual = BD.config.resumoArquivadoMes[ym] || {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, itens: 0, pedidos: 0};
+    BD.config.resumoArquivadoMes[ym] = {
+      fat: r2(atual.fat + novo.fat), custo: r2(atual.custo + novo.custo), taxas: r2(atual.taxas + novo.taxas),
+      despesas: r2(atual.despesas + novo.despesas), perdas: r2(atual.perdas + novo.perdas),
+      itens: atual.itens + novo.itens, pedidos: atual.pedidos + novo.pedidosSet.size
+    };
+  });
   BD.vendas = BD.vendas.filter(x => !antes(x)); BD.compras = BD.compras.filter(x => !antes(x));
   BD.despesas = BD.despesas.filter(x => !antes(x)); BD.perdas = BD.perdas.filter(x => !antes(x));
   salvarTudo(); renderTudo();
@@ -6651,7 +6685,7 @@ function funilHTML(mes){
 function renderDashboard(){
   const selMes = $('dashMesSel'); if(selMes && !selMes.value) selMes.value = mesAtual();
   const mes = (selMes && selMes.value) || mesAtual(); const m = resultadoMes(mes), ant = resultadoMes(mesAnterior(mes));
-  $('dashTituloMes').textContent = '📊 Resumo de ' + fmtMes(mes);
+  $('dashTituloMes').innerHTML = '📊 Resumo de ' + esc(fmtMes(mes)) + (m.temArquivado ? ' <small class="suave">(inclui dados arquivados)</small>' : '');
   $('dashMes').innerHTML =
     cardHTML('Faturamento', brl(m.fat), '', '') .replace('</div></div>', '</div>' + (ant.fat > 0 ? '<div class="sub">' + deltaHTML(m.fat, ant.fat) + '</div>' : '') + '</div>') +
     cardHTML('Pedidos', m.pedidos, 'ticket médio ' + brl(m.pedidos ? m.fat / m.pedidos : 0)) +
