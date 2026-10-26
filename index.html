@@ -1431,7 +1431,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <div><label for="cupomValor">Valor total R$</label><input type="number" step="0.01" id="cupomValor" placeholder="0,00" inputmode="decimal"></div>
     </div>
     <h3>Itens comprados (opcional)</h3>
-    <div class="dica">Informe os itens para atualizar o preço dos insumos e acompanhar a variação.</div>
+    <div class="dica">Informe os itens para atualizar o preço dos insumos e acompanhar a variação. Pode digitar o preço por kg/litro/unidade (igual na etiqueta do mercado) que o valor total é calculado sozinho — e aparece embaixo se o preço subiu ou caiu em relação ao que já estava cadastrado.</div>
     <div id="cupomItensLista"></div>
     <button class="btn cinza pequeno" type="button" onclick="adicionarLinhaCupom()" style="margin:6px 0">+ Adicionar item</button>
     <label for="cupomItens">Observações / itens em texto livre</label>
@@ -5072,17 +5072,64 @@ let LINHAS_CUPOM = [];
 function lerLinhasCupom(){
   LINHAS_CUPOM = LINHAS_CUPOM.map((l, i) => ({
     nome: ($('cl_n' + i) ? $('cl_n' + i).value : l.nome), qtd: ($('cl_q' + i) ? $('cl_q' + i).value : l.qtd),
-    unid: ($('cl_u' + i) ? $('cl_u' + i).value : l.unid), valor: ($('cl_v' + i) ? $('cl_v' + i).value : l.valor),
+    unid: ($('cl_u' + i) ? $('cl_u' + i).value : l.unid), precoUnit: ($('cl_p' + i) ? $('cl_p' + i).value : l.precoUnit),
+    valor: ($('cl_v' + i) ? $('cl_v' + i).value : l.valor),
     insumo: ($('cl_i' + i) ? $('cl_i' + i).checked : (l.insumo !== false))}));
 }
-function adicionarLinhaCupom(){ lerLinhasCupom(); LINHAS_CUPOM.push({nome: '', qtd: '', unid: 'kg', valor: '', insumo: true}); renderLinhasCupom(); const i = LINHAS_CUPOM.length - 1; if($('cl_n' + i)) $('cl_n' + i).focus(); }
+function adicionarLinhaCupom(){ lerLinhasCupom(); LINHAS_CUPOM.push({nome: '', qtd: '', unid: 'kg', precoUnit: '', valor: '', insumo: true}); renderLinhasCupom(); const i = LINHAS_CUPOM.length - 1; if($('cl_n' + i)) $('cl_n' + i).focus(); }
 function removerLinhaCupom(i){ lerLinhasCupom(); LINHAS_CUPOM.splice(i, 1); renderLinhasCupom(); }
+// Digitou o preço por unidade (ex: R$/kg, igual na etiqueta do mercado) → calcula o valor total sozinho (qtd × preço)
+function clRecalcValor(i){
+  const qtdEl = $('cl_q' + i), puEl = $('cl_p' + i), vEl = $('cl_v' + i);
+  if(qtdEl && puEl && vEl){
+    const qtd = parseNum(qtdEl.value), pu = parseNum(puEl.value);
+    if(qtd > 0 && pu > 0) vEl.value = r2(qtd * pu).toFixed(2).replace('.', ',');
+  }
+  clAtualizarComparacao(i);
+}
+// Digitou o valor total direto → calcula o preço por unidade sozinho (valor ÷ qtd), pra comparar com o cadastro
+function clRecalcPreco(i){
+  const qtdEl = $('cl_q' + i), puEl = $('cl_p' + i), vEl = $('cl_v' + i);
+  if(qtdEl && puEl && vEl){
+    const qtd = parseNum(qtdEl.value), v = parseNum(vEl.value);
+    if(qtd > 0 && v > 0) puEl.value = r2(v / qtd).toFixed(2).replace('.', ',');
+  }
+  clAtualizarComparacao(i);
+}
+// Mostra, embaixo da linha, o preço atual cadastrado no insumo x o preço novo desta compra (se subiu, caiu ou ficou igual)
+function clAtualizarComparacao(i){
+  const el = $('cl_cmp' + i); if(!el) return;
+  const nome = $('cl_n' + i) ? $('cl_n' + i).value.trim() : '';
+  const unid = $('cl_u' + i) ? $('cl_u' + i).value : 'kg';
+  const qtd = $('cl_q' + i) ? parseNum($('cl_q' + i).value) : 0;
+  const pu = $('cl_p' + i) ? parseNum($('cl_p' + i).value) : 0;
+  const v = $('cl_v' + i) ? parseNum($('cl_v' + i).value) : 0;
+  const precoNovo = pu > 0 ? pu : (qtd > 0 && v > 0 ? r2(v / qtd) : 0);
+  if(!nome || !precoNovo){ el.innerHTML = ''; return; }
+  const ins = acharInsumoPorNome(nome);
+  if(!ins || !(ins.precoBase > 0)){ el.innerHTML = '<span class="suave">Insumo novo — sem preço anterior pra comparar.</span>'; return; }
+  if(familiaUn(ins.unid) !== familiaUn(unid)){ el.innerHTML = '<span class="suave">Cadastrado em "' + esc(ins.unid) + '" — escolha essa unidade aqui pra comparar o preço.</span>'; return; }
+  const precoAtual = r2(ins.precoBase * (FATOR_UN[unid] || 1));
+  const delta = precoAtual > 0 ? (precoNovo - precoAtual) / precoAtual * 100 : 0;
+  const seta = delta > 0.5 ? '🔺' : delta < -0.5 ? '🔻' : '➡️';
+  const cls = delta > 0.5 ? 'erro' : delta < -0.5 ? 'ok' : 'suave';
+  el.innerHTML = 'Cadastrado: <b>' + brl(precoAtual) + '/' + esc(unid) + '</b> → nesta compra: <b>' + brl(precoNovo) + '/' + esc(unid) + '</b> <span class="' + cls + '">' + seta + ' ' + (delta >= 0 ? '+' : '') + fmt(delta, 1) + '%</span>';
+}
 function renderLinhasCupom(){
-  $('cupomItensLista').innerHTML = LINHAS_CUPOM.map((l, i) =>
-    '<div class="linha-form" style="grid-template-columns:2.2fr 1fr 1fr 1fr auto auto"><div><input id="cl_n' + i + '" list="listaInsumosDL" placeholder="Nome do item" value="' + esc(l.nome) + '" aria-label="Item"></div><div><input id="cl_q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade"></div>' +
-    '<div><select id="cl_u' + i + '" aria-label="Unidade">' + UNIDADES.map(u => '<option' + (u === l.unid ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div><div><input id="cl_v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total"></div>' +
-    '<label class="linha" style="white-space:nowrap" title="Desmarque se não for insumo de produção (ex: material de limpeza, uso pessoal) — entra como despesa Diversos, sem mexer no estoque de insumos."><input type="checkbox" id="cl_i' + i + '"' + (l.insumo !== false ? ' checked' : '') + '> 📦 Insumo</label>' +
-    '<button class="btn vermelho pequeno" type="button" onclick="removerLinhaCupom(' + i + ')" aria-label="Remover">✕</button></div>').join('');
+  $('cupomItensLista').innerHTML = LINHAS_CUPOM.map((l, i) => {
+    const unidAtual = l.unid || 'kg';
+    return '<div class="cupom-item-bloco">' +
+      '<div class="linha-form" style="grid-template-columns:2fr 0.8fr 0.8fr 1fr 1fr auto auto">' +
+      '<div><input id="cl_n' + i + '" list="listaInsumosDL" placeholder="Nome do item" value="' + esc(l.nome) + '" aria-label="Item" oninput="clAtualizarComparacao(' + i + ')"></div>' +
+      '<div><input id="cl_q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade" oninput="clRecalcValor(' + i + ')"></div>' +
+      '<div><select id="cl_u' + i + '" aria-label="Unidade" onchange="clAtualizarComparacao(' + i + ')">' + UNIDADES.map(u => '<option' + (u === unidAtual ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
+      '<div><input id="cl_p' + i + '" type="text" inputmode="decimal" placeholder="R$/' + unidAtual + '" value="' + esc(l.precoUnit || '') + '" aria-label="Preço por unidade" oninput="clRecalcValor(' + i + ')"></div>' +
+      '<div><input id="cl_v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total" oninput="clRecalcPreco(' + i + ')"></div>' +
+      '<label class="linha" style="white-space:nowrap" title="Desmarque se não for insumo de produção (ex: material de limpeza, uso pessoal) — entra como despesa Diversos, sem mexer no estoque de insumos."><input type="checkbox" id="cl_i' + i + '"' + (l.insumo !== false ? ' checked' : '') + '> 📦 Insumo</label>' +
+      '<button class="btn vermelho pequeno" type="button" onclick="removerLinhaCupom(' + i + ')" aria-label="Remover">✕</button>' +
+      '</div><div id="cl_cmp' + i + '" class="pequeno-txt" style="margin:-4px 0 10px"></div></div>';
+  }).join('');
+  LINHAS_CUPOM.forEach((l, i) => clAtualizarComparacao(i));
 }
 /* ---------- fornecedores ---------- */
 function adicionarFornecedor(){
@@ -5475,7 +5522,7 @@ function cadastrarCupom(){
   const data = $('cupomData').value || dataHoje(); const valor = parseNum($('cupomValor').value);
   if(valor <= 0) return toast('Informe o valor total da compra.', 'alerta');
   if(!numero && !mercado) return toast('Informe o nº do cupom ou o nome do mercado.', 'alerta');
-  const itensLista = LINHAS_CUPOM.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
+  const itensLista = LINHAS_CUPOM.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, precoUnit: parseNum(l.precoUnit) || null, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
   const compra = {id: uid(), numero, cnpj, mercado, data, valor, itens: $('cupomItens').value.trim(), itensLista};
   // se o fornecedor já está cadastrado mas ainda não tem CNPJ salvo, aproveita o que foi digitado aqui pra completar o cadastro
   if(mercado && cnpj){
