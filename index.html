@@ -1442,6 +1442,15 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <button type="button" class="tt-chip on" data-t="vista" onclick="selecionarPagamentoCupom('vista')">💵 À vista</button>
       <button type="button" class="tt-chip" data-t="prazo" onclick="selecionarPagamentoCupom('prazo')">📅 A prazo</button>
     </div>
+    <div id="cupomFormaWrap">
+      <label>Pago com</label>
+      <div class="grupo-botoes" id="cupomFormaPagamento">
+        <button type="button" class="tt-chip on" data-f="dinheiro" onclick="selecionarFormaPagamentoCupom('dinheiro')">💵 Dinheiro</button>
+        <button type="button" class="tt-chip" data-f="pix" onclick="selecionarFormaPagamentoCupom('pix')">⚡ PIX</button>
+        <button type="button" class="tt-chip" data-f="debito" onclick="selecionarFormaPagamentoCupom('debito')">💳 Débito</button>
+        <button type="button" class="tt-chip" data-f="credito" onclick="selecionarFormaPagamentoCupom('credito')">💳 Crédito</button>
+      </div>
+    </div>
     <label class="linha" id="cupomLancarDespesaWrap"><input type="checkbox" id="cupomLancarDespesa" checked> Lançar o valor total como despesa (Insumos avulsos)</label>
     <div id="cupomPrazoBloco" class="oculto">
       <div class="bloco-calc">
@@ -1847,6 +1856,7 @@ let carrinhoAtual = [];
 let ultimoPedidoImpresso = null;
 let ETQ_TIPO = 'massa';
 let CUPOM_PAGAMENTO = 'vista';
+let CUPOM_FORMA_PAGAMENTO = 'dinheiro';
 let CP_FILTRO = 'abertas';
 let ETQ_SABOR = null;
 let ETQ_QTD = 1;
@@ -2758,6 +2768,78 @@ async function removerInsumo(id){
   BD.insumos = BD.insumos.filter(i => i.id !== id);
   recalcularTudo(); salvar('insumos', 'fichas', 'formulasMassa'); renderInsumos();
 }
+/* ---------- rendimento/perda no preparo (ex: frango cru → cozido e desfiado) ---------- */
+// Converte os dois pesos pra base comparável (g/ml/un) e devolve o % de perda e de rendimento. null se as unidades não são comparáveis (ex: kg vs Un).
+function calcPerdaRendimento(comprado, unidC, rendimento, unidR){
+  if(!(comprado > 0) || !(rendimento > 0)) return null;
+  if(familiaUn(unidC) !== familiaUn(unidR)) return null;
+  const c = comprado * (FATOR_UN[unidC] || 1), r = rendimento * (FATOR_UN[unidR] || 1);
+  if(!(c > 0)) return null;
+  return {percPerda: r2((1 - r / c) * 100), percRendimento: r2(r / c * 100)};
+}
+let _ctlRendimento = null;
+function renderRendimentoModal(insId){
+  const ins = BD.insumos.find(i => i.id === insId); if(!ins) return '';
+  if(!Array.isArray(ins.testesRendimento)) ins.testesRendimento = [];
+  const unidPadrao = (familiaUn(ins.unid) === 'u') ? 'Un' : (ins.unid === 'Litro' || ins.unid === 'ml' ? ins.unid : 'kg');
+  const testes = ins.testesRendimento.slice().sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+  const comCalc = testes.map(t => ({...t, calc: calcPerdaRendimento(t.pesoComprado, t.unidComprado, t.pesoRendimento, t.unidRendimento)}));
+  const validos = comCalc.filter(t => t.calc);
+  const mediaGeral = validos.length ? r2(soma(validos, t => t.calc.percPerda) / validos.length) : null;
+  const porMarca = {};
+  validos.forEach(t => { const m = (t.marca || '').trim() || '(sem marca informada)'; (porMarca[m] = porMarca[m] || []).push(t.calc.percPerda); });
+  const resumoMarcas = Object.keys(porMarca).sort().map(m => { const arr = porMarca[m]; return {marca: m, media: r2(soma(arr, x => x) / arr.length), n: arr.length}; });
+  let html = '<div class="dica">Registre, a cada compra desse insumo, quanto comprou (cru/congelado) e quanto rendeu depois de limpar/cozinhar/desfiar. Dá pra comparar ao longo do tempo ou quando trocar de marca.</div>' +
+    '<div class="linha-form" style="grid-template-columns:1fr 1.3fr 1fr 0.7fr 1fr 0.7fr">' +
+    '<div><label for="rendData">Data</label><input type="date" id="rendData" value="' + dataHoje() + '"></div>' +
+    '<div><label for="rendMarca">Marca / fornecedor (opcional)</label><input type="text" id="rendMarca" placeholder="Ex: Seara, Sadia..."></div>' +
+    '<div><label for="rendComprado">Peso comprado (cru)</label><input type="text" id="rendComprado" inputmode="decimal" placeholder="Ex: 3,950"></div>' +
+    '<div><label for="rendUnidC">Un.</label><select id="rendUnidC">' + UNIDADES.map(u => '<option' + (u === unidPadrao ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
+    '<div><label for="rendRendimento">Rendimento final</label><input type="text" id="rendRendimento" inputmode="decimal" placeholder="Ex: 2,064"></div>' +
+    '<div><label for="rendUnidR">Un.</label><select id="rendUnidR">' + UNIDADES.map(u => '<option' + (u === unidPadrao ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
+    '</div><div><label for="rendObs">Observação (opcional)</label><input type="text" id="rendObs" placeholder="Ex: descongelado, cozido na pressão e desfiado"></div>' +
+    '<button class="btn" type="button" onclick="registrarRendimento(\'' + insId + '\')" style="margin:10px 0">+ Registrar teste</button>';
+  if(mediaGeral !== null){
+    html += '<div class="grade"><div class="card"><h3>Perda média geral</h3><div class="valor">' + fmt(mediaGeral, 1) + '%</div><div class="sub">rendimento médio ' + fmt(100 - mediaGeral, 1) + '% · ' + validos.length + ' teste(s)</div></div></div>';
+  }
+  if(resumoMarcas.length > 1){
+    html += '<h4 style="margin:12px 0 4px">Por marca</h4><div class="tabela-wrap"><table class="tabela"><thead><tr><th>Marca</th><th class="n">Perda média</th><th class="n">Testes</th></tr></thead><tbody>' +
+      resumoMarcas.map(r => '<tr><td>' + esc(r.marca) + '</td><td class="n">' + fmt(r.media, 1) + '%</td><td class="n">' + r.n + '</td></tr>').join('') + '</tbody></table></div>';
+  }
+  html += '<h4 style="margin:12px 0 4px">Histórico</h4>';
+  html += testes.length ? '<div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Marca</th><th class="n">Comprado</th><th class="n">Rendimento</th><th class="n">Perda</th><th>Obs</th><th>Ações</th></tr></thead><tbody>' +
+    comCalc.map(t => {
+      const perc = t.calc ? t.calc.percPerda : null;
+      const cls = (perc !== null && mediaGeral !== null && Math.abs(perc - mediaGeral) > 5) ? (perc > mediaGeral ? ' class="erro"' : ' class="ok"') : '';
+      return '<tr><td>' + fmtData(t.data) + '</td><td>' + esc(t.marca || '—') + '</td><td class="n">' + fmt(t.pesoComprado, 3) + ' ' + esc(t.unidComprado) + '</td><td class="n">' + fmt(t.pesoRendimento, 3) + ' ' + esc(t.unidRendimento) + '</td><td class="n"' + cls + '><b>' + (perc !== null ? fmt(perc, 1) + '%' : '—') + '</b></td><td>' + esc(t.obs || '—') + '</td><td class="acoes"><button class="btn vermelho pequeno" onclick="removerRendimento(\'' + insId + '\',\'' + t.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+    }).join('') + '</tbody></table></div>'
+    : '<div class="vazio">Nenhum teste registrado ainda.</div>';
+  return html;
+}
+function abrirRendimentoInsumo(insId){
+  const ins = BD.insumos.find(i => i.id === insId); if(!ins) return;
+  _ctlRendimento = abrirModal({titulo: '🍗 Rendimento/perda — ' + ins.nome, largo: true, html: renderRendimentoModal(insId), botoes: [{rotulo: 'Fechar', classe: 'cinza'}]});
+}
+function registrarRendimento(insId){
+  const ins = BD.insumos.find(i => i.id === insId); if(!ins) return;
+  const data = $('rendData').value || dataHoje(); const marca = $('rendMarca').value.trim();
+  const comprado = parseNum($('rendComprado').value); const unidC = $('rendUnidC').value;
+  const rendimento = parseNum($('rendRendimento').value); const unidR = $('rendUnidR').value;
+  const obs = $('rendObs').value.trim();
+  if(!(comprado > 0) || !(rendimento > 0)) return toast('Informe o peso comprado e o rendimento final.', 'alerta');
+  if(!Array.isArray(ins.testesRendimento)) ins.testesRendimento = [];
+  ins.testesRendimento.push({id: uid(), data, marca, pesoComprado: comprado, unidComprado: unidC, pesoRendimento: rendimento, unidRendimento: unidR, obs});
+  salvar('insumos');
+  if(_ctlRendimento) _ctlRendimento.corpo.innerHTML = renderRendimentoModal(insId);
+  const calc = calcPerdaRendimento(comprado, unidC, rendimento, unidR);
+  toast('Teste registrado' + (calc ? ': ' + fmt(calc.percPerda, 1) + '% de perda (' + fmt(calc.percRendimento, 1) + '% de rendimento).' : '.'), 'ok', {ms: 6000});
+}
+function removerRendimento(insId, testeId){
+  const ins = BD.insumos.find(i => i.id === insId); if(!ins) return;
+  ins.testesRendimento = (ins.testesRendimento || []).filter(t => t.id !== testeId);
+  salvar('insumos');
+  if(_ctlRendimento) _ctlRendimento.corpo.innerHTML = renderRendimentoModal(insId);
+}
 function verHistoricoInsumo(id){
   const ins = BD.insumos.find(i => i.id === id); if(!ins) return;
   const h = (ins.historicoPreco || []).slice().reverse();
@@ -2783,7 +2865,7 @@ function renderInsumos(){
   $('qtdInsumos').textContent = BD.insumos.length;
   $('tabelaInsumos').innerHTML = lista.length ? lista.map(i =>
     '<tr><td>' + esc(i.nome) + (i.origem ? ' <span class="tag" title="Calculado por receita">🔗</span>' : '') + (i.unid === 'Un' && !i.pesoUnitario ? '' : '') + (i.pesoUnitario ? ' <span class="tag cinza">1 un = ' + fmt(i.pesoUnitario, 0) + ' g</span>' : '') + '</td><td>' + esc(i.unid) + '</td><td class="n">' + fmt(i.qtd, 3) + '</td><td class="n">' + brl(i.valor) + '</td><td class="n">' + esc(i.etiqueta) + ': ' + brl(i.precoExibido) + '</td><td>' + variacaoInsumo(i) + '</td>' +
-    '<td class="acoes"><button class="btn cinza pequeno" onclick="editarInsumo(\'' + i.id + '\')" aria-label="Editar">✏️</button><button class="btn cinza pequeno" onclick="verHistoricoInsumo(\'' + i.id + '\')" aria-label="Histórico de preço" title="Histórico de preço">📈</button><button class="btn vermelho pequeno" onclick="removerInsumo(\'' + i.id + '\')" aria-label="Excluir">✕</button></td></tr>'
+    '<td class="acoes"><button class="btn cinza pequeno" onclick="editarInsumo(\'' + i.id + '\')" aria-label="Editar">✏️</button><button class="btn cinza pequeno" onclick="verHistoricoInsumo(\'' + i.id + '\')" aria-label="Histórico de preço" title="Histórico de preço">📈</button><button class="btn cinza pequeno" onclick="abrirRendimentoInsumo(\'' + i.id + '\')" aria-label="Rendimento/perda no preparo" title="Rendimento/perda no preparo (ex: cru → cozido e desfiado)">🍗</button><button class="btn vermelho pequeno" onclick="removerInsumo(\'' + i.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="7"><div class="vazio">' + (BD.insumos.length ? 'Nenhum insumo encontrado.' : 'Cadastre seu primeiro insumo acima.') + '</div></td></tr>';
   atualizarCampoPesoUn();
 }
@@ -5546,7 +5628,7 @@ function cadastrarCupom(){
   if(valor <= 0) return toast('Informe o valor total da compra.', 'alerta');
   if(!numero && !mercado) return toast('Informe o nº do cupom ou o nome do mercado.', 'alerta');
   const itensLista = LINHAS_CUPOM.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, precoUnit: parseNum(l.precoUnit) || null, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
-  const compra = {id: uid(), numero, cnpj, mercado, data, valor, itens: $('cupomItens').value.trim(), itensLista};
+  const compra = {id: uid(), numero, cnpj, mercado, data, valor, itens: $('cupomItens').value.trim(), itensLista, formaPagamento: CUPOM_PAGAMENTO === 'vista' ? CUPOM_FORMA_PAGAMENTO : null};
   // se o fornecedor já está cadastrado mas ainda não tem CNPJ salvo, aproveita o que foi digitado aqui pra completar o cadastro
   if(mercado && cnpj){
     const fExistente = acharFornecedorPorNome(mercado);
@@ -5587,11 +5669,11 @@ function cadastrarCupom(){
     const descBase = 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : '');
     const despesaIds = [];
     if(valorInsumos > 0){
-      const d = {id: uid(), data, desc: descBase, valor: valorInsumos, categoria: 'Insumos avulsos', compraId: compra.id};
+      const d = {id: uid(), data, desc: descBase, valor: valorInsumos, categoria: 'Insumos avulsos', compraId: compra.id, formaPagamento: CUPOM_FORMA_PAGAMENTO};
       BD.despesas.unshift(d); despesaIds.push(d.id);
     }
     if(somaDiversos > 0){
-      const d2 = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: compra.id};
+      const d2 = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: compra.id, formaPagamento: CUPOM_FORMA_PAGAMENTO};
       BD.despesas.unshift(d2); despesaIds.push(d2.id);
     }
     compra.despesaId = despesaIds[0] || null;
@@ -5600,7 +5682,7 @@ function cadastrarCupom(){
   BD.compras.unshift(compra);
   if(atualizados || criados){ recalcularTudo(); }
   ['cupomNum', 'cupomCNPJ', 'cupomMercado', 'cupomValor', 'cupomItens'].forEach(i => $(i).value = ''); LINHAS_CUPOM = []; renderLinhasCupom();
-  selecionarPagamentoCupom('vista');
+  selecionarPagamentoCupom('vista'); selecionarFormaPagamentoCupom('dinheiro');
   salvar('compras', 'despesas', 'insumos', 'fichas', 'contasPagar'); renderCompras();
   toast('Cupom salvo.' + (parcelasGeradas ? ' ' + parcelasGeradas + ' parcela(s) criada(s) em Contas a pagar.' : '') + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (criados ? ' ' + criados + ' insumo(s) novo(s) cadastrado(s).' : '') + (somaDiversos ? ' ' + brl(somaDiversos) + ' em "Diversos" (não entrou no estoque de insumos).' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
 }
@@ -5609,7 +5691,12 @@ function selecionarPagamentoCupom(t){
   document.querySelectorAll('#cupomPagamentoTipo .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   if($('cupomPrazoBloco')) $('cupomPrazoBloco').classList.toggle('oculto', t !== 'prazo');
   if($('cupomLancarDespesaWrap')) $('cupomLancarDespesaWrap').classList.toggle('oculto', t === 'prazo');
+  if($('cupomFormaWrap')) $('cupomFormaWrap').classList.toggle('oculto', t === 'prazo');
   if(t === 'prazo' && $('cupomPrimeiroVenc') && !$('cupomPrimeiroVenc').value) $('cupomPrimeiroVenc').value = dataHoje();
+}
+function selecionarFormaPagamentoCupom(f){
+  CUPOM_FORMA_PAGAMENTO = f;
+  document.querySelectorAll('#cupomFormaPagamento .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.f === f));
 }
 /* ---------- edição de cupom já salvo: inclui editar os itens (produto, qtd, preço, total) ---------- */
 let LINHAS_EDICAO_COMPRA = [];
@@ -5635,7 +5722,8 @@ function editarCompra(id){
     {id: 'numero', rotulo: 'Nº cupom / NF', valor: c.numero},
     {id: 'mercado', rotulo: 'Mercado / loja', valor: c.mercado},
     {id: 'cnpj', rotulo: 'CNPJ', valor: c.cnpj},
-    {id: 'valor', rotulo: 'Valor total (R$)', tipo: 'numero', valor: c.valor}
+    {id: 'valor', rotulo: 'Valor total (R$)', tipo: 'numero', valor: c.valor},
+    {id: 'forma', rotulo: 'Pago com', tipo: 'select', valor: c.formaPagamento || '', opcoes: [{v: '', t: '— não informado / a prazo —'}].concat(FORMAS.map(f => ({v: f, t: rotForma[f]})))}
   ];
   const html = campos.map(campoHTML).join('') +
     '<h3 style="margin:14px 0 4px">Itens comprados</h3>' +
@@ -5658,11 +5746,12 @@ function editarCompra(id){
         const numero = ctl.el.querySelector('#mf_numero').value.trim();
         const mercado = ctl.el.querySelector('#mf_mercado').value.trim();
         const cnpj = ctl.el.querySelector('#mf_cnpj').value.trim();
+        const forma = ctl.el.querySelector('#mf_forma').value || null;
         const obs = ctl.el.querySelector('#mf_itens').value.trim();
         const itensLista = LINHAS_EDICAO_COMPRA.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, precoUnit: parseNum(l.precoUnit) || null, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
         const atualizarPrecos = ctl.el.querySelector('#ecAtualizarPrecos').checked;
         const r = atualizarPrecos ? atualizarPrecosInsumosDeItens(itensLista) : {atualizados: 0, criados: 0, naoAchados: []};
-        Object.assign(c, {data, numero, mercado, cnpj, valor, itens: obs, itensLista});
+        Object.assign(c, {data, numero, mercado, cnpj, valor, formaPagamento: forma, itens: obs, itensLista});
         // despesa(s) vinculada(s) (compra à vista): reparte entre "Insumos avulsos" e "Diversos" do mesmo jeito que ao lançar o cupom
         const itensDiversos = itensLista.filter(l => l.insumo === false);
         const somaDiversos = r2(soma(itensDiversos, l => l.valor));
@@ -5672,11 +5761,11 @@ function editarCompra(id){
         const despesasAtuais = idsAtuais.map(did => BD.despesas.find(x => x.id === did)).filter(Boolean);
         const dInsumos = despesasAtuais.find(x => x.categoria !== 'Diversos') || despesasAtuais[0];
         const dDiversos = despesasAtuais.find(x => x.categoria === 'Diversos' && x !== dInsumos);
-        if(dInsumos){ dInsumos.data = data; dInsumos.valor = somaDiversos > 0 ? valorInsumos : valor; dInsumos.desc = descBase; }
+        if(dInsumos){ dInsumos.data = data; dInsumos.valor = somaDiversos > 0 ? valorInsumos : valor; dInsumos.desc = descBase; if(forma) dInsumos.formaPagamento = forma; }
         if(somaDiversos > 0){
-          if(dDiversos){ dDiversos.data = data; dDiversos.valor = somaDiversos; dDiversos.desc = descBase + ' (diversos)'; }
+          if(dDiversos){ dDiversos.data = data; dDiversos.valor = somaDiversos; dDiversos.desc = descBase + ' (diversos)'; if(forma) dDiversos.formaPagamento = forma; }
           else if(dInsumos){
-            const novaDesp = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: c.id};
+            const novaDesp = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: c.id, formaPagamento: forma};
             BD.despesas.unshift(novaDesp);
             c.despesaIds = [dInsumos.id, novaDesp.id]; c.despesaId = dInsumos.id;
           }
@@ -6374,7 +6463,7 @@ function renderCompras(){
   const q = norm($('pesquisaCupom').value);
   const lista = BD.compras.filter(c => !q || norm(c.numero).includes(q) || norm(c.cnpj).includes(q) || norm(c.mercado).includes(q)).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
   $('tabelaCompras').innerHTML = lista.length ? lista.map(c =>
-    '<tr><td>' + fmtData(c.data) + '</td><td>' + esc(c.numero) + '</td><td>' + esc(c.mercado) + ((c.itensLista || []).length ? ' <span class="tag" title="' + esc(c.itensLista.map(i => i.nome).join(', ')) + '">' + c.itensLista.length + ' item(ns)</span>' : '') + '</td><td>' + esc(c.cnpj || '—') + '</td><td class="n">' + brl(c.valor) + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarCompra(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirCompra(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>'
+    '<tr><td>' + fmtData(c.data) + '</td><td>' + esc(c.numero) + '</td><td>' + esc(c.mercado) + ((c.itensLista || []).length ? ' <span class="tag" title="' + esc(c.itensLista.map(i => i.nome).join(', ')) + '">' + c.itensLista.length + ' item(ns)</span>' : '') + (c.formaPagamento ? ' <span class="tag cinza">' + esc(rotForma[c.formaPagamento] || c.formaPagamento) + '</span>' : (c.contasPagarGrupoId || (c.contasPagarGrupoIds && c.contasPagarGrupoIds.length) ? ' <span class="tag laranja">📅 a prazo</span>' : '')) + '</td><td>' + esc(c.cnpj || '—') + '</td><td class="n">' + brl(c.valor) + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarCompra(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirCompra(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum cupom cadastrado.</div></td></tr>';
   $('somaCompras').textContent = brl(soma(lista, c => c.valor));
 }
