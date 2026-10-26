@@ -1428,11 +1428,12 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <div><label for="cupomCNPJ">CNPJ do fornecedor</label><input type="text" id="cupomCNPJ" list="listaFornecedoresCNPJ" placeholder="Deixe vazio se não tiver" inputmode="numeric" onblur="preencherMercadoDoCNPJ()"></div>
       <div><label for="cupomMercado">Mercado / loja / fornecedor</label><input type="text" id="cupomMercado" list="listaFornecedoresSugeridos" placeholder="Nome do estabelecimento" autocomplete="off" oninput="preencherCNPJDoFornecedor()" onblur="preencherCNPJDoFornecedor()"></div>
       <div><label for="cupomData">Data da compra</label><input type="date" id="cupomData"></div>
-      <div><label for="cupomValor">Valor total R$</label><input type="number" step="0.01" id="cupomValor" placeholder="0,00" inputmode="decimal"></div>
+      <div><label for="cupomValor">Valor total R$</label><input type="number" step="0.01" id="cupomValor" placeholder="0,00" inputmode="decimal" oninput="atualizarResumoCupom('cl_')"></div>
     </div>
     <h3>Itens comprados (opcional)</h3>
-    <div class="dica">Informe os itens para atualizar o preço dos insumos e acompanhar a variação. Pode digitar o preço por kg/litro/unidade (igual na etiqueta do mercado) que o valor total é calculado sozinho — e aparece embaixo se o preço subiu ou caiu em relação ao que já estava cadastrado.</div>
+    <div class="dica">Informe os itens para atualizar o preço dos insumos e acompanhar a variação. Pode digitar o preço por kg/litro/unidade (igual na etiqueta do mercado) que o valor total é calculado sozinho — e aparece embaixo se o preço subiu ou caiu em relação ao que já estava cadastrado. Se a soma dos itens não bater com o "Valor total" (por causa de desconto ou acréscimo no cupom), a diferença é repartida proporcionalmente entre os itens na hora de atualizar o preço dos insumos e dividir insumos × diversos.</div>
     <div id="cupomItensLista"></div>
+    <div id="cupomResumoItens"></div>
     <button class="btn cinza pequeno" type="button" onclick="adicionarLinhaCupom()" style="margin:6px 0">+ Adicionar item</button>
     <label for="cupomItens">Observações / itens em texto livre</label>
     <textarea id="cupomItens" rows="2" placeholder="Ex: promoção, forma de pagamento..."></textarea>
@@ -5200,6 +5201,35 @@ function clAtualizarComparacao(i, pfx){
   const seta = delta > 0.5 ? '🔺' : delta < -0.5 ? '🔻' : '➡️';
   const cls = delta > 0.5 ? 'erro' : delta < -0.5 ? 'ok' : 'suave';
   el.innerHTML = 'Cadastrado: <b>' + brl(precoAtual) + '/' + esc(unid) + '</b> → nesta compra: <b>' + brl(precoNovo) + '/' + esc(unid) + '</b> <span class="' + cls + '">' + seta + ' ' + (delta >= 0 ? '+' : '') + fmt(delta, 1) + '%</span>';
+  atualizarResumoCupom(pfx);
+}
+// Calcula o fator entre o valor total pago e a soma dos itens informados (ex: desconto ou acréscimo do cupom)
+function fatorAjusteCupom(itensLista, valorTotal){
+  const subtotal = r2(soma(itensLista, l => parseNum(l.valor)));
+  if(!(subtotal > 0) || !(valorTotal > 0)) return 1;
+  return valorTotal / subtotal;
+}
+// Aplica esse fator a cada item (valor e preço/unid), pra refletir o preço efetivamente pago, sem alterar os itens originais do cupom (guardados como na nota)
+function itensComAjusteCupom(itensLista, valorTotal){
+  const fator = fatorAjusteCupom(itensLista, valorTotal);
+  if(Math.abs(fator - 1) < 0.0001) return itensLista;
+  return itensLista.map(l => ({...l, valor: r2(l.valor * fator), precoUnit: l.precoUnit != null ? r2(l.precoUnit * fator) : l.precoUnit}));
+}
+// Mostra, embaixo da lista de itens, se a soma bate com o "Valor total" do cupom — e avisa que a diferença (desconto/acréscimo)
+// é repartida proporcionalmente entre os itens pra não distorcer o preço dos insumos nem a divisão insumos × diversos.
+function atualizarResumoCupom(pfx){
+  pfx = pfx || 'cl_';
+  const el = $(pfx === 'ecl_' ? 'ecResumoCupom' : 'cupomResumoItens'); if(!el) return;
+  const linhas = pfx === 'ecl_' ? LINHAS_EDICAO_COMPRA : LINHAS_CUPOM;
+  const subtotal = r2(soma(linhas, l => parseNum(l.valor)));
+  const valorEl = pfx === 'ecl_' ? document.getElementById('mf_valor') : $('cupomValor');
+  const valorTotal = valorEl ? parseNum(valorEl.value) : 0;
+  if(!(subtotal > 0) || !(valorTotal > 0)){ el.innerHTML = ''; return; }
+  const diff = r2(subtotal - valorTotal);
+  if(Math.abs(diff) < 0.01){ el.innerHTML = ''; return; }
+  const perc = subtotal > 0 ? Math.abs(diff) / subtotal * 100 : 0;
+  const rotulo = diff > 0 ? '🏷️ Desconto identificado' : '➕ Acréscimo identificado';
+  el.innerHTML = '<div class="dica">Subtotal dos itens: <b>' + brl(subtotal) + '</b> · ' + rotulo + ': <b>' + brl(Math.abs(diff)) + '</b> (' + fmt(perc, 1) + '%) — já considerado, proporcionalmente, no preço dos insumos e na divisão insumos × diversos ao salvar.</div>';
 }
 // Monta o HTML de UMA linha de item (nome, qtd, unidade, R$/unid, R$ total, insumo?) — usado tanto no cupom novo (pfx "cl_")
 // quanto na edição de um cupom já salvo (pfx "ecl_"), pra não duplicar a mesma lógica nos dois lugares.
@@ -5219,6 +5249,7 @@ function linhaCupomHTML(pfx, i, l, onRemover){
 function renderLinhasCupom(){
   $('cupomItensLista').innerHTML = LINHAS_CUPOM.map((l, i) => linhaCupomHTML('cl_', i, l, 'removerLinhaCupom')).join('');
   LINHAS_CUPOM.forEach((l, i) => clAtualizarComparacao(i));
+  atualizarResumoCupom('cl_');
 }
 /* ---------- fornecedores ---------- */
 function adicionarFornecedor(){
@@ -5635,9 +5666,13 @@ function cadastrarCupom(){
     const cnpjD = somenteDigitos(cnpj);
     if(fExistente && !fExistente.cnpj && cnpjD.length === 14){ fExistente.cnpj = cnpjD; salvar('fornecedores'); }
   }
-  const itensDiversos = itensLista.filter(l => l.insumo === false);
+  // se a soma dos itens não bate com o valor total do cupom (desconto/acréscimo), reparte essa diferença
+  // proporcionalmente entre os itens antes de atualizar o preço dos insumos e dividir insumos × diversos
+  const fatorCupom = fatorAjusteCupom(itensLista, valor);
+  const itensAjustados = itensComAjusteCupom(itensLista, valor);
+  const itensDiversos = itensAjustados.filter(l => l.insumo === false);
   const somaDiversos = r2(soma(itensDiversos, l => l.valor));
-  const {atualizados, criados, naoAchados} = $('cupomAtualizarPrecos').checked ? atualizarPrecosInsumosDeItens(itensLista) : {atualizados: 0, criados: 0, naoAchados: []};
+  const {atualizados, criados, naoAchados} = $('cupomAtualizarPrecos').checked ? atualizarPrecosInsumosDeItens(itensAjustados) : {atualizados: 0, criados: 0, naoAchados: []};
   const valorInsumos = r2(Math.max(0, valor - somaDiversos));
   let parcelasGeradas = 0;
   if(CUPOM_PAGAMENTO === 'prazo'){
@@ -5684,7 +5719,7 @@ function cadastrarCupom(){
   ['cupomNum', 'cupomCNPJ', 'cupomMercado', 'cupomValor', 'cupomItens'].forEach(i => $(i).value = ''); LINHAS_CUPOM = []; renderLinhasCupom();
   selecionarPagamentoCupom('vista'); selecionarFormaPagamentoCupom('dinheiro');
   salvar('compras', 'despesas', 'insumos', 'fichas', 'contasPagar'); renderCompras();
-  toast('Cupom salvo.' + (parcelasGeradas ? ' ' + parcelasGeradas + ' parcela(s) criada(s) em Contas a pagar.' : '') + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (criados ? ' ' + criados + ' insumo(s) novo(s) cadastrado(s).' : '') + (somaDiversos ? ' ' + brl(somaDiversos) + ' em "Diversos" (não entrou no estoque de insumos).' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
+  toast('Cupom salvo.' + (parcelasGeradas ? ' ' + parcelasGeradas + ' parcela(s) criada(s) em Contas a pagar.' : '') + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (criados ? ' ' + criados + ' insumo(s) novo(s) cadastrado(s).' : '') + (somaDiversos ? ' ' + brl(somaDiversos) + ' em "Diversos" (não entrou no estoque de insumos).' : '') + (Math.abs(fatorCupom - 1) > 0.001 ? ' ' + (fatorCupom < 1 ? 'Desconto' : 'Acréscimo') + ' do cupom considerado proporcionalmente no preço dos insumos.' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
 }
 function selecionarPagamentoCupom(t){
   CUPOM_PAGAMENTO = t;
@@ -5713,6 +5748,7 @@ function renderLinhasEdicaoCompra(){
   const el = $('ecItensLista'); if(!el) return;
   el.innerHTML = LINHAS_EDICAO_COMPRA.length ? LINHAS_EDICAO_COMPRA.map((l, i) => linhaCupomHTML('ecl_', i, l, 'removerLinhaEdicaoCompra')).join('') : '<div class="vazio">Nenhum item lançado neste cupom ainda.</div>';
   LINHAS_EDICAO_COMPRA.forEach((l, i) => clAtualizarComparacao(i, 'ecl_'));
+  atualizarResumoCupom('ecl_');
 }
 function editarCompra(id){
   const c = BD.compras.find(x => x.id === id); if(!c) return;
@@ -5721,14 +5757,15 @@ function editarCompra(id){
     {id: 'data', rotulo: 'Data', tipo: 'data', valor: c.data},
     {id: 'numero', rotulo: 'Nº cupom / NF', valor: c.numero},
     {id: 'mercado', rotulo: 'Mercado / loja', valor: c.mercado},
-    {id: 'cnpj', rotulo: 'CNPJ', valor: c.cnpj},
-    {id: 'valor', rotulo: 'Valor total (R$)', tipo: 'numero', valor: c.valor},
-    {id: 'forma', rotulo: 'Pago com', tipo: 'select', valor: c.formaPagamento || '', opcoes: [{v: '', t: '— não informado / a prazo —'}].concat(FORMAS.map(f => ({v: f, t: rotForma[f]})))}
+    {id: 'cnpj', rotulo: 'CNPJ', valor: c.cnpj}
   ];
-  const html = campos.map(campoHTML).join('') +
+  const campoValorHTML = '<label for="mf_valor">Valor total (R$)</label><input id="mf_valor" type="text" inputmode="decimal" value="' + esc(c.valor) + '" oninput="atualizarResumoCupom(\'ecl_\')" autocomplete="off">';
+  const campoForma = {id: 'forma', rotulo: 'Pago com', tipo: 'select', valor: c.formaPagamento || '', opcoes: [{v: '', t: '— não informado / a prazo —'}].concat(FORMAS.map(f => ({v: f, t: rotForma[f]})))};
+  const html = campos.map(campoHTML).join('') + campoValorHTML + campoHTML(campoForma) +
     '<h3 style="margin:14px 0 4px">Itens comprados</h3>' +
-    '<div class="dica">Produto, quantidade e preço por unidade (ou o valor total) — um calcula o outro sozinho, e compara com o preço já cadastrado no insumo.</div>' +
+    '<div class="dica">Produto, quantidade e preço por unidade (ou o valor total) — um calcula o outro sozinho, e compara com o preço já cadastrado no insumo. Se a soma dos itens não bater com o "Valor total" (desconto/acréscimo), a diferença é repartida proporcionalmente entre os itens.</div>' +
     '<div id="ecItensLista"></div>' +
+    '<div id="ecResumoCupom"></div>' +
     '<button class="btn cinza pequeno" type="button" onclick="adicionarLinhaEdicaoCompra()" style="margin:6px 0">+ Adicionar item</button>' +
     '<label class="linha"><input type="checkbox" id="ecAtualizarPrecos" checked> Atualizar o preço dos insumos com os itens acima</label>' +
     campoHTML({id: 'itens', rotulo: 'Observações', tipo: 'area', valor: c.itens}) +
@@ -5750,10 +5787,13 @@ function editarCompra(id){
         const obs = ctl.el.querySelector('#mf_itens').value.trim();
         const itensLista = LINHAS_EDICAO_COMPRA.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, precoUnit: parseNum(l.precoUnit) || null, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
         const atualizarPrecos = ctl.el.querySelector('#ecAtualizarPrecos').checked;
-        const r = atualizarPrecos ? atualizarPrecosInsumosDeItens(itensLista) : {atualizados: 0, criados: 0, naoAchados: []};
+        // mesma lógica do lançamento: se a soma dos itens não bater com o valor total (desconto/acréscimo), reparte
+        // essa diferença proporcionalmente entre os itens antes de atualizar o preço dos insumos e dividir insumos × diversos
+        const itensAjustados = itensComAjusteCupom(itensLista, valor);
+        const r = atualizarPrecos ? atualizarPrecosInsumosDeItens(itensAjustados) : {atualizados: 0, criados: 0, naoAchados: []};
         Object.assign(c, {data, numero, mercado, cnpj, valor, formaPagamento: forma, itens: obs, itensLista});
         // despesa(s) vinculada(s) (compra à vista): reparte entre "Insumos avulsos" e "Diversos" do mesmo jeito que ao lançar o cupom
-        const itensDiversos = itensLista.filter(l => l.insumo === false);
+        const itensDiversos = itensAjustados.filter(l => l.insumo === false);
         const somaDiversos = r2(soma(itensDiversos, l => l.valor));
         const valorInsumos = r2(Math.max(0, valor - somaDiversos));
         const descBase = 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : '');
