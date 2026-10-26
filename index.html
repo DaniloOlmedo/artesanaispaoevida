@@ -5079,31 +5079,35 @@ function lerLinhasCupom(){
 function adicionarLinhaCupom(){ lerLinhasCupom(); LINHAS_CUPOM.push({nome: '', qtd: '', unid: 'kg', precoUnit: '', valor: '', insumo: true}); renderLinhasCupom(); const i = LINHAS_CUPOM.length - 1; if($('cl_n' + i)) $('cl_n' + i).focus(); }
 function removerLinhaCupom(i){ lerLinhasCupom(); LINHAS_CUPOM.splice(i, 1); renderLinhasCupom(); }
 // Digitou o preço por unidade (ex: R$/kg, igual na etiqueta do mercado) → calcula o valor total sozinho (qtd × preço)
-function clRecalcValor(i){
-  const qtdEl = $('cl_q' + i), puEl = $('cl_p' + i), vEl = $('cl_v' + i);
+// pfx permite reaproveitar esta mesma lógica em mais de uma lista de itens na tela (ex: lançar cupom novo × editar cupom existente)
+function clRecalcValor(i, pfx){
+  pfx = pfx || 'cl_';
+  const qtdEl = $(pfx + 'q' + i), puEl = $(pfx + 'p' + i), vEl = $(pfx + 'v' + i);
   if(qtdEl && puEl && vEl){
     const qtd = parseNum(qtdEl.value), pu = parseNum(puEl.value);
     if(qtd > 0 && pu > 0) vEl.value = r2(qtd * pu).toFixed(2).replace('.', ',');
   }
-  clAtualizarComparacao(i);
+  clAtualizarComparacao(i, pfx);
 }
 // Digitou o valor total direto → calcula o preço por unidade sozinho (valor ÷ qtd), pra comparar com o cadastro
-function clRecalcPreco(i){
-  const qtdEl = $('cl_q' + i), puEl = $('cl_p' + i), vEl = $('cl_v' + i);
+function clRecalcPreco(i, pfx){
+  pfx = pfx || 'cl_';
+  const qtdEl = $(pfx + 'q' + i), puEl = $(pfx + 'p' + i), vEl = $(pfx + 'v' + i);
   if(qtdEl && puEl && vEl){
     const qtd = parseNum(qtdEl.value), v = parseNum(vEl.value);
     if(qtd > 0 && v > 0) puEl.value = r2(v / qtd).toFixed(2).replace('.', ',');
   }
-  clAtualizarComparacao(i);
+  clAtualizarComparacao(i, pfx);
 }
 // Mostra, embaixo da linha, o preço atual cadastrado no insumo x o preço novo desta compra (se subiu, caiu ou ficou igual)
-function clAtualizarComparacao(i){
-  const el = $('cl_cmp' + i); if(!el) return;
-  const nome = $('cl_n' + i) ? $('cl_n' + i).value.trim() : '';
-  const unid = $('cl_u' + i) ? $('cl_u' + i).value : 'kg';
-  const qtd = $('cl_q' + i) ? parseNum($('cl_q' + i).value) : 0;
-  const pu = $('cl_p' + i) ? parseNum($('cl_p' + i).value) : 0;
-  const v = $('cl_v' + i) ? parseNum($('cl_v' + i).value) : 0;
+function clAtualizarComparacao(i, pfx){
+  pfx = pfx || 'cl_';
+  const el = $(pfx + 'cmp' + i); if(!el) return;
+  const nome = $(pfx + 'n' + i) ? $(pfx + 'n' + i).value.trim() : '';
+  const unid = $(pfx + 'u' + i) ? $(pfx + 'u' + i).value : 'kg';
+  const qtd = $(pfx + 'q' + i) ? parseNum($(pfx + 'q' + i).value) : 0;
+  const pu = $(pfx + 'p' + i) ? parseNum($(pfx + 'p' + i).value) : 0;
+  const v = $(pfx + 'v' + i) ? parseNum($(pfx + 'v' + i).value) : 0;
   const precoNovo = pu > 0 ? pu : (qtd > 0 && v > 0 ? r2(v / qtd) : 0);
   if(!nome || !precoNovo){ el.innerHTML = ''; return; }
   const ins = acharInsumoPorNome(nome);
@@ -5115,20 +5119,23 @@ function clAtualizarComparacao(i){
   const cls = delta > 0.5 ? 'erro' : delta < -0.5 ? 'ok' : 'suave';
   el.innerHTML = 'Cadastrado: <b>' + brl(precoAtual) + '/' + esc(unid) + '</b> → nesta compra: <b>' + brl(precoNovo) + '/' + esc(unid) + '</b> <span class="' + cls + '">' + seta + ' ' + (delta >= 0 ? '+' : '') + fmt(delta, 1) + '%</span>';
 }
+// Monta o HTML de UMA linha de item (nome, qtd, unidade, R$/unid, R$ total, insumo?) — usado tanto no cupom novo (pfx "cl_")
+// quanto na edição de um cupom já salvo (pfx "ecl_"), pra não duplicar a mesma lógica nos dois lugares.
+function linhaCupomHTML(pfx, i, l, onRemover){
+  const unidAtual = l.unid || 'kg';
+  return '<div class="cupom-item-bloco">' +
+    '<div class="linha-form" style="grid-template-columns:2fr 0.8fr 0.8fr 1fr 1fr auto auto">' +
+    '<div><input id="' + pfx + 'n' + i + '" list="listaInsumosDL" placeholder="Nome do item" value="' + esc(l.nome) + '" aria-label="Item" oninput="clAtualizarComparacao(' + i + ',\'' + pfx + '\')"></div>' +
+    '<div><input id="' + pfx + 'q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade" oninput="clRecalcValor(' + i + ',\'' + pfx + '\')"></div>' +
+    '<div><select id="' + pfx + 'u' + i + '" aria-label="Unidade" onchange="clAtualizarComparacao(' + i + ',\'' + pfx + '\')">' + UNIDADES.map(u => '<option' + (u === unidAtual ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
+    '<div><input id="' + pfx + 'p' + i + '" type="text" inputmode="decimal" placeholder="R$/' + unidAtual + '" value="' + esc(l.precoUnit || '') + '" aria-label="Preço por unidade" oninput="clRecalcValor(' + i + ',\'' + pfx + '\')"></div>' +
+    '<div><input id="' + pfx + 'v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total" oninput="clRecalcPreco(' + i + ',\'' + pfx + '\')"></div>' +
+    '<label class="linha" style="white-space:nowrap" title="Desmarque se não for insumo de produção (ex: material de limpeza, uso pessoal) — entra como despesa Diversos, sem mexer no estoque de insumos."><input type="checkbox" id="' + pfx + 'i' + i + '"' + (l.insumo !== false ? ' checked' : '') + '> 📦 Insumo</label>' +
+    '<button class="btn vermelho pequeno" type="button" onclick="' + onRemover + '(' + i + ')" aria-label="Remover">✕</button>' +
+    '</div><div id="' + pfx + 'cmp' + i + '" class="pequeno-txt" style="margin:-4px 0 10px"></div></div>';
+}
 function renderLinhasCupom(){
-  $('cupomItensLista').innerHTML = LINHAS_CUPOM.map((l, i) => {
-    const unidAtual = l.unid || 'kg';
-    return '<div class="cupom-item-bloco">' +
-      '<div class="linha-form" style="grid-template-columns:2fr 0.8fr 0.8fr 1fr 1fr auto auto">' +
-      '<div><input id="cl_n' + i + '" list="listaInsumosDL" placeholder="Nome do item" value="' + esc(l.nome) + '" aria-label="Item" oninput="clAtualizarComparacao(' + i + ')"></div>' +
-      '<div><input id="cl_q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade" oninput="clRecalcValor(' + i + ')"></div>' +
-      '<div><select id="cl_u' + i + '" aria-label="Unidade" onchange="clAtualizarComparacao(' + i + ')">' + UNIDADES.map(u => '<option' + (u === unidAtual ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
-      '<div><input id="cl_p' + i + '" type="text" inputmode="decimal" placeholder="R$/' + unidAtual + '" value="' + esc(l.precoUnit || '') + '" aria-label="Preço por unidade" oninput="clRecalcValor(' + i + ')"></div>' +
-      '<div><input id="cl_v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total" oninput="clRecalcPreco(' + i + ')"></div>' +
-      '<label class="linha" style="white-space:nowrap" title="Desmarque se não for insumo de produção (ex: material de limpeza, uso pessoal) — entra como despesa Diversos, sem mexer no estoque de insumos."><input type="checkbox" id="cl_i' + i + '"' + (l.insumo !== false ? ' checked' : '') + '> 📦 Insumo</label>' +
-      '<button class="btn vermelho pequeno" type="button" onclick="removerLinhaCupom(' + i + ')" aria-label="Remover">✕</button>' +
-      '</div><div id="cl_cmp' + i + '" class="pequeno-txt" style="margin:-4px 0 10px"></div></div>';
-  }).join('');
+  $('cupomItensLista').innerHTML = LINHAS_CUPOM.map((l, i) => linhaCupomHTML('cl_', i, l, 'removerLinhaCupom')).join('');
   LINHAS_CUPOM.forEach((l, i) => clAtualizarComparacao(i));
 }
 /* ---------- fornecedores ---------- */
@@ -5516,6 +5523,22 @@ function confirmarImportacaoClientes(ctl){
   salvar('clientes'); renderClientes(); atualizarDatalists();
   toast(add + ' cliente(s) adicionado(s) ao cadastro. Complete o endereço quando puder.', 'ok', {ms: 7000});
 }
+// Aplica os itens marcados como "📦 Insumo" ao cadastro de Insumos (cria o que não existe, atualiza preço/unidade do que já existe).
+// Usado tanto ao salvar um cupom novo quanto ao editar um cupom já lançado.
+function atualizarPrecosInsumosDeItens(itensLista){
+  let atualizados = 0, criados = 0; const naoAchados = [];
+  itensLista.filter(l => l.insumo !== false).forEach(l => {
+    const ins = acharInsumoPorNome(l.nome);
+    if(!ins){
+      const novo = {id: uid(), nome: l.nome, unid: l.unid, qtd: l.qtd, valor: l.valor, precoBase: precoBaseDe(l.unid, l.qtd, l.valor), historicoPreco: []};
+      rotularInsumo(novo); registrarHistorico(novo); BD.insumos.push(novo); criados++;
+      return;
+    }
+    if(ins.origem){ naoAchados.push(l.nome + ' (calculado por receita)'); return; }
+    ins.unid = l.unid; ins.qtd = l.qtd; ins.valor = l.valor; ins.precoBase = precoBaseDe(l.unid, l.qtd, l.valor); rotularInsumo(ins); registrarHistorico(ins); atualizados++;
+  });
+  return {atualizados, criados, naoAchados};
+}
 function cadastrarCupom(){
   lerLinhasCupom();
   const numero = $('cupomNum').value.trim(); const cnpj = $('cupomCNPJ').value.trim(); const mercado = $('cupomMercado').value.trim();
@@ -5530,21 +5553,9 @@ function cadastrarCupom(){
     const cnpjD = somenteDigitos(cnpj);
     if(fExistente && !fExistente.cnpj && cnpjD.length === 14){ fExistente.cnpj = cnpjD; salvar('fornecedores'); }
   }
-  let atualizados = 0, criados = 0; const naoAchados = [];
   const itensDiversos = itensLista.filter(l => l.insumo === false);
   const somaDiversos = r2(soma(itensDiversos, l => l.valor));
-  if($('cupomAtualizarPrecos').checked){
-    itensLista.filter(l => l.insumo !== false).forEach(l => {
-      const ins = acharInsumoPorNome(l.nome);
-      if(!ins){
-        const novo = {id: uid(), nome: l.nome, unid: l.unid, qtd: l.qtd, valor: l.valor, precoBase: precoBaseDe(l.unid, l.qtd, l.valor), historicoPreco: []};
-        rotularInsumo(novo); registrarHistorico(novo); BD.insumos.push(novo); criados++;
-        return;
-      }
-      if(ins.origem){ naoAchados.push(l.nome + ' (calculado por receita)'); return; }
-      ins.unid = l.unid; ins.qtd = l.qtd; ins.valor = l.valor; ins.precoBase = precoBaseDe(l.unid, l.qtd, l.valor); rotularInsumo(ins); registrarHistorico(ins); atualizados++;
-    });
-  }
+  const {atualizados, criados, naoAchados} = $('cupomAtualizarPrecos').checked ? atualizarPrecosInsumosDeItens(itensLista) : {atualizados: 0, criados: 0, naoAchados: []};
   const valorInsumos = r2(Math.max(0, valor - somaDiversos));
   let parcelasGeradas = 0;
   if(CUPOM_PAGAMENTO === 'prazo'){
@@ -5600,18 +5611,85 @@ function selecionarPagamentoCupom(t){
   if($('cupomLancarDespesaWrap')) $('cupomLancarDespesaWrap').classList.toggle('oculto', t === 'prazo');
   if(t === 'prazo' && $('cupomPrimeiroVenc') && !$('cupomPrimeiroVenc').value) $('cupomPrimeiroVenc').value = dataHoje();
 }
+/* ---------- edição de cupom já salvo: inclui editar os itens (produto, qtd, preço, total) ---------- */
+let LINHAS_EDICAO_COMPRA = [];
+function lerLinhasEdicaoCompra(){
+  LINHAS_EDICAO_COMPRA = LINHAS_EDICAO_COMPRA.map((l, i) => ({
+    nome: ($('ecl_n' + i) ? $('ecl_n' + i).value : l.nome), qtd: ($('ecl_q' + i) ? $('ecl_q' + i).value : l.qtd),
+    unid: ($('ecl_u' + i) ? $('ecl_u' + i).value : l.unid), precoUnit: ($('ecl_p' + i) ? $('ecl_p' + i).value : l.precoUnit),
+    valor: ($('ecl_v' + i) ? $('ecl_v' + i).value : l.valor),
+    insumo: ($('ecl_i' + i) ? $('ecl_i' + i).checked : (l.insumo !== false))}));
+}
+function adicionarLinhaEdicaoCompra(){ lerLinhasEdicaoCompra(); LINHAS_EDICAO_COMPRA.push({nome: '', qtd: '', unid: 'kg', precoUnit: '', valor: '', insumo: true}); renderLinhasEdicaoCompra(); const i = LINHAS_EDICAO_COMPRA.length - 1; if($('ecl_n' + i)) $('ecl_n' + i).focus(); }
+function removerLinhaEdicaoCompra(i){ lerLinhasEdicaoCompra(); LINHAS_EDICAO_COMPRA.splice(i, 1); renderLinhasEdicaoCompra(); }
+function renderLinhasEdicaoCompra(){
+  const el = $('ecItensLista'); if(!el) return;
+  el.innerHTML = LINHAS_EDICAO_COMPRA.length ? LINHAS_EDICAO_COMPRA.map((l, i) => linhaCupomHTML('ecl_', i, l, 'removerLinhaEdicaoCompra')).join('') : '<div class="vazio">Nenhum item lançado neste cupom ainda.</div>';
+  LINHAS_EDICAO_COMPRA.forEach((l, i) => clAtualizarComparacao(i, 'ecl_'));
+}
 function editarCompra(id){
   const c = BD.compras.find(x => x.id === id); if(!c) return;
-  formModal({titulo: 'Editar cupom', campos: [
-    {id: 'data', rotulo: 'Data', tipo: 'data', valor: c.data}, {id: 'numero', rotulo: 'Nº cupom / NF', valor: c.numero}, {id: 'mercado', rotulo: 'Mercado / loja', valor: c.mercado},
-    {id: 'cnpj', rotulo: 'CNPJ', valor: c.cnpj}, {id: 'valor', rotulo: 'Valor total (R$)', tipo: 'numero', valor: c.valor}, {id: 'itens', rotulo: 'Observações', tipo: 'area', valor: c.itens}
-  ], salvar: v => {
-    if(!v.data || !(v.valor > 0)){ toast('Data e valor válidos, por favor.', 'alerta'); return false; }
-    Object.assign(c, {data: v.data, numero: v.numero, mercado: v.mercado, cnpj: v.cnpj, valor: v.valor, itens: v.itens});
-    const d = c.despesaId && BD.despesas.find(x => x.id === c.despesaId);
-    if(d){ d.data = v.data; d.valor = v.valor; d.desc = 'Compra: ' + (v.mercado || 'cupom') + (v.numero ? ' (nº ' + v.numero + ')' : ''); }
-    salvar('compras', 'despesas'); renderCompras();
-  }});
+  LINHAS_EDICAO_COMPRA = clona(c.itensLista || []);
+  const campos = [
+    {id: 'data', rotulo: 'Data', tipo: 'data', valor: c.data},
+    {id: 'numero', rotulo: 'Nº cupom / NF', valor: c.numero},
+    {id: 'mercado', rotulo: 'Mercado / loja', valor: c.mercado},
+    {id: 'cnpj', rotulo: 'CNPJ', valor: c.cnpj},
+    {id: 'valor', rotulo: 'Valor total (R$)', tipo: 'numero', valor: c.valor}
+  ];
+  const html = campos.map(campoHTML).join('') +
+    '<h3 style="margin:14px 0 4px">Itens comprados</h3>' +
+    '<div class="dica">Produto, quantidade e preço por unidade (ou o valor total) — um calcula o outro sozinho, e compara com o preço já cadastrado no insumo.</div>' +
+    '<div id="ecItensLista"></div>' +
+    '<button class="btn cinza pequeno" type="button" onclick="adicionarLinhaEdicaoCompra()" style="margin:6px 0">+ Adicionar item</button>' +
+    '<label class="linha"><input type="checkbox" id="ecAtualizarPrecos" checked> Atualizar o preço dos insumos com os itens acima</label>' +
+    campoHTML({id: 'itens', rotulo: 'Observações', tipo: 'area', valor: c.itens}) +
+    (c.contasPagarGrupoId || (c.contasPagarGrupoIds && c.contasPagarGrupoIds.length) ? '<div class="aviso">⚠️ Este cupom foi lançado "a prazo": as parcelas em Contas a pagar não são recalculadas automaticamente ao editar aqui — ajuste-as em "Contas a pagar" se precisar.</div>' : '');
+  abrirModal({
+    titulo: 'Editar cupom', html, largo: true,
+    aoAbrir: () => renderLinhasEdicaoCompra(),
+    botoes: [
+      {rotulo: 'Cancelar', classe: 'cinza'},
+      {rotulo: 'Salvar', fn: ctl => {
+        lerLinhasEdicaoCompra();
+        const data = ctl.el.querySelector('#mf_data').value;
+        const valor = parseNum(ctl.el.querySelector('#mf_valor').value);
+        if(!data || !(valor > 0)){ toast('Data e valor válidos, por favor.', 'alerta'); return false; }
+        const numero = ctl.el.querySelector('#mf_numero').value.trim();
+        const mercado = ctl.el.querySelector('#mf_mercado').value.trim();
+        const cnpj = ctl.el.querySelector('#mf_cnpj').value.trim();
+        const obs = ctl.el.querySelector('#mf_itens').value.trim();
+        const itensLista = LINHAS_EDICAO_COMPRA.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, precoUnit: parseNum(l.precoUnit) || null, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
+        const atualizarPrecos = ctl.el.querySelector('#ecAtualizarPrecos').checked;
+        const r = atualizarPrecos ? atualizarPrecosInsumosDeItens(itensLista) : {atualizados: 0, criados: 0, naoAchados: []};
+        Object.assign(c, {data, numero, mercado, cnpj, valor, itens: obs, itensLista});
+        // despesa(s) vinculada(s) (compra à vista): reparte entre "Insumos avulsos" e "Diversos" do mesmo jeito que ao lançar o cupom
+        const itensDiversos = itensLista.filter(l => l.insumo === false);
+        const somaDiversos = r2(soma(itensDiversos, l => l.valor));
+        const valorInsumos = r2(Math.max(0, valor - somaDiversos));
+        const descBase = 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : '');
+        const idsAtuais = c.despesaIds || (c.despesaId ? [c.despesaId] : []);
+        const despesasAtuais = idsAtuais.map(did => BD.despesas.find(x => x.id === did)).filter(Boolean);
+        const dInsumos = despesasAtuais.find(x => x.categoria !== 'Diversos') || despesasAtuais[0];
+        const dDiversos = despesasAtuais.find(x => x.categoria === 'Diversos' && x !== dInsumos);
+        if(dInsumos){ dInsumos.data = data; dInsumos.valor = somaDiversos > 0 ? valorInsumos : valor; dInsumos.desc = descBase; }
+        if(somaDiversos > 0){
+          if(dDiversos){ dDiversos.data = data; dDiversos.valor = somaDiversos; dDiversos.desc = descBase + ' (diversos)'; }
+          else if(dInsumos){
+            const novaDesp = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: c.id};
+            BD.despesas.unshift(novaDesp);
+            c.despesaIds = [dInsumos.id, novaDesp.id]; c.despesaId = dInsumos.id;
+          }
+        }else if(dDiversos){
+          BD.despesas = BD.despesas.filter(x => x.id !== dDiversos.id);
+          c.despesaIds = dInsumos ? [dInsumos.id] : [];
+        }
+        if(r.atualizados || r.criados) recalcularTudo();
+        salvar('compras', 'despesas', 'insumos', 'fichas'); renderCompras();
+        toast('Cupom atualizado.' + (r.atualizados ? ' ' + r.atualizados + ' preço(s) de insumo atualizado(s).' : '') + (r.criados ? ' ' + r.criados + ' insumo(s) novo(s) cadastrado(s).' : '') + (r.naoAchados.length ? ' Não atualizados: ' + r.naoAchados.join(', ') + '.' : ''), 'ok', {ms: 6000});
+      }}
+    ]
+  });
 }
 async function excluirCompra(id){
   const c = BD.compras.find(x => x.id === id); if(!c) return;
