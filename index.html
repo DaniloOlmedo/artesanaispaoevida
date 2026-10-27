@@ -122,6 +122,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde2);box-shadow:0 
 .aviso.ok-a{background:rgba(46,125,50,.10);border-left-color:#2e7d32}
 hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 .resultado{margin-top:12px;padding:12px 14px;background:var(--realce);border-radius:8px;border-left:4px solid var(--verde2)}
+.ajuda-aba{background:var(--painel);border-radius:10px;margin-bottom:16px;box-shadow:var(--sombra);border-left:4px solid var(--verde2)}
+.ajuda-aba summary{cursor:pointer;padding:14px 16px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+.ajuda-aba summary::-webkit-details-marker{display:none}
+.ajuda-aba summary::before{content:'▸';display:inline-block;transition:transform .15s;color:var(--verde2)}
+.ajuda-aba[open] summary::before{transform:rotate(90deg)}
+.ajuda-aba .ajuda-corpo{padding:0 16px 14px;font-size:.88rem;line-height:1.55}
+.ajuda-aba .ajuda-corpo ol,.ajuda-aba .ajuda-corpo ul{margin:6px 0 10px 20px;padding:0}
+.ajuda-aba .ajuda-corpo li{margin:4px 0}
+.ajuda-aba .ajuda-corpo p{margin:6px 0}
 .resultado h4{margin:0 0 8px;color:var(--verde)}
 :root[data-theme="dark"] .resultado h4{color:#7fe0ae}
 .resultado p{margin:3px 0}
@@ -537,6 +546,13 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 <!-- ============ PAINEL ============ -->
 <!-- ============ INÍCIO (tela de atalhos) ============ -->
 <section id="inicio" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🏠 Início</summary><div class="ajuda-corpo">
+    <p>É a tela de atalhos: toque em qualquer botão pra ir direto naquela aba.</p>
+    <ul>
+      <li>Os números pequenos (ex: no Caixa, na Fila, no Estoque) avisam o que está pendente: pedidos aguardando, caixa do dia ainda não fechado, itens acabando.</li>
+      <li>Não precisa preencher nada aqui — é só navegação.</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <div class="inicio-cabecalho">
       <div class="saudacao" id="inicioSaudacao">Olá!</div>
@@ -582,6 +598,16 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 </section>
 
 <section id="dashboard" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 📊 Painel</summary><div class="ajuda-corpo">
+    <p>É só leitura — os dados vêm sozinhos de Vendas, Custos, Compras etc. Troque o mês no campo do topo pra ver outro período.</p>
+    <ul>
+      <li><b>Resumo do mês</b> e <b>Funil financeiro</b>: faturamento, custos e lucro, passo a passo.</li>
+      <li><b>Situação financeira</b>: inclui o "Faturamento do ano" e o quanto já usou do teto do MEI.</li>
+      <li><b>Saúde do negócio</b> e <b>Metas</b>: avisos automáticos e meta × realizado.</li>
+      <li><b>Simulador "e se...?"</b>: teste mudanças (preço, volume) sem mexer em nada de verdade.</li>
+      <li><b>Estoque acabando</b> e <b>Top 5</b>: o que repor e o que mais vende/dá lucro.</li>
+    </ul>
+  </div></details>
   <div id="dashPendencias"></div>
   <div class="painel">
     <div class="cab-painel"><h2 id="dashTituloMes">📊 Resumo do mês</h2>
@@ -627,6 +653,15 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ CONCILIAÇÃO BANCÁRIA ============ -->
 <section id="conciliacao" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🏦 Conciliação bancária</summary><div class="ajuda-corpo">
+    <p>Confere se o que está no extrato do banco bate com o que você lançou no sistema (vendas e despesas). O manual completo, passo a passo, está no painel "📖 Manual da conciliação bancária" no final desta aba — abra quando precisar.</p>
+    <ol>
+      <li>Baixe o extrato (OFX ou CSV) no app/site do banco ou maquininha.</li>
+      <li>Importe aqui escolhendo a conta certa.</li>
+      <li>Abra "Conciliar" e clique em "⚡ Conciliar automaticamente".</li>
+      <li>Resolva o que sobrou (pendentes) um a um.</li>
+    </ol>
+  </div></details>
   <div class="painel">
     <h2>📥 Importar extrato</h2>
     <div class="aviso">Baixe o extrato no app ou site do seu banco (ou da maquininha) em <b>OFX</b> ou <b>CSV</b> e envie aqui. O sistema compara cada entrada e saída com as vendas e despesas já lançadas, sem apagar nada.</div>
@@ -671,8 +706,9 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </div>
     <div id="audRes"></div>
   </div>
-  <div class="painel">
-    <h2>📖 Manual da conciliação bancária</h2>
+  <details class="ajuda-aba">
+    <summary>📖 Manual da conciliação bancária</summary>
+    <div class="ajuda-corpo">
     <p class="suave">Conciliar é conferir se o que está no <b>extrato do banco</b> bate com o que você lançou no sistema (vendas e despesas). Faça uma vez por semana ou ao fim do mês.</p>
     <h3>Passo 1 — Baixe o extrato</h3>
     <p>No app ou site do banco/maquininha, procure <b>Extrato → Exportar</b> e escolha <b>OFX</b> (melhor) ou <b>CSV</b>. Baixe o período desejado (um mês é o ideal). Faça isso para cada conta: Santander, Stone/Ton, Infinity Pay, Mercado Pago, Getnet e fatura do cartão.</p>
@@ -703,11 +739,25 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </ul>
     <div class="aviso">Dica: o quadro <b>por conta</b> no topo de Conciliar mostra entradas, saídas, saldo do mês e pendências de cada conta. O objetivo é zerar os pendentes.</div>
     <div class="aviso alerta-a">Seus dados ficam apenas neste aparelho. Faça backup em <b>Dados</b> depois de conciliar.</div>
-  </div>
+    </div>
+  </details>
 </section>
 
 <!-- ============ VENDAS ============ -->
 <section id="vendas" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🛒 Vendas</summary><div class="ajuda-corpo">
+    <p>É onde você bate o pedido. Passo a passo:</p>
+    <ol>
+      <li>Confira o local em "📍 Vendendo em" (troque na aba Locais se precisar).</li>
+      <li>Opcional: nome do cliente e se o consumo é 🥡 Viagem ou 🍽️ Local.</li>
+      <li>Toque nos produtos na grade pra adicionar ao pedido. Use "Meio a meio" pra dois sabores, ou "Cortesia" pra degustação sem cobrar.</li>
+      <li>Confira o carrinho; aplique desconto se precisar.</li>
+      <li>Se já recebeu o pagamento, marque "💰 Pagamento já recebido?" e escolha a forma.</li>
+      <li>Toque em "✅ Finalizar pedido" — imprime a comanda e, se marcado, manda pra fila da cozinha.</li>
+    </ol>
+    <p><b>Pedidos registrados</b> (abaixo): lista do dia/mês, pra conferir, receber pagamento pendente ou cancelar.<br>
+    <b>Lançar venda retroativa</b>: cadastra vendas antigas só pra contabilidade — não imprime nada e não mexe no estoque.</p>
+  </div></details>
   <div class="painel">
     <div class="cab-painel">
       <h2>🛒 Tirar pedido</h2>
@@ -840,6 +890,13 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ LOCAIS ============ -->
 <section id="locais" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 📍 Locais</summary><div class="ajuda-corpo">
+    <ol>
+      <li>Cadastre seus pontos de venda (feira, condomínio, trailer...).</li>
+      <li>Escolha o "Local atual" antes de começar a vender — toda venda a partir daí fica marcada com ele.</li>
+      <li>O comparativo embaixo mostra faturamento, lucro e ticket médio de cada local, pra você ver onde vale mais a pena ir.</li>
+    </ol>
+  </div></details>
   <div class="painel">
     <h2>📍 Onde você está vendendo agora?</h2>
     <div class="aviso">Escolha antes de começar a vender. Toda venda registrada a partir daqui fica marcada com esse local, para você comparar depois onde vende mais.</div>
@@ -867,6 +924,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ CLIENTES ============ -->
 <section id="clientes" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 👤 Clientes</summary><div class="ajuda-corpo">
+    <ul>
+      <li>Cadastre manualmente, ou toque em "🔎 Buscar clientes nas vendas" pra importar nome/telefone de quem já comprou.</li>
+      <li>Endereço serve pra um futuro serviço de entrega.</li>
+      <li>"💛 Clientes fiéis" mostra quem mais comprou no período — uso só seu, pra decidir quem surpreender com um brinde.</li>
+      <li>"🔗 Mesclar clientes duplicados" junta dois cadastros do mesmo cliente em um só.</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <h2>📥 Importar clientes das vendas já lançadas</h2>
     <div class="aviso">Escolha um período e o sistema procura, nas vendas já registradas (inclusive as retroativas), os nomes e telefones dos clientes que ainda não estão neste cadastro.</div>
@@ -893,6 +958,13 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ FILA ============ -->
 <section id="fila" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 👨‍🍳 Fila</summary><div class="ajuda-corpo">
+    <p>Mostra os pedidos em preparo. Para cada um, use os botões na ordem: <b>Iniciar → Pronto → Entregar</b> (é esse clique que alimenta os tempos da aba Atendimento).</p>
+    <ul>
+      <li><b>🖥️ Abrir modo totem</b>: tela pro cliente fazer o pedido sozinho num tablet.</li>
+      <li><b>📺 Painel de chamada</b>: abre numa aba/tela separada (ex: TV na parede) mostrando as senhas prontas.</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <div class="cab-painel"><h2>👨‍🍳 Fila da cozinha</h2>
       <div class="acoes"><button class="btn" type="button" onclick="iniciarTotem()">🖥️ Abrir modo totem</button><button class="btn cinza" type="button" onclick="window.open(location.href.split('#')[0]+'#painel','_blank')">📺 Painel de chamada (outra tela)</button></div></div>
@@ -902,6 +974,9 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ ATENDIMENTO ============ -->
 <section id="atendimento" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — ⏱️ Atendimento</summary><div class="ajuda-corpo">
+    <p>Só leitura — mostra o tempo médio entre o pedido e a entrega, medido sozinho quando você usa Iniciar → Pronto → Entregar na Fila. Troque o período no topo. "💡 O que melhorar" traz avisos automáticos (ex: horário de pico, produto que demora mais).</p>
+  </div></details>
   <div class="painel">
     <div class="cab-painel"><h2>⏱️ Atendimento e indicadores</h2>
       <select id="atPeriodo" style="width:auto" onchange="renderAtendimento()" aria-label="Período"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo">Tudo</option></select></div>
@@ -916,6 +991,20 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ CAIXA ============ -->
 <section id="caixa" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 💵 Caixa</summary><div class="ajuda-corpo">
+    <ol>
+      <li>Escolha o dia no topo pra ver vendas, formas de pagamento e produtos vendidos.</li>
+      <li>Em "Conferência do dinheiro", informe o fundo de troco e o que contou na gaveta; lance sangrias/retiradas se tirou dinheiro durante o dia.</li>
+      <li>Toque em "🔒 Fechar o dia" pra registrar o fechamento.</li>
+    </ol>
+    <p>Mais abaixo, nesta mesma aba:</p>
+    <ul>
+      <li><b>💳 Conferência do cartão</b>: confere se a taxa que a maquininha descontou bate com a cadastrada.</li>
+      <li><b>📅 Resumo mensal</b>: resultado real do mês, com relatórios pra imprimir/exportar.</li>
+      <li><b>🧾 Recibo de consumo</b>: emite comprovante pro cliente pedir reembolso.</li>
+      <li><b>📊 Limite MEI</b> e <b>🧾 DAS-MEI</b>: acompanha o teto anual e o vencimento da guia (a emissão em si é sempre no Portal do Empreendedor).</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <div class="cab-painel">
       <h2>💵 Fechamento de caixa</h2>
@@ -1029,6 +1118,16 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ FICHAS ============ -->
 <section id="fichas" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 📋 Fichas</summary><div class="ajuda-corpo">
+    <ol>
+      <li>Digite o nome do produto e toque em "Criar / carregar ficha".</li>
+      <li>Adicione os ingredientes (precisam estar cadastrados antes em Insumos) com a quantidade usada na receita toda.</li>
+      <li>Se o produto usa algo do Estoque (ex: massa pronta congelada) ou embalagem, vincule nas seções "Componentes de estoque" e "Embalagem".</li>
+      <li>Preencha porções, perda/quebra e margem desejada — o custo e o preço sugerido saem sozinhos.</li>
+      <li>Em "💲 Preço praticado", ajuste pro valor que você realmente cobra (pode usar o sugerido com um clique).</li>
+    </ol>
+    <p><b>Produtos sem ficha técnica</b> (mais abaixo): pra bebidas e revenda — só preço de venda e custo de compra, sem receita.</p>
+  </div></details>
   <div class="painel">
     <h2>📋 Fichas técnicas e precificação</h2>
     <div class="flex-linha">
@@ -1130,6 +1229,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ PRECIFICAÇÃO EM MASSA ============ -->
 <section id="precificacao" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🏷️ Precificação</summary><div class="ajuda-corpo">
+    <p>Simulador pra ver o efeito de uma mudança em todos os produtos de uma vez, sem alterar nada ainda.</p>
+    <ul>
+      <li>Mexa na margem desejada, na forma de pagamento ou no tipo de consumo (viagem/local) e veja custo, lucro e margem recalcularem na hora.</li>
+      <li>"🏷️ Aplicar sugerido em TODOS" grava o preço sugerido direto nas fichas de todos os produtos.</li>
+      <li>"Aplicar só nos sem preço" faz isso só em quem ainda não tem preço praticado definido.</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <h2>🏷️ Precificação em massa — simulador de preços</h2>
     <div class="aviso">Altere o preço praticado e veja na hora custo, lucro e margem <b>líquida</b> (já descontando impostos e taxa da forma de pagamento escolhida).</div>
@@ -1151,6 +1258,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ INSUMOS ============ -->
 <section id="insumos" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🧪 Insumos</summary><div class="ajuda-corpo">
+    <p>Cadastre cada ingrediente ou embalagem uma vez — nome, unidade, quantidade comprada e valor total. O sistema calcula sozinho o preço por grama/ml/unidade, e esse preço é usado em Fichas, Massa e Nutricional.</p>
+    <ul>
+      <li>A coluna "Variação" mostra se o preço subiu ou caiu desde a última vez (geralmente atualizado direto pela aba Compras).</li>
+      <li>"Peso 1 un (g)" é opcional: permite usar unidades inteiras (ex: 1 ovo) em receitas que pedem gramas.</li>
+      <li>🍗 na linha do insumo abre o controle de rendimento/perda no preparo (ex: frango cru → desfiado).</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <h2>🧪 Cadastro de ingredientes e embalagens</h2>
     <div class="aviso">Cadastre uma vez e use em todas as fichas. O preço é calculado por grama, ml ou unidade. Insumos marcados com 🔗 são calculados automaticamente a partir de uma receita (Massa ou Ficha).</div>
@@ -1170,6 +1285,16 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ MASSA ============ -->
 <section id="massa" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🧮 Massa</summary><div class="ajuda-corpo">
+    <p>Calculadora de padeiro, onde a farinha sempre vale 100%.</p>
+    <ol>
+      <li>Escolha a farinha e o peso total que quer produzir.</li>
+      <li>Lance os demais ingredientes em % sobre a farinha (sal, água, fermento...).</li>
+      <li>Salve a receita (💾) pra reaproveitar depois.</li>
+      <li>"🔗 Usar esta massa como insumo" deixa ela disponível pra usar dentro de uma Ficha (ex: massa de pizza como ingrediente do produto final).</li>
+    </ol>
+    <p><b>Cálculo inverso</b> (segundo painel): quando você já pesou os ingredientes reais numa fornada e quer descobrir o % de padeiro de cada um, pra depois salvar como receita.</p>
+  </div></details>
   <div class="painel">
     <h2>🧮 Calculadora de massa — base 100% farinha</h2>
     <div class="aviso">Farinha = 100%. Informe os demais ingredientes em % sobre a farinha, defina o peso total e veja tudo em gramas e o custo. Salve suas receitas e, se quiser, mantenha a massa como <b>insumo</b> para usar nas fichas.</div>
@@ -1228,6 +1353,15 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ ESTOQUE ============ -->
 <section id="estoque" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 📦 Estoque</summary><div class="ajuda-corpo">
+    <ol>
+      <li>Cadastre cada componente (massa pronta, caixa, insumo embalado...) e a quantidade guardada no <b>Depósito</b> (estoque geral em casa).</li>
+      <li>Antes de vender, use "🚚 Levar" pra mover a quantidade que vai usar do depósito pro <b>Estoque do dia</b> — é isso que fica liberado pra vender na feira/condomínio.</li>
+      <li>Ao voltar, "↩️ Devolver" joga a sobra de volta pro depósito.</li>
+      <li>Use a <b>Contagem do depósito</b> (ex: toda sexta) e o <b>Fechamento do dia</b> pra conferir se bateu com o sistema; registre como perda o que faltou de verdade.</li>
+    </ol>
+    <p>Componente não cadastrado aqui não é controlado — não bloqueia a venda. Vincule os componentes às Fichas pra o desconto ser automático a cada venda.</p>
+  </div></details>
   <div class="painel">
     <h2>📦 Estoque — depósito e cadastro</h2>
     <div class="aviso"><b>Depósito</b> é o estoque geral guardado em casa — é o ponto de partida de tudo (matéria-prima, massas e itens prontos congelados). Cadastre ou reponha aqui: "Farinha Globo" 10, "Massa de Pizza" 50, "Caixa Pizza 25cm" 40... Vincule as fichas aos componentes (aba Fichas) pra o sistema descontar a cada venda.<br>Quando for vender, use "🚚 Levar" pra mover do depósito pro <b>Estoque do dia</b> (o que está liberado pra vender agora, na feira/condomínio) — leve só a quantidade que pretende vender. Ao voltar, "↩️ Devolver" joga a sobra de volta pro depósito. Componentes <b>não cadastrados aqui não são controlados</b> (não bloqueiam a venda).</div>
@@ -1263,6 +1397,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ ETIQUETAS ============ -->
 <section id="etiquetas" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🏷️ Etiquetas</summary><div class="ajuda-corpo">
+    <ol>
+      <li>Escolha o tipo (massa/pizza/empanada) e o sabor. Se o sabor ainda não existir, cadastre com "+ Sabor" ou use "📋 Importar sabores das fichas" pra trazer todos de uma vez.</li>
+      <li>Informe quantidade, data de produção (a validade calcula sozinha) e responsável.</li>
+      <li>"🖨️ Registrar e imprimir" gera a etiqueta e já entra no controle de congelador abaixo, com número de lote automático.</li>
+    </ol>
+    <p>Vincular (🔗) um sabor a uma ficha técnica traz os ingredientes pra etiqueta sozinho, sem digitar de novo.</p>
+  </div></details>
   <div class="painel">
     <h2>🏷️ Gerar etiqueta de freezer</h2>
     <div class="aviso">Escolha o tipo e o sabor, informe a quantidade e a validade. Ao registrar, o lote entra no controle de estoque congelado abaixo, com numeração automática (dia/mês/ano e sequência do dia).</div>
@@ -1320,6 +1462,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ NUTRICIONAL ============ -->
 <section id="nutricional" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🔬 Nutricional</summary><div class="ajuda-corpo">
+    <ol>
+      <li>Na aba "🧪 Ingredientes", cadastre cada ingrediente com os valores por 100g do rótulo da embalagem.</li>
+      <li>Na aba "📋 Receita", vincule a ficha técnica (ou a receita de Massa) e clique em "📥 Importar ingredientes" pra trazer tudo sozinho — ou lance manualmente.</li>
+      <li>Informe o peso final da receita e a porção; a tabela com %VD sai pronta pra imprimir.</li>
+    </ol>
+    <div class="aviso alerta-a">Antes de usar numa embalagem de venda, confira com um nutricionista ou a vigilância sanitária — este cálculo não cobre todas as regras de arredondamento e rotulagem.</div>
+  </div></details>
   <div class="painel">
     <h2>🔬 Tabela nutricional</h2>
     <div class="aviso">Calcula a tabela por 100 g e por porção, com %VD e a rotulagem frontal (lupa), a partir dos ingredientes cadastrados e da receita. <b>Antes de usar numa embalagem de venda</b>, confira com um nutricionista ou a vigilância sanitária: a porção de referência por categoria e as regras de arredondamento (Anexo IV/V da IN 75/2020) podem ter particularidades que este cálculo não cobre.</div>
@@ -1388,6 +1538,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ COMPRAS ============ -->
 <section id="compras" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 🧾 Compras</summary><div class="ajuda-corpo">
+    <ul>
+      <li><b>💳 Contas a pagar</b>: qualquer conta futura (compra a prazo, aluguel, internet...). Marque como paga só quando o dinheiro sair de verdade — a despesa é lançada sozinha, na data certa.</li>
+      <li><b>🚚 Fornecedores</b>: cadastre uma vez, com CNPJ — o botão "🔎 Buscar dados" preenche nome/endereço/telefone sozinho.</li>
+      <li><b>🧾 Compras e cupons fiscais</b>: lance o cupom e os itens comprados. Marque "📦 Insumo" no que for matéria-prima do negócio — o preço do insumo atualiza sozinho. Desmarque o que for gasto pessoal/diversos misturado na mesma nota. Se a nota teve desconto, o sistema reparte ele proporcionalmente entre os itens. Escolha À vista (e a forma: dinheiro/PIX/débito/crédito) ou A prazo.</li>
+      <li><b>📋 Cupons cadastrados</b>: lista tudo — toque em ✏️ pra corrigir qualquer coisa, inclusive os itens, depois de salvo.</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <div class="cab-painel"><h2>💳 Contas a pagar</h2></div>
     <div class="aviso">Cadastre qualquer conta que falta pagar — compra a prazo, aluguel, internet, parcela de equipamento etc. Marque como paga quando o dinheiro sair de verdade: isso lança a despesa sozinho, na data certa.</div>
@@ -1472,6 +1630,15 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ CUSTOS ============ -->
 <section id="custos" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 💰 Custos</summary><div class="ajuda-corpo">
+    <ul>
+      <li><b>💳 Taxas de pagamento</b>: cadastre os % reais de cada maquininha e o imposto — entra em todo cálculo de preço sugerido e lucro real.</li>
+      <li><b>⚙️ Preferências</b>: arredondamento do preço sugerido, vias da comanda, CNPJ pro recibo, etc.</li>
+      <li><b>💰 Custos fixos mensais</b>: aluguel, salários, energia... usado pro ponto de equilíbrio (quanto precisa vender pra não ter prejuízo).</li>
+      <li><b>📉 Despesas reais</b>: o dinheiro que realmente saiu no dia a dia (diferente da estimativa acima) — isso sim entra no lucro líquido do mês.</li>
+      <li><b>🖥️ Totem</b> (se usar): configura a tela de autoatendimento pro cliente pedir sozinho.</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <h2>💳 Taxas de pagamento — cadastre os % reais</h2>
     <div class="aviso">Débito = Get Net • Crédito e PIX = Infinit Pay. Esses percentuais entram no preço sugerido <b>e</b> no lucro real de cada venda.</div>
@@ -1584,6 +1751,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ DADOS ============ -->
 <section id="dados" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 💾 Dados</summary><div class="ajuda-corpo">
+    <ul>
+      <li><b>⬇️ Exportar backup</b>: guarda tudo num arquivo. Faça isso com frequência e salve num lugar seguro (Drive, e-mail, pen drive).</li>
+      <li>Usa dois aparelhos (tablet do totem + celular)? Use <b>🔀 Mesclar vendas</b> importando o backup do outro, ou ative a <b>🔄 Sincronização automática</b> com o mesmo "código do negócio" nos dois.</li>
+      <li><b>🗄️ Arquivar dados antigos</b>: libera espaço sem perder nada — fica salvo num arquivo separado, mexe só em vendas/compras/despesas/perdas antigas.</li>
+      <li><b>↩️ Pontos de restauração</b>: salva-vidas automático antes de qualquer importação/restauração — use se algo der errado.</li>
+    </ul>
+  </div></details>
   <div class="painel">
     <h2>💾 Backup e dados</h2>
     <div class="aviso">O backup guarda insumos, fichas, receitas, estoque, vendas, despesas, compras e configurações. Guarde o arquivo em um lugar seguro (Drive, e-mail, pen drive). Seus dados ficam apenas neste navegador/aparelho.</div>
