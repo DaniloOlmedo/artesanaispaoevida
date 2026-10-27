@@ -122,15 +122,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde2);box-shadow:0 
 .aviso.ok-a{background:rgba(46,125,50,.10);border-left-color:#2e7d32}
 hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 .resultado{margin-top:12px;padding:12px 14px;background:var(--realce);border-radius:8px;border-left:4px solid var(--verde2)}
-.ajuda-aba{background:var(--painel);border-radius:10px;margin-bottom:16px;box-shadow:var(--sombra);border-left:4px solid var(--verde2)}
-.ajuda-aba summary{cursor:pointer;padding:14px 16px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
-.ajuda-aba summary::-webkit-details-marker{display:none}
-.ajuda-aba summary::before{content:'▸';display:inline-block;transition:transform .15s;color:var(--verde2)}
-.ajuda-aba[open] summary::before{transform:rotate(90deg)}
-.ajuda-aba .ajuda-corpo{padding:0 16px 14px;font-size:.88rem;line-height:1.55}
-.ajuda-aba .ajuda-corpo ol,.ajuda-aba .ajuda-corpo ul{margin:6px 0 10px 20px;padding:0}
-.ajuda-aba .ajuda-corpo li{margin:4px 0}
-.ajuda-aba .ajuda-corpo p{margin:6px 0}
 .resultado h4{margin:0 0 8px;color:var(--verde)}
 :root[data-theme="dark"] .resultado h4{color:#7fe0ae}
 .resultado p{margin:3px 0}
@@ -546,13 +537,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 <!-- ============ PAINEL ============ -->
 <!-- ============ INÍCIO (tela de atalhos) ============ -->
 <section id="inicio" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🏠 Início</summary><div class="ajuda-corpo">
-    <p>É a tela de atalhos: toque em qualquer botão pra ir direto naquela aba.</p>
-    <ul>
-      <li>Os números pequenos (ex: no Caixa, na Fila, no Estoque) avisam o que está pendente: pedidos aguardando, caixa do dia ainda não fechado, itens acabando.</li>
-      <li>Não precisa preencher nada aqui — é só navegação.</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <div class="inicio-cabecalho">
       <div class="saudacao" id="inicioSaudacao">Olá!</div>
@@ -598,16 +582,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 </section>
 
 <section id="dashboard" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 📊 Painel</summary><div class="ajuda-corpo">
-    <p>É só leitura — os dados vêm sozinhos de Vendas, Custos, Compras etc. Troque o mês no campo do topo pra ver outro período.</p>
-    <ul>
-      <li><b>Resumo do mês</b> e <b>Funil financeiro</b>: faturamento, custos e lucro, passo a passo.</li>
-      <li><b>Situação financeira</b>: inclui o "Faturamento do ano" e o quanto já usou do teto do MEI.</li>
-      <li><b>Saúde do negócio</b> e <b>Metas</b>: avisos automáticos e meta × realizado.</li>
-      <li><b>Simulador "e se...?"</b>: teste mudanças (preço, volume) sem mexer em nada de verdade.</li>
-      <li><b>Estoque acabando</b> e <b>Top 5</b>: o que repor e o que mais vende/dá lucro.</li>
-    </ul>
-  </div></details>
   <div id="dashPendencias"></div>
   <div class="painel">
     <div class="cab-painel"><h2 id="dashTituloMes">📊 Resumo do mês</h2>
@@ -653,15 +627,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ CONCILIAÇÃO BANCÁRIA ============ -->
 <section id="conciliacao" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🏦 Conciliação bancária</summary><div class="ajuda-corpo">
-    <p>Confere se o que está no extrato do banco bate com o que você lançou no sistema (vendas e despesas). O manual completo, passo a passo, está no painel "📖 Manual da conciliação bancária" no final desta aba — abra quando precisar.</p>
-    <ol>
-      <li>Baixe o extrato (OFX ou CSV) no app/site do banco ou maquininha.</li>
-      <li>Importe aqui escolhendo a conta certa.</li>
-      <li>Abra "Conciliar" e clique em "⚡ Conciliar automaticamente".</li>
-      <li>Resolva o que sobrou (pendentes) um a um.</li>
-    </ol>
-  </div></details>
   <div class="painel">
     <h2>📥 Importar extrato</h2>
     <div class="aviso">Baixe o extrato no app ou site do seu banco (ou da maquininha) em <b>OFX</b> ou <b>CSV</b> e envie aqui. O sistema compara cada entrada e saída com as vendas e despesas já lançadas, sem apagar nada.</div>
@@ -706,9 +671,8 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </div>
     <div id="audRes"></div>
   </div>
-  <details class="ajuda-aba">
-    <summary>📖 Manual da conciliação bancária</summary>
-    <div class="ajuda-corpo">
+  <div class="painel">
+    <h2>📖 Manual da conciliação bancária</h2>
     <p class="suave">Conciliar é conferir se o que está no <b>extrato do banco</b> bate com o que você lançou no sistema (vendas e despesas). Faça uma vez por semana ou ao fim do mês.</p>
     <h3>Passo 1 — Baixe o extrato</h3>
     <p>No app ou site do banco/maquininha, procure <b>Extrato → Exportar</b> e escolha <b>OFX</b> (melhor) ou <b>CSV</b>. Baixe o período desejado (um mês é o ideal). Faça isso para cada conta: Santander, Stone/Ton, Infinity Pay, Mercado Pago, Getnet e fatura do cartão.</p>
@@ -739,25 +703,11 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </ul>
     <div class="aviso">Dica: o quadro <b>por conta</b> no topo de Conciliar mostra entradas, saídas, saldo do mês e pendências de cada conta. O objetivo é zerar os pendentes.</div>
     <div class="aviso alerta-a">Seus dados ficam apenas neste aparelho. Faça backup em <b>Dados</b> depois de conciliar.</div>
-    </div>
-  </details>
+  </div>
 </section>
 
 <!-- ============ VENDAS ============ -->
 <section id="vendas" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🛒 Vendas</summary><div class="ajuda-corpo">
-    <p>É onde você bate o pedido. Passo a passo:</p>
-    <ol>
-      <li>Confira o local em "📍 Vendendo em" (troque na aba Locais se precisar).</li>
-      <li>Opcional: nome do cliente e se o consumo é 🥡 Viagem ou 🍽️ Local.</li>
-      <li>Toque nos produtos na grade pra adicionar ao pedido. Use "Meio a meio" pra dois sabores, ou "Cortesia" pra degustação sem cobrar.</li>
-      <li>Confira o carrinho; aplique desconto se precisar.</li>
-      <li>Se já recebeu o pagamento, marque "💰 Pagamento já recebido?" e escolha a forma.</li>
-      <li>Toque em "✅ Finalizar pedido" — imprime a comanda e, se marcado, manda pra fila da cozinha.</li>
-    </ol>
-    <p><b>Pedidos registrados</b> (abaixo): lista do dia/mês, pra conferir, receber pagamento pendente ou cancelar.<br>
-    <b>Lançar venda retroativa</b>: cadastra vendas antigas só pra contabilidade — não imprime nada e não mexe no estoque.</p>
-  </div></details>
   <div class="painel">
     <div class="cab-painel">
       <h2>🛒 Tirar pedido</h2>
@@ -890,13 +840,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ LOCAIS ============ -->
 <section id="locais" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 📍 Locais</summary><div class="ajuda-corpo">
-    <ol>
-      <li>Cadastre seus pontos de venda (feira, condomínio, trailer...).</li>
-      <li>Escolha o "Local atual" antes de começar a vender — toda venda a partir daí fica marcada com ele.</li>
-      <li>O comparativo embaixo mostra faturamento, lucro e ticket médio de cada local, pra você ver onde vale mais a pena ir.</li>
-    </ol>
-  </div></details>
   <div class="painel">
     <h2>📍 Onde você está vendendo agora?</h2>
     <div class="aviso">Escolha antes de começar a vender. Toda venda registrada a partir daqui fica marcada com esse local, para você comparar depois onde vende mais.</div>
@@ -924,14 +867,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ CLIENTES ============ -->
 <section id="clientes" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 👤 Clientes</summary><div class="ajuda-corpo">
-    <ul>
-      <li>Cadastre manualmente, ou toque em "🔎 Buscar clientes nas vendas" pra importar nome/telefone de quem já comprou.</li>
-      <li>Endereço serve pra um futuro serviço de entrega.</li>
-      <li>"💛 Clientes fiéis" mostra quem mais comprou no período — uso só seu, pra decidir quem surpreender com um brinde.</li>
-      <li>"🔗 Mesclar clientes duplicados" junta dois cadastros do mesmo cliente em um só.</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <h2>📥 Importar clientes das vendas já lançadas</h2>
     <div class="aviso">Escolha um período e o sistema procura, nas vendas já registradas (inclusive as retroativas), os nomes e telefones dos clientes que ainda não estão neste cadastro.</div>
@@ -958,13 +893,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ FILA ============ -->
 <section id="fila" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 👨‍🍳 Fila</summary><div class="ajuda-corpo">
-    <p>Mostra os pedidos em preparo. Para cada um, use os botões na ordem: <b>Iniciar → Pronto → Entregar</b> (é esse clique que alimenta os tempos da aba Atendimento).</p>
-    <ul>
-      <li><b>🖥️ Abrir modo totem</b>: tela pro cliente fazer o pedido sozinho num tablet.</li>
-      <li><b>📺 Painel de chamada</b>: abre numa aba/tela separada (ex: TV na parede) mostrando as senhas prontas.</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <div class="cab-painel"><h2>👨‍🍳 Fila da cozinha</h2>
       <div class="acoes"><button class="btn" type="button" onclick="iniciarTotem()">🖥️ Abrir modo totem</button><button class="btn cinza" type="button" onclick="window.open(location.href.split('#')[0]+'#painel','_blank')">📺 Painel de chamada (outra tela)</button></div></div>
@@ -974,9 +902,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ ATENDIMENTO ============ -->
 <section id="atendimento" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — ⏱️ Atendimento</summary><div class="ajuda-corpo">
-    <p>Só leitura — mostra o tempo médio entre o pedido e a entrega, medido sozinho quando você usa Iniciar → Pronto → Entregar na Fila. Troque o período no topo. "💡 O que melhorar" traz avisos automáticos (ex: horário de pico, produto que demora mais).</p>
-  </div></details>
   <div class="painel">
     <div class="cab-painel"><h2>⏱️ Atendimento e indicadores</h2>
       <select id="atPeriodo" style="width:auto" onchange="renderAtendimento()" aria-label="Período"><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="tudo">Tudo</option></select></div>
@@ -991,20 +916,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ CAIXA ============ -->
 <section id="caixa" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 💵 Caixa</summary><div class="ajuda-corpo">
-    <ol>
-      <li>Escolha o dia no topo pra ver vendas, formas de pagamento e produtos vendidos.</li>
-      <li>Em "Conferência do dinheiro", informe o fundo de troco e o que contou na gaveta; lance sangrias/retiradas se tirou dinheiro durante o dia.</li>
-      <li>Toque em "🔒 Fechar o dia" pra registrar o fechamento.</li>
-    </ol>
-    <p>Mais abaixo, nesta mesma aba:</p>
-    <ul>
-      <li><b>💳 Conferência do cartão</b>: confere se a taxa que a maquininha descontou bate com a cadastrada.</li>
-      <li><b>📅 Resumo mensal</b>: resultado real do mês, com relatórios pra imprimir/exportar.</li>
-      <li><b>🧾 Recibo de consumo</b>: emite comprovante pro cliente pedir reembolso.</li>
-      <li><b>📊 Limite MEI</b> e <b>🧾 DAS-MEI</b>: acompanha o teto anual e o vencimento da guia (a emissão em si é sempre no Portal do Empreendedor).</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <div class="cab-painel">
       <h2>💵 Fechamento de caixa</h2>
@@ -1118,16 +1029,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ FICHAS ============ -->
 <section id="fichas" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 📋 Fichas</summary><div class="ajuda-corpo">
-    <ol>
-      <li>Digite o nome do produto e toque em "Criar / carregar ficha".</li>
-      <li>Adicione os ingredientes (precisam estar cadastrados antes em Insumos) com a quantidade usada na receita toda.</li>
-      <li>Se o produto usa algo do Estoque (ex: massa pronta congelada) ou embalagem, vincule nas seções "Componentes de estoque" e "Embalagem".</li>
-      <li>Preencha porções, perda/quebra e margem desejada — o custo e o preço sugerido saem sozinhos.</li>
-      <li>Em "💲 Preço praticado", ajuste pro valor que você realmente cobra (pode usar o sugerido com um clique).</li>
-    </ol>
-    <p><b>Produtos sem ficha técnica</b> (mais abaixo): pra bebidas e revenda — só preço de venda e custo de compra, sem receita.</p>
-  </div></details>
   <div class="painel">
     <h2>📋 Fichas técnicas e precificação</h2>
     <div class="flex-linha">
@@ -1229,14 +1130,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ PRECIFICAÇÃO EM MASSA ============ -->
 <section id="precificacao" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🏷️ Precificação</summary><div class="ajuda-corpo">
-    <p>Simulador pra ver o efeito de uma mudança em todos os produtos de uma vez, sem alterar nada ainda.</p>
-    <ul>
-      <li>Mexa na margem desejada, na forma de pagamento ou no tipo de consumo (viagem/local) e veja custo, lucro e margem recalcularem na hora.</li>
-      <li>"🏷️ Aplicar sugerido em TODOS" grava o preço sugerido direto nas fichas de todos os produtos.</li>
-      <li>"Aplicar só nos sem preço" faz isso só em quem ainda não tem preço praticado definido.</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <h2>🏷️ Precificação em massa — simulador de preços</h2>
     <div class="aviso">Altere o preço praticado e veja na hora custo, lucro e margem <b>líquida</b> (já descontando impostos e taxa da forma de pagamento escolhida).</div>
@@ -1258,14 +1151,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ INSUMOS ============ -->
 <section id="insumos" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🧪 Insumos</summary><div class="ajuda-corpo">
-    <p>Cadastre cada ingrediente ou embalagem uma vez — nome, unidade, quantidade comprada e valor total. O sistema calcula sozinho o preço por grama/ml/unidade, e esse preço é usado em Fichas, Massa e Nutricional.</p>
-    <ul>
-      <li>A coluna "Variação" mostra se o preço subiu ou caiu desde a última vez (geralmente atualizado direto pela aba Compras).</li>
-      <li>"Peso 1 un (g)" é opcional: permite usar unidades inteiras (ex: 1 ovo) em receitas que pedem gramas.</li>
-      <li>🍗 na linha do insumo abre o controle de rendimento/perda no preparo (ex: frango cru → desfiado).</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <h2>🧪 Cadastro de ingredientes e embalagens</h2>
     <div class="aviso">Cadastre uma vez e use em todas as fichas. O preço é calculado por grama, ml ou unidade. Insumos marcados com 🔗 são calculados automaticamente a partir de uma receita (Massa ou Ficha).</div>
@@ -1285,16 +1170,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ MASSA ============ -->
 <section id="massa" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🧮 Massa</summary><div class="ajuda-corpo">
-    <p>Calculadora de padeiro, onde a farinha sempre vale 100%.</p>
-    <ol>
-      <li>Escolha a farinha e o peso total que quer produzir.</li>
-      <li>Lance os demais ingredientes em % sobre a farinha (sal, água, fermento...).</li>
-      <li>Salve a receita (💾) pra reaproveitar depois.</li>
-      <li>"🔗 Usar esta massa como insumo" deixa ela disponível pra usar dentro de uma Ficha (ex: massa de pizza como ingrediente do produto final).</li>
-    </ol>
-    <p><b>Cálculo inverso</b> (segundo painel): quando você já pesou os ingredientes reais numa fornada e quer descobrir o % de padeiro de cada um, pra depois salvar como receita.</p>
-  </div></details>
   <div class="painel">
     <h2>🧮 Calculadora de massa — base 100% farinha</h2>
     <div class="aviso">Farinha = 100%. Informe os demais ingredientes em % sobre a farinha, defina o peso total e veja tudo em gramas e o custo. Salve suas receitas e, se quiser, mantenha a massa como <b>insumo</b> para usar nas fichas.</div>
@@ -1353,15 +1228,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ ESTOQUE ============ -->
 <section id="estoque" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 📦 Estoque</summary><div class="ajuda-corpo">
-    <ol>
-      <li>Cadastre cada componente (massa pronta, caixa, insumo embalado...) e a quantidade guardada no <b>Depósito</b> (estoque geral em casa).</li>
-      <li>Antes de vender, use "🚚 Levar" pra mover a quantidade que vai usar do depósito pro <b>Estoque do dia</b> — é isso que fica liberado pra vender na feira/condomínio.</li>
-      <li>Ao voltar, "↩️ Devolver" joga a sobra de volta pro depósito.</li>
-      <li>Use a <b>Contagem do depósito</b> (ex: toda sexta) e o <b>Fechamento do dia</b> pra conferir se bateu com o sistema; registre como perda o que faltou de verdade.</li>
-    </ol>
-    <p>Componente não cadastrado aqui não é controlado — não bloqueia a venda. Vincule os componentes às Fichas pra o desconto ser automático a cada venda.</p>
-  </div></details>
   <div class="painel">
     <h2>📦 Estoque — depósito e cadastro</h2>
     <div class="aviso"><b>Depósito</b> é o estoque geral guardado em casa — é o ponto de partida de tudo (matéria-prima, massas e itens prontos congelados). Cadastre ou reponha aqui: "Farinha Globo" 10, "Massa de Pizza" 50, "Caixa Pizza 25cm" 40... Vincule as fichas aos componentes (aba Fichas) pra o sistema descontar a cada venda.<br>Quando for vender, use "🚚 Levar" pra mover do depósito pro <b>Estoque do dia</b> (o que está liberado pra vender agora, na feira/condomínio) — leve só a quantidade que pretende vender. Ao voltar, "↩️ Devolver" joga a sobra de volta pro depósito. Componentes <b>não cadastrados aqui não são controlados</b> (não bloqueiam a venda).</div>
@@ -1397,14 +1263,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ ETIQUETAS ============ -->
 <section id="etiquetas" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🏷️ Etiquetas</summary><div class="ajuda-corpo">
-    <ol>
-      <li>Escolha o tipo (massa/pizza/empanada) e o sabor. Se o sabor ainda não existir, cadastre com "+ Sabor" ou use "📋 Importar sabores das fichas" pra trazer todos de uma vez.</li>
-      <li>Informe quantidade, data de produção (a validade calcula sozinha) e responsável.</li>
-      <li>"🖨️ Registrar e imprimir" gera a etiqueta e já entra no controle de congelador abaixo, com número de lote automático.</li>
-    </ol>
-    <p>Vincular (🔗) um sabor a uma ficha técnica traz os ingredientes pra etiqueta sozinho, sem digitar de novo.</p>
-  </div></details>
   <div class="painel">
     <h2>🏷️ Gerar etiqueta de freezer</h2>
     <div class="aviso">Escolha o tipo e o sabor, informe a quantidade e a validade. Ao registrar, o lote entra no controle de estoque congelado abaixo, com numeração automática (dia/mês/ano e sequência do dia).</div>
@@ -1462,14 +1320,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ NUTRICIONAL ============ -->
 <section id="nutricional" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🔬 Nutricional</summary><div class="ajuda-corpo">
-    <ol>
-      <li>Na aba "🧪 Ingredientes", cadastre cada ingrediente com os valores por 100g do rótulo da embalagem.</li>
-      <li>Na aba "📋 Receita", vincule a ficha técnica (ou a receita de Massa) e clique em "📥 Importar ingredientes" pra trazer tudo sozinho — ou lance manualmente.</li>
-      <li>Informe o peso final da receita e a porção; a tabela com %VD sai pronta pra imprimir.</li>
-    </ol>
-    <div class="aviso alerta-a">Antes de usar numa embalagem de venda, confira com um nutricionista ou a vigilância sanitária — este cálculo não cobre todas as regras de arredondamento e rotulagem.</div>
-  </div></details>
   <div class="painel">
     <h2>🔬 Tabela nutricional</h2>
     <div class="aviso">Calcula a tabela por 100 g e por porção, com %VD e a rotulagem frontal (lupa), a partir dos ingredientes cadastrados e da receita. <b>Antes de usar numa embalagem de venda</b>, confira com um nutricionista ou a vigilância sanitária: a porção de referência por categoria e as regras de arredondamento (Anexo IV/V da IN 75/2020) podem ter particularidades que este cálculo não cobre.</div>
@@ -1538,14 +1388,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ COMPRAS ============ -->
 <section id="compras" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 🧾 Compras</summary><div class="ajuda-corpo">
-    <ul>
-      <li><b>💳 Contas a pagar</b>: qualquer conta futura (compra a prazo, aluguel, internet...). Marque como paga só quando o dinheiro sair de verdade — a despesa é lançada sozinha, na data certa.</li>
-      <li><b>🚚 Fornecedores</b>: cadastre uma vez, com CNPJ — o botão "🔎 Buscar dados" preenche nome/endereço/telefone sozinho.</li>
-      <li><b>🧾 Compras e cupons fiscais</b>: lance o cupom e os itens comprados. Marque "📦 Insumo" no que for matéria-prima do negócio — o preço do insumo atualiza sozinho. Desmarque o que for gasto pessoal/diversos misturado na mesma nota. Se a nota teve desconto, o sistema reparte ele proporcionalmente entre os itens. Escolha À vista (e a forma: dinheiro/PIX/débito/crédito) ou A prazo.</li>
-      <li><b>📋 Cupons cadastrados</b>: lista tudo — toque em ✏️ pra corrigir qualquer coisa, inclusive os itens, depois de salvo.</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <div class="cab-painel"><h2>💳 Contas a pagar</h2></div>
     <div class="aviso">Cadastre qualquer conta que falta pagar — compra a prazo, aluguel, internet, parcela de equipamento etc. Marque como paga quando o dinheiro sair de verdade: isso lança a despesa sozinho, na data certa.</div>
@@ -1561,37 +1403,30 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   </div>
   <div class="painel">
     <h2>🚚 Fornecedores</h2>
-    <div class="aviso">Cadastre seus fornecedores para escolher rápido na hora de lançar um cupom, e ter o contato sempre à mão. Informe o CNPJ e clique em "🔎 Buscar dados" pra preencher nome, endereço e telefone sozinho (consulta a Receita Federal).</div>
-    <div class="linha-form" style="grid-template-columns:1.3fr 1fr auto">
-      <div><label for="fornCNPJ">CNPJ</label><input type="text" id="fornCNPJ" placeholder="00.000.000/0000-00" inputmode="numeric" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarDadosCNPJ('forn');}"></div>
-      <div style="display:flex;align-items:flex-end"><button class="btn cinza" type="button" onclick="buscarDadosCNPJ('forn', this)" style="width:100%">🔎 Buscar dados</button></div>
-      <div></div>
+    <div class="aviso">Cadastre seus fornecedores para escolher rápido na hora de lançar um cupom, e ter o contato sempre à mão.</div>
+    <div class="linha-form" style="grid-template-columns:1.6fr 1.2fr 1.6fr 1.6fr auto">
       <div><label for="fornNome">Nome / razão social</label><input type="text" id="fornNome" placeholder="Ex: Distribuidora Queijos Serra" autocomplete="off" onkeydown="if(event.key==='Enter')adicionarFornecedor()"></div>
-      <div><label for="fornContatoNome">Nome do contato</label><input type="text" id="fornContatoNome" placeholder="Ex: Sr. João"></div>
       <div><label for="fornContato">Telefone / WhatsApp</label><input type="text" id="fornContato" placeholder="(00) 00000-0000" inputmode="tel"></div>
       <div><label for="fornFornece">O que fornece</label><input type="text" id="fornFornece" placeholder="Ex: queijo, presunto, embalagens"></div>
-      <div><label for="fornEndereco">Endereço</label><input type="text" id="fornEndereco" placeholder="Rua, número, bairro, cidade"></div>
       <div><label for="fornObs">Observação (opcional)</label><input type="text" id="fornObs" placeholder="Ex: entrega às terças, pedido mínimo..."></div>
-      <button class="btn" type="button" onclick="adicionarFornecedor()">+ Adicionar fornecedor</button>
+      <button class="btn" type="button" onclick="adicionarFornecedor()">+</button>
     </div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Fornecedor</th><th>CNPJ</th><th>Contato</th><th>Fornece</th><th>Endereço</th><th>Ações</th></tr></thead><tbody id="tabelaFornecedores"></tbody></table></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Fornecedor</th><th>Contato</th><th>Fornece</th><th>Observação</th><th>Ações</th></tr></thead><tbody id="tabelaFornecedores"></tbody></table></div>
     <datalist id="listaFornecedoresSugeridos"></datalist>
-    <datalist id="listaFornecedoresCNPJ"></datalist>
   </div>
   <div class="painel">
     <h2>🧾 Compras e cupons fiscais</h2>
     <div class="aviso">Cadastre seus cupons. Você pode lançar a compra como despesa e atualizar o preço dos insumos automaticamente.</div>
     <div class="bloco-calc">
       <div><label for="cupomNum">Nº cupom / NF</label><input type="text" id="cupomNum" placeholder="Número"></div>
-      <div><label for="cupomCNPJ">CNPJ do fornecedor</label><input type="text" id="cupomCNPJ" list="listaFornecedoresCNPJ" placeholder="Deixe vazio se não tiver" inputmode="numeric" onblur="preencherMercadoDoCNPJ()"></div>
-      <div><label for="cupomMercado">Mercado / loja / fornecedor</label><input type="text" id="cupomMercado" list="listaFornecedoresSugeridos" placeholder="Nome do estabelecimento" autocomplete="off" oninput="preencherCNPJDoFornecedor()" onblur="preencherCNPJDoFornecedor()"></div>
+      <div><label for="cupomCNPJ">CNPJ do fornecedor</label><input type="text" id="cupomCNPJ" placeholder="Deixe vazio se não tiver" inputmode="numeric"></div>
+      <div><label for="cupomMercado">Mercado / loja / fornecedor</label><input type="text" id="cupomMercado" list="listaFornecedoresSugeridos" placeholder="Nome do estabelecimento" autocomplete="off"></div>
       <div><label for="cupomData">Data da compra</label><input type="date" id="cupomData"></div>
-      <div><label for="cupomValor">Valor total R$</label><input type="number" step="0.01" id="cupomValor" placeholder="0,00" inputmode="decimal" oninput="atualizarResumoCupom('cl_')"></div>
+      <div><label for="cupomValor">Valor total R$</label><input type="number" step="0.01" id="cupomValor" placeholder="0,00" inputmode="decimal"></div>
     </div>
     <h3>Itens comprados (opcional)</h3>
-    <div class="dica">Informe os itens para atualizar o preço dos insumos e acompanhar a variação. Pode digitar o preço por kg/litro/unidade (igual na etiqueta do mercado) que o valor total é calculado sozinho — e aparece embaixo se o preço subiu ou caiu em relação ao que já estava cadastrado. Se a soma dos itens não bater com o "Valor total" (por causa de desconto ou acréscimo no cupom), a diferença é repartida proporcionalmente entre os itens na hora de atualizar o preço dos insumos e dividir insumos × diversos.</div>
+    <div class="dica">Informe os itens para atualizar o preço dos insumos e acompanhar a variação.</div>
     <div id="cupomItensLista"></div>
-    <div id="cupomResumoItens"></div>
     <button class="btn cinza pequeno" type="button" onclick="adicionarLinhaCupom()" style="margin:6px 0">+ Adicionar item</button>
     <label for="cupomItens">Observações / itens em texto livre</label>
     <textarea id="cupomItens" rows="2" placeholder="Ex: promoção, forma de pagamento..."></textarea>
@@ -1600,15 +1435,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div class="grupo-botoes" id="cupomPagamentoTipo">
       <button type="button" class="tt-chip on" data-t="vista" onclick="selecionarPagamentoCupom('vista')">💵 À vista</button>
       <button type="button" class="tt-chip" data-t="prazo" onclick="selecionarPagamentoCupom('prazo')">📅 A prazo</button>
-    </div>
-    <div id="cupomFormaWrap">
-      <label>Pago com</label>
-      <div class="grupo-botoes" id="cupomFormaPagamento">
-        <button type="button" class="tt-chip on" data-f="dinheiro" onclick="selecionarFormaPagamentoCupom('dinheiro')">💵 Dinheiro</button>
-        <button type="button" class="tt-chip" data-f="pix" onclick="selecionarFormaPagamentoCupom('pix')">⚡ PIX</button>
-        <button type="button" class="tt-chip" data-f="debito" onclick="selecionarFormaPagamentoCupom('debito')">💳 Débito</button>
-        <button type="button" class="tt-chip" data-f="credito" onclick="selecionarFormaPagamentoCupom('credito')">💳 Crédito</button>
-      </div>
     </div>
     <label class="linha" id="cupomLancarDespesaWrap"><input type="checkbox" id="cupomLancarDespesa" checked> Lançar o valor total como despesa (Insumos avulsos)</label>
     <div id="cupomPrazoBloco" class="oculto">
@@ -1630,15 +1456,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ CUSTOS ============ -->
 <section id="custos" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 💰 Custos</summary><div class="ajuda-corpo">
-    <ul>
-      <li><b>💳 Taxas de pagamento</b>: cadastre os % reais de cada maquininha e o imposto — entra em todo cálculo de preço sugerido e lucro real.</li>
-      <li><b>⚙️ Preferências</b>: arredondamento do preço sugerido, vias da comanda, CNPJ pro recibo, etc.</li>
-      <li><b>💰 Custos fixos mensais</b>: aluguel, salários, energia... usado pro ponto de equilíbrio (quanto precisa vender pra não ter prejuízo).</li>
-      <li><b>📉 Despesas reais</b>: o dinheiro que realmente saiu no dia a dia (diferente da estimativa acima) — isso sim entra no lucro líquido do mês.</li>
-      <li><b>🖥️ Totem</b> (se usar): configura a tela de autoatendimento pro cliente pedir sozinho.</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <h2>💳 Taxas de pagamento — cadastre os % reais</h2>
     <div class="aviso">Débito = Get Net • Crédito e PIX = Infinit Pay. Esses percentuais entram no preço sugerido <b>e</b> no lucro real de cada venda.</div>
@@ -1751,14 +1568,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
 <!-- ============ DADOS ============ -->
 <section id="dados" class="pagina">
-  <details class="ajuda-aba"><summary>❓ Como usar — 💾 Dados</summary><div class="ajuda-corpo">
-    <ul>
-      <li><b>⬇️ Exportar backup</b>: guarda tudo num arquivo. Faça isso com frequência e salve num lugar seguro (Drive, e-mail, pen drive).</li>
-      <li>Usa dois aparelhos (tablet do totem + celular)? Use <b>🔀 Mesclar vendas</b> importando o backup do outro, ou ative a <b>🔄 Sincronização automática</b> com o mesmo "código do negócio" nos dois.</li>
-      <li><b>🗄️ Arquivar dados antigos</b>: libera espaço sem perder nada — fica salvo num arquivo separado, mexe só em vendas/compras/despesas/perdas antigas.</li>
-      <li><b>↩️ Pontos de restauração</b>: salva-vidas automático antes de qualquer importação/restauração — use se algo der errado.</li>
-    </ul>
-  </div></details>
   <div class="painel">
     <h2>💾 Backup e dados</h2>
     <div class="aviso">O backup guarda insumos, fichas, receitas, estoque, vendas, despesas, compras e configurações. Guarde o arquivo em um lugar seguro (Drive, e-mail, pen drive). Seus dados ficam apenas neste navegador/aparelho.</div>
@@ -2032,7 +1841,6 @@ let carrinhoAtual = [];
 let ultimoPedidoImpresso = null;
 let ETQ_TIPO = 'massa';
 let CUPOM_PAGAMENTO = 'vista';
-let CUPOM_FORMA_PAGAMENTO = 'dinheiro';
 let CP_FILTRO = 'abertas';
 let ETQ_SABOR = null;
 let ETQ_QTD = 1;
@@ -2294,62 +2102,6 @@ function acharInsumoPorNome(nome){
 function acharFornecedorPorNome(nome){
   const n = norm(nome); if(!n) return null;
   return BD.fornecedores.find(f => norm(f.nome) === n) || null;
-}
-const somenteDigitos = s => String(s || '').replace(/\D/g, '');
-function formatarCNPJ(v){
-  const d = somenteDigitos(v).slice(0, 14);
-  if(d.length < 14) return v || '';
-  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-}
-function acharFornecedorPorCNPJ(cnpj){
-  const d = somenteDigitos(cnpj); if(d.length !== 14) return null;
-  return BD.fornecedores.find(f => somenteDigitos(f.cnpj) === d) || null;
-}
-/* ---------- preenchimento automático: fornecedor ↔ CNPJ na tela de compras ---------- */
-function preencherCNPJDoFornecedor(){
-  const mercado = $('cupomMercado') ? $('cupomMercado').value.trim() : '';
-  if(!mercado) return;
-  const f = acharFornecedorPorNome(mercado);
-  if(f && f.cnpj && $('cupomCNPJ') && !$('cupomCNPJ').value.trim()) $('cupomCNPJ').value = formatarCNPJ(f.cnpj);
-}
-function preencherMercadoDoCNPJ(){
-  const cnpj = $('cupomCNPJ') ? $('cupomCNPJ').value.trim() : '';
-  if(!cnpj) return;
-  const f = acharFornecedorPorCNPJ(cnpj);
-  if(f){
-    if($('cupomCNPJ')) $('cupomCNPJ').value = formatarCNPJ(f.cnpj);
-    if($('cupomMercado') && !$('cupomMercado').value.trim()) $('cupomMercado').value = f.nome;
-  }
-}
-/* ---------- busca de CNPJ na Receita Federal (via BrasilAPI, gratuito e sem login) ---------- */
-async function buscarDadosCNPJ(prefixo, btn){
-  const campoCnpj = $(prefixo + 'CNPJ'); if(!campoCnpj) return;
-  const d = somenteDigitos(campoCnpj.value);
-  if(d.length !== 14) return toast('Digite um CNPJ válido (14 números).', 'alerta');
-  campoCnpj.value = formatarCNPJ(d);
-  const txtOrig = btn ? btn.textContent : null; if(btn){ btn.disabled = true; btn.textContent = '🔎 Buscando...'; }
-  try{
-    const resp = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + d);
-    if(!resp.ok) throw new Error(resp.status === 404 ? 'CNPJ não encontrado.' : 'Falha na consulta (' + resp.status + ').');
-    const j = await resp.json();
-    const nome = j.nome_fantasia && j.nome_fantasia.trim() ? j.nome_fantasia.trim() : (j.razao_social || '');
-    const partesEnd = [
-      [j.descricao_tipo_de_logradouro, j.logradouro].filter(Boolean).join(' '),
-      j.numero, j.bairro,
-      [j.municipio, j.uf].filter(Boolean).join('/')
-    ].filter(Boolean);
-    const endereco = partesEnd.join(', ');
-    const tel = j.ddd_telefone_1 ? j.ddd_telefone_1 : '';
-    if($(prefixo + 'Nome') && !$(prefixo + 'Nome').value.trim()) $(prefixo + 'Nome').value = nome;
-    if($(prefixo + 'Endereco')) $(prefixo + 'Endereco').value = endereco;
-    if($(prefixo + 'Contato') && tel && !$(prefixo + 'Contato').value.trim()) $(prefixo + 'Contato').value = tel;
-    if($(prefixo + 'Fornece') && !$(prefixo + 'Fornece').value.trim() && j.cnae_fiscal_descricao) $(prefixo + 'Fornece').value = j.cnae_fiscal_descricao;
-    toast('Dados encontrados: ' + (j.razao_social || nome) + '.', 'ok', {ms: 6000});
-  }catch(e){
-    toast('Não foi possível buscar esse CNPJ: ' + e.message, 'erro', {ms: 7000});
-  }finally{
-    if(btn){ btn.disabled = false; btn.textContent = txtOrig; }
-  }
 }
 function acharInsumo(ref){ // ref: {insumoId, nome}
   if(!ref) return null;
@@ -2944,78 +2696,6 @@ async function removerInsumo(id){
   BD.insumos = BD.insumos.filter(i => i.id !== id);
   recalcularTudo(); salvar('insumos', 'fichas', 'formulasMassa'); renderInsumos();
 }
-/* ---------- rendimento/perda no preparo (ex: frango cru → cozido e desfiado) ---------- */
-// Converte os dois pesos pra base comparável (g/ml/un) e devolve o % de perda e de rendimento. null se as unidades não são comparáveis (ex: kg vs Un).
-function calcPerdaRendimento(comprado, unidC, rendimento, unidR){
-  if(!(comprado > 0) || !(rendimento > 0)) return null;
-  if(familiaUn(unidC) !== familiaUn(unidR)) return null;
-  const c = comprado * (FATOR_UN[unidC] || 1), r = rendimento * (FATOR_UN[unidR] || 1);
-  if(!(c > 0)) return null;
-  return {percPerda: r2((1 - r / c) * 100), percRendimento: r2(r / c * 100)};
-}
-let _ctlRendimento = null;
-function renderRendimentoModal(insId){
-  const ins = BD.insumos.find(i => i.id === insId); if(!ins) return '';
-  if(!Array.isArray(ins.testesRendimento)) ins.testesRendimento = [];
-  const unidPadrao = (familiaUn(ins.unid) === 'u') ? 'Un' : (ins.unid === 'Litro' || ins.unid === 'ml' ? ins.unid : 'kg');
-  const testes = ins.testesRendimento.slice().sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-  const comCalc = testes.map(t => ({...t, calc: calcPerdaRendimento(t.pesoComprado, t.unidComprado, t.pesoRendimento, t.unidRendimento)}));
-  const validos = comCalc.filter(t => t.calc);
-  const mediaGeral = validos.length ? r2(soma(validos, t => t.calc.percPerda) / validos.length) : null;
-  const porMarca = {};
-  validos.forEach(t => { const m = (t.marca || '').trim() || '(sem marca informada)'; (porMarca[m] = porMarca[m] || []).push(t.calc.percPerda); });
-  const resumoMarcas = Object.keys(porMarca).sort().map(m => { const arr = porMarca[m]; return {marca: m, media: r2(soma(arr, x => x) / arr.length), n: arr.length}; });
-  let html = '<div class="dica">Registre, a cada compra desse insumo, quanto comprou (cru/congelado) e quanto rendeu depois de limpar/cozinhar/desfiar. Dá pra comparar ao longo do tempo ou quando trocar de marca.</div>' +
-    '<div class="linha-form" style="grid-template-columns:1fr 1.3fr 1fr 0.7fr 1fr 0.7fr">' +
-    '<div><label for="rendData">Data</label><input type="date" id="rendData" value="' + dataHoje() + '"></div>' +
-    '<div><label for="rendMarca">Marca / fornecedor (opcional)</label><input type="text" id="rendMarca" placeholder="Ex: Seara, Sadia..."></div>' +
-    '<div><label for="rendComprado">Peso comprado (cru)</label><input type="text" id="rendComprado" inputmode="decimal" placeholder="Ex: 3,950"></div>' +
-    '<div><label for="rendUnidC">Un.</label><select id="rendUnidC">' + UNIDADES.map(u => '<option' + (u === unidPadrao ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
-    '<div><label for="rendRendimento">Rendimento final</label><input type="text" id="rendRendimento" inputmode="decimal" placeholder="Ex: 2,064"></div>' +
-    '<div><label for="rendUnidR">Un.</label><select id="rendUnidR">' + UNIDADES.map(u => '<option' + (u === unidPadrao ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
-    '</div><div><label for="rendObs">Observação (opcional)</label><input type="text" id="rendObs" placeholder="Ex: descongelado, cozido na pressão e desfiado"></div>' +
-    '<button class="btn" type="button" onclick="registrarRendimento(\'' + insId + '\')" style="margin:10px 0">+ Registrar teste</button>';
-  if(mediaGeral !== null){
-    html += '<div class="grade"><div class="card"><h3>Perda média geral</h3><div class="valor">' + fmt(mediaGeral, 1) + '%</div><div class="sub">rendimento médio ' + fmt(100 - mediaGeral, 1) + '% · ' + validos.length + ' teste(s)</div></div></div>';
-  }
-  if(resumoMarcas.length > 1){
-    html += '<h4 style="margin:12px 0 4px">Por marca</h4><div class="tabela-wrap"><table class="tabela"><thead><tr><th>Marca</th><th class="n">Perda média</th><th class="n">Testes</th></tr></thead><tbody>' +
-      resumoMarcas.map(r => '<tr><td>' + esc(r.marca) + '</td><td class="n">' + fmt(r.media, 1) + '%</td><td class="n">' + r.n + '</td></tr>').join('') + '</tbody></table></div>';
-  }
-  html += '<h4 style="margin:12px 0 4px">Histórico</h4>';
-  html += testes.length ? '<div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Marca</th><th class="n">Comprado</th><th class="n">Rendimento</th><th class="n">Perda</th><th>Obs</th><th>Ações</th></tr></thead><tbody>' +
-    comCalc.map(t => {
-      const perc = t.calc ? t.calc.percPerda : null;
-      const cls = (perc !== null && mediaGeral !== null && Math.abs(perc - mediaGeral) > 5) ? (perc > mediaGeral ? ' class="erro"' : ' class="ok"') : '';
-      return '<tr><td>' + fmtData(t.data) + '</td><td>' + esc(t.marca || '—') + '</td><td class="n">' + fmt(t.pesoComprado, 3) + ' ' + esc(t.unidComprado) + '</td><td class="n">' + fmt(t.pesoRendimento, 3) + ' ' + esc(t.unidRendimento) + '</td><td class="n"' + cls + '><b>' + (perc !== null ? fmt(perc, 1) + '%' : '—') + '</b></td><td>' + esc(t.obs || '—') + '</td><td class="acoes"><button class="btn vermelho pequeno" onclick="removerRendimento(\'' + insId + '\',\'' + t.id + '\')" aria-label="Excluir">✕</button></td></tr>';
-    }).join('') + '</tbody></table></div>'
-    : '<div class="vazio">Nenhum teste registrado ainda.</div>';
-  return html;
-}
-function abrirRendimentoInsumo(insId){
-  const ins = BD.insumos.find(i => i.id === insId); if(!ins) return;
-  _ctlRendimento = abrirModal({titulo: '🍗 Rendimento/perda — ' + ins.nome, largo: true, html: renderRendimentoModal(insId), botoes: [{rotulo: 'Fechar', classe: 'cinza'}]});
-}
-function registrarRendimento(insId){
-  const ins = BD.insumos.find(i => i.id === insId); if(!ins) return;
-  const data = $('rendData').value || dataHoje(); const marca = $('rendMarca').value.trim();
-  const comprado = parseNum($('rendComprado').value); const unidC = $('rendUnidC').value;
-  const rendimento = parseNum($('rendRendimento').value); const unidR = $('rendUnidR').value;
-  const obs = $('rendObs').value.trim();
-  if(!(comprado > 0) || !(rendimento > 0)) return toast('Informe o peso comprado e o rendimento final.', 'alerta');
-  if(!Array.isArray(ins.testesRendimento)) ins.testesRendimento = [];
-  ins.testesRendimento.push({id: uid(), data, marca, pesoComprado: comprado, unidComprado: unidC, pesoRendimento: rendimento, unidRendimento: unidR, obs});
-  salvar('insumos');
-  if(_ctlRendimento) _ctlRendimento.corpo.innerHTML = renderRendimentoModal(insId);
-  const calc = calcPerdaRendimento(comprado, unidC, rendimento, unidR);
-  toast('Teste registrado' + (calc ? ': ' + fmt(calc.percPerda, 1) + '% de perda (' + fmt(calc.percRendimento, 1) + '% de rendimento).' : '.'), 'ok', {ms: 6000});
-}
-function removerRendimento(insId, testeId){
-  const ins = BD.insumos.find(i => i.id === insId); if(!ins) return;
-  ins.testesRendimento = (ins.testesRendimento || []).filter(t => t.id !== testeId);
-  salvar('insumos');
-  if(_ctlRendimento) _ctlRendimento.corpo.innerHTML = renderRendimentoModal(insId);
-}
 function verHistoricoInsumo(id){
   const ins = BD.insumos.find(i => i.id === id); if(!ins) return;
   const h = (ins.historicoPreco || []).slice().reverse();
@@ -3041,7 +2721,7 @@ function renderInsumos(){
   $('qtdInsumos').textContent = BD.insumos.length;
   $('tabelaInsumos').innerHTML = lista.length ? lista.map(i =>
     '<tr><td>' + esc(i.nome) + (i.origem ? ' <span class="tag" title="Calculado por receita">🔗</span>' : '') + (i.unid === 'Un' && !i.pesoUnitario ? '' : '') + (i.pesoUnitario ? ' <span class="tag cinza">1 un = ' + fmt(i.pesoUnitario, 0) + ' g</span>' : '') + '</td><td>' + esc(i.unid) + '</td><td class="n">' + fmt(i.qtd, 3) + '</td><td class="n">' + brl(i.valor) + '</td><td class="n">' + esc(i.etiqueta) + ': ' + brl(i.precoExibido) + '</td><td>' + variacaoInsumo(i) + '</td>' +
-    '<td class="acoes"><button class="btn cinza pequeno" onclick="editarInsumo(\'' + i.id + '\')" aria-label="Editar">✏️</button><button class="btn cinza pequeno" onclick="verHistoricoInsumo(\'' + i.id + '\')" aria-label="Histórico de preço" title="Histórico de preço">📈</button><button class="btn cinza pequeno" onclick="abrirRendimentoInsumo(\'' + i.id + '\')" aria-label="Rendimento/perda no preparo" title="Rendimento/perda no preparo (ex: cru → cozido e desfiado)">🍗</button><button class="btn vermelho pequeno" onclick="removerInsumo(\'' + i.id + '\')" aria-label="Excluir">✕</button></td></tr>'
+    '<td class="acoes"><button class="btn cinza pequeno" onclick="editarInsumo(\'' + i.id + '\')" aria-label="Editar">✏️</button><button class="btn cinza pequeno" onclick="verHistoricoInsumo(\'' + i.id + '\')" aria-label="Histórico de preço" title="Histórico de preço">📈</button><button class="btn vermelho pequeno" onclick="removerInsumo(\'' + i.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="7"><div class="vazio">' + (BD.insumos.length ? 'Nenhum insumo encontrado.' : 'Cadastre seu primeiro insumo acima.') + '</div></td></tr>';
   atualizarCampoPesoUn();
 }
@@ -5040,16 +4720,6 @@ function resultadoMes(mes){
   const r = resumoLinhas(linhas);
   const desp = soma(BD.despesas.filter(d => (d.data || '').startsWith(mes)), d => d.valor);
   const perdas = soma(BD.perdas.filter(p => (p.data || '').startsWith(mes)), p => p.valor);
-  // soma o resumo arquivado desse mês (se algum dado desse mês já foi arquivado), pra o total
-  // continuar certo mesmo sem o histórico completo de linhas de venda (ver arquivarDadosAntigos)
-  const arq = (BD.config.resumoArquivadoMes || {})[mes];
-  if(arq){
-    const fat = r2(r.fat + arq.fat), custo = r2(r.custo + arq.custo), taxas = r2(r.taxas + arq.taxas);
-    const despTot = r2(desp + arq.despesas), perdasTot = r2(perdas + arq.perdas);
-    return {...r, fat, custo, taxas, lucro: fat - custo - taxas, itens: r.itens + arq.itens, pedidos: r.pedidos + arq.pedidos,
-      linhas, despesas: despTot, perdas: perdasTot, liquido: fat - custo - taxas - despTot - perdasTot,
-      temArquivado: true};
-  }
   return {...r, linhas, despesas: desp, perdas, liquido: r.fat - r.custo - r.taxas - desp - perdas};
 }
 function deltaHTML(atual, anterior){
@@ -5070,8 +4740,7 @@ function renderResumoMensal(){
     linha('<b>= LUCRO LÍQUIDO</b> ' + deltaHTML(m.liquido, ant.liquido), brl(m.liquido), m.liquido >= 0 ? 'ok' : 'erro', true) +
     linha('Margem líquida', m.fat > 0 ? fmt(m.liquido / m.fat * 100, 1) + '%' : '—') +
     linha('A receber (pendente)', brl(m.pendente), m.pendente > 0 ? 'alerta' : '') +
-    (semTaxas && m.fat > 0 ? '<div class="aviso alerta-a">Taxas de pagamento não cadastradas: o lucro acima está sem descontar taxas de cartão/PIX e impostos.</div>' : '') +
-    (m.temArquivado ? '<div class="aviso">📦 Este mês tem dados arquivados (Dados → Arquivar dados antigos). Os totais acima já somam o arquivado, mas a tabela de produtos abaixo mostra só o que ainda está aqui — pra ver tudo, mescle o arquivo de volta.</div>' : '');
+    (semTaxas && m.fat > 0 ? '<div class="aviso alerta-a">Taxas de pagamento não cadastradas: o lucro acima está sem descontar taxas de cartão/PIX e impostos.</div>' : '');
   const arr = produtosResumo(m.linhas);
   $('tabelaResumoMensal').innerHTML = arr.length ? arr.map(([n, x]) => '<tr><td>' + esc(n) + '</td><td class="n">' + x.qtd + '</td><td class="n">' + brl(x.fat) + '</td><td class="n ' + (x.lucro < 0 ? 'erro' : '') + '">' + brl(x.lucro) + '</td></tr>').join('') : '<tr><td colspan="4"><div class="vazio">Sem vendas neste mês.</div></td></tr>';
 }
@@ -5330,132 +4999,40 @@ let LINHAS_CUPOM = [];
 function lerLinhasCupom(){
   LINHAS_CUPOM = LINHAS_CUPOM.map((l, i) => ({
     nome: ($('cl_n' + i) ? $('cl_n' + i).value : l.nome), qtd: ($('cl_q' + i) ? $('cl_q' + i).value : l.qtd),
-    unid: ($('cl_u' + i) ? $('cl_u' + i).value : l.unid), precoUnit: ($('cl_p' + i) ? $('cl_p' + i).value : l.precoUnit),
-    valor: ($('cl_v' + i) ? $('cl_v' + i).value : l.valor),
+    unid: ($('cl_u' + i) ? $('cl_u' + i).value : l.unid), valor: ($('cl_v' + i) ? $('cl_v' + i).value : l.valor),
     insumo: ($('cl_i' + i) ? $('cl_i' + i).checked : (l.insumo !== false))}));
 }
-function adicionarLinhaCupom(){ lerLinhasCupom(); LINHAS_CUPOM.push({nome: '', qtd: '', unid: 'kg', precoUnit: '', valor: '', insumo: true}); renderLinhasCupom(); const i = LINHAS_CUPOM.length - 1; if($('cl_n' + i)) $('cl_n' + i).focus(); }
+function adicionarLinhaCupom(){ lerLinhasCupom(); LINHAS_CUPOM.push({nome: '', qtd: '', unid: 'kg', valor: '', insumo: true}); renderLinhasCupom(); const i = LINHAS_CUPOM.length - 1; if($('cl_n' + i)) $('cl_n' + i).focus(); }
 function removerLinhaCupom(i){ lerLinhasCupom(); LINHAS_CUPOM.splice(i, 1); renderLinhasCupom(); }
-// Digitou o preço por unidade (ex: R$/kg, igual na etiqueta do mercado) → calcula o valor total sozinho (qtd × preço)
-// pfx permite reaproveitar esta mesma lógica em mais de uma lista de itens na tela (ex: lançar cupom novo × editar cupom existente)
-function clRecalcValor(i, pfx){
-  pfx = pfx || 'cl_';
-  const qtdEl = $(pfx + 'q' + i), puEl = $(pfx + 'p' + i), vEl = $(pfx + 'v' + i);
-  if(qtdEl && puEl && vEl){
-    const qtd = parseNum(qtdEl.value), pu = parseNum(puEl.value);
-    if(qtd > 0 && pu > 0) vEl.value = r2(qtd * pu).toFixed(2).replace('.', ',');
-  }
-  clAtualizarComparacao(i, pfx);
-}
-// Digitou o valor total direto → calcula o preço por unidade sozinho (valor ÷ qtd), pra comparar com o cadastro
-function clRecalcPreco(i, pfx){
-  pfx = pfx || 'cl_';
-  const qtdEl = $(pfx + 'q' + i), puEl = $(pfx + 'p' + i), vEl = $(pfx + 'v' + i);
-  if(qtdEl && puEl && vEl){
-    const qtd = parseNum(qtdEl.value), v = parseNum(vEl.value);
-    if(qtd > 0 && v > 0) puEl.value = r2(v / qtd).toFixed(2).replace('.', ',');
-  }
-  clAtualizarComparacao(i, pfx);
-}
-// Mostra, embaixo da linha, o preço atual cadastrado no insumo x o preço novo desta compra (se subiu, caiu ou ficou igual)
-function clAtualizarComparacao(i, pfx){
-  pfx = pfx || 'cl_';
-  const el = $(pfx + 'cmp' + i); if(!el) return;
-  const nome = $(pfx + 'n' + i) ? $(pfx + 'n' + i).value.trim() : '';
-  const unid = $(pfx + 'u' + i) ? $(pfx + 'u' + i).value : 'kg';
-  const qtd = $(pfx + 'q' + i) ? parseNum($(pfx + 'q' + i).value) : 0;
-  const pu = $(pfx + 'p' + i) ? parseNum($(pfx + 'p' + i).value) : 0;
-  const v = $(pfx + 'v' + i) ? parseNum($(pfx + 'v' + i).value) : 0;
-  const precoNovo = pu > 0 ? pu : (qtd > 0 && v > 0 ? r2(v / qtd) : 0);
-  if(!nome || !precoNovo){ el.innerHTML = ''; return; }
-  const ins = acharInsumoPorNome(nome);
-  if(!ins || !(ins.precoBase > 0)){ el.innerHTML = '<span class="suave">Insumo novo — sem preço anterior pra comparar.</span>'; return; }
-  if(familiaUn(ins.unid) !== familiaUn(unid)){ el.innerHTML = '<span class="suave">Cadastrado em "' + esc(ins.unid) + '" — escolha essa unidade aqui pra comparar o preço.</span>'; return; }
-  const precoAtual = r2(ins.precoBase * (FATOR_UN[unid] || 1));
-  const delta = precoAtual > 0 ? (precoNovo - precoAtual) / precoAtual * 100 : 0;
-  const seta = delta > 0.5 ? '🔺' : delta < -0.5 ? '🔻' : '➡️';
-  const cls = delta > 0.5 ? 'erro' : delta < -0.5 ? 'ok' : 'suave';
-  el.innerHTML = 'Cadastrado: <b>' + brl(precoAtual) + '/' + esc(unid) + '</b> → nesta compra: <b>' + brl(precoNovo) + '/' + esc(unid) + '</b> <span class="' + cls + '">' + seta + ' ' + (delta >= 0 ? '+' : '') + fmt(delta, 1) + '%</span>';
-  atualizarResumoCupom(pfx);
-}
-// Calcula o fator entre o valor total pago e a soma dos itens informados (ex: desconto ou acréscimo do cupom)
-function fatorAjusteCupom(itensLista, valorTotal){
-  const subtotal = r2(soma(itensLista, l => parseNum(l.valor)));
-  if(!(subtotal > 0) || !(valorTotal > 0)) return 1;
-  return valorTotal / subtotal;
-}
-// Aplica esse fator a cada item (valor e preço/unid), pra refletir o preço efetivamente pago, sem alterar os itens originais do cupom (guardados como na nota)
-function itensComAjusteCupom(itensLista, valorTotal){
-  const fator = fatorAjusteCupom(itensLista, valorTotal);
-  if(Math.abs(fator - 1) < 0.0001) return itensLista;
-  return itensLista.map(l => ({...l, valor: r2(l.valor * fator), precoUnit: l.precoUnit != null ? r2(l.precoUnit * fator) : l.precoUnit}));
-}
-// Mostra, embaixo da lista de itens, se a soma bate com o "Valor total" do cupom — e avisa que a diferença (desconto/acréscimo)
-// é repartida proporcionalmente entre os itens pra não distorcer o preço dos insumos nem a divisão insumos × diversos.
-function atualizarResumoCupom(pfx){
-  pfx = pfx || 'cl_';
-  const el = $(pfx === 'ecl_' ? 'ecResumoCupom' : 'cupomResumoItens'); if(!el) return;
-  const linhas = pfx === 'ecl_' ? LINHAS_EDICAO_COMPRA : LINHAS_CUPOM;
-  const subtotal = r2(soma(linhas, l => parseNum(l.valor)));
-  const valorEl = pfx === 'ecl_' ? document.getElementById('mf_valor') : $('cupomValor');
-  const valorTotal = valorEl ? parseNum(valorEl.value) : 0;
-  if(!(subtotal > 0) || !(valorTotal > 0)){ el.innerHTML = ''; return; }
-  const diff = r2(subtotal - valorTotal);
-  if(Math.abs(diff) < 0.01){ el.innerHTML = ''; return; }
-  const perc = subtotal > 0 ? Math.abs(diff) / subtotal * 100 : 0;
-  const rotulo = diff > 0 ? '🏷️ Desconto identificado' : '➕ Acréscimo identificado';
-  el.innerHTML = '<div class="dica">Subtotal dos itens: <b>' + brl(subtotal) + '</b> · ' + rotulo + ': <b>' + brl(Math.abs(diff)) + '</b> (' + fmt(perc, 1) + '%) — já considerado, proporcionalmente, no preço dos insumos e na divisão insumos × diversos ao salvar.</div>';
-}
-// Monta o HTML de UMA linha de item (nome, qtd, unidade, R$/unid, R$ total, insumo?) — usado tanto no cupom novo (pfx "cl_")
-// quanto na edição de um cupom já salvo (pfx "ecl_"), pra não duplicar a mesma lógica nos dois lugares.
-function linhaCupomHTML(pfx, i, l, onRemover){
-  const unidAtual = l.unid || 'kg';
-  return '<div class="cupom-item-bloco">' +
-    '<div class="linha-form" style="grid-template-columns:2fr 0.8fr 0.8fr 1fr 1fr auto auto">' +
-    '<div><input id="' + pfx + 'n' + i + '" list="listaInsumosDL" placeholder="Nome do item" value="' + esc(l.nome) + '" aria-label="Item" oninput="clAtualizarComparacao(' + i + ',\'' + pfx + '\')"></div>' +
-    '<div><input id="' + pfx + 'q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade" oninput="clRecalcValor(' + i + ',\'' + pfx + '\')"></div>' +
-    '<div><select id="' + pfx + 'u' + i + '" aria-label="Unidade" onchange="clAtualizarComparacao(' + i + ',\'' + pfx + '\')">' + UNIDADES.map(u => '<option' + (u === unidAtual ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
-    '<div><input id="' + pfx + 'p' + i + '" type="text" inputmode="decimal" placeholder="R$/' + unidAtual + '" value="' + esc(l.precoUnit || '') + '" aria-label="Preço por unidade" oninput="clRecalcValor(' + i + ',\'' + pfx + '\')"></div>' +
-    '<div><input id="' + pfx + 'v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total" oninput="clRecalcPreco(' + i + ',\'' + pfx + '\')"></div>' +
-    '<label class="linha" style="white-space:nowrap" title="Desmarque se não for insumo de produção (ex: material de limpeza, uso pessoal) — entra como despesa Diversos, sem mexer no estoque de insumos."><input type="checkbox" id="' + pfx + 'i' + i + '"' + (l.insumo !== false ? ' checked' : '') + '> 📦 Insumo</label>' +
-    '<button class="btn vermelho pequeno" type="button" onclick="' + onRemover + '(' + i + ')" aria-label="Remover">✕</button>' +
-    '</div><div id="' + pfx + 'cmp' + i + '" class="pequeno-txt" style="margin:-4px 0 10px"></div></div>';
-}
 function renderLinhasCupom(){
-  $('cupomItensLista').innerHTML = LINHAS_CUPOM.map((l, i) => linhaCupomHTML('cl_', i, l, 'removerLinhaCupom')).join('');
-  LINHAS_CUPOM.forEach((l, i) => clAtualizarComparacao(i));
-  atualizarResumoCupom('cl_');
+  $('cupomItensLista').innerHTML = LINHAS_CUPOM.map((l, i) =>
+    '<div class="linha-form" style="grid-template-columns:2.2fr 1fr 1fr 1fr auto auto"><div><input id="cl_n' + i + '" list="listaInsumosDL" placeholder="Nome do item" value="' + esc(l.nome) + '" aria-label="Item"></div><div><input id="cl_q' + i + '" type="text" inputmode="decimal" placeholder="Qtd" value="' + esc(l.qtd) + '" aria-label="Quantidade"></div>' +
+    '<div><select id="cl_u' + i + '" aria-label="Unidade">' + UNIDADES.map(u => '<option' + (u === l.unid ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div><div><input id="cl_v' + i + '" type="text" inputmode="decimal" placeholder="R$ total" value="' + esc(l.valor) + '" aria-label="Valor total"></div>' +
+    '<label class="linha" style="white-space:nowrap" title="Desmarque se não for insumo de produção (ex: material de limpeza, uso pessoal) — entra como despesa Diversos, sem mexer no estoque de insumos."><input type="checkbox" id="cl_i' + i + '"' + (l.insumo !== false ? ' checked' : '') + '> 📦 Insumo</label>' +
+    '<button class="btn vermelho pequeno" type="button" onclick="removerLinhaCupom(' + i + ')" aria-label="Remover">✕</button></div>').join('');
 }
 /* ---------- fornecedores ---------- */
 function adicionarFornecedor(){
   const nome = $('fornNome').value.trim(); const contato = $('fornContato').value.trim();
   const fornece = $('fornFornece').value.trim(); const obs = $('fornObs').value.trim();
-  const cnpj = somenteDigitos($('fornCNPJ').value); const contatoNome = $('fornContatoNome').value.trim();
-  const endereco = $('fornEndereco').value.trim();
   if(!nome) return toast('Informe o nome do fornecedor.', 'alerta');
   if(BD.fornecedores.some(f => norm(f.nome) === norm(nome))) return toast('Já existe um fornecedor com esse nome.', 'alerta');
-  if(cnpj && cnpj.length !== 14) return toast('CNPJ inválido: precisa ter 14 números (ou deixe vazio).', 'alerta');
-  BD.fornecedores.push({id: uid(), nome, contato, contatoNome, fornece, endereco, cnpj, obs});
-  ['fornCNPJ', 'fornNome', 'fornContatoNome', 'fornContato', 'fornFornece', 'fornEndereco', 'fornObs'].forEach(i => $(i).value = '');
+  BD.fornecedores.push({id: uid(), nome, contato, fornece, obs});
+  ['fornNome', 'fornContato', 'fornFornece', 'fornObs'].forEach(i => $(i).value = '');
   salvar('fornecedores'); renderFornecedores(); toast('Fornecedor cadastrado.', 'ok');
 }
 function editarFornecedor(id){
   const f = BD.fornecedores.find(x => x.id === id); if(!f) return;
   formModal({titulo: 'Editar fornecedor', campos: [
     {id: 'nome', rotulo: 'Nome / razão social', valor: f.nome},
-    {id: 'cnpj', rotulo: 'CNPJ', valor: formatarCNPJ(f.cnpj)},
-    {id: 'contatoNome', rotulo: 'Nome do contato', valor: f.contatoNome},
     {id: 'contato', rotulo: 'Telefone / WhatsApp', valor: f.contato},
     {id: 'fornece', rotulo: 'O que fornece', valor: f.fornece},
-    {id: 'endereco', rotulo: 'Endereço', valor: f.endereco},
     {id: 'obs', rotulo: 'Observação', valor: f.obs}
   ], salvar: v => {
     if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
     if(BD.fornecedores.some(x => x.id !== f.id && norm(x.nome) === norm(v.nome))){ toast('Já existe outro fornecedor com esse nome.', 'alerta'); return false; }
-    const cnpjD = somenteDigitos(v.cnpj);
-    if(cnpjD && cnpjD.length !== 14){ toast('CNPJ inválido: precisa ter 14 números (ou deixe vazio).', 'alerta'); return false; }
     const antigo = f.nome;
-    f.nome = v.nome; f.cnpj = cnpjD; f.contatoNome = v.contatoNome; f.contato = v.contato; f.fornece = v.fornece; f.endereco = v.endereco; f.obs = v.obs;
+    f.nome = v.nome; f.contato = v.contato; f.fornece = v.fornece; f.obs = v.obs;
     if(norm(antigo) !== norm(v.nome)) BD.compras.forEach(c => { if(norm(c.mercado) === norm(antigo)) c.mercado = v.nome; });
     salvar('fornecedores', 'compras'); renderFornecedores(); renderCompras();
   }});
@@ -5470,13 +5047,11 @@ function renderFornecedores(){
   const lista = BD.fornecedores.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   const tbl = $('tabelaFornecedores');
   if(tbl) tbl.innerHTML = lista.length ? lista.map(f =>
-    '<tr><td><b>' + esc(f.nome) + '</b>' + (f.contatoNome ? '<br><small class="suave">' + esc(f.contatoNome) + '</small>' : '') + '</td><td>' + (f.cnpj ? esc(formatarCNPJ(f.cnpj)) : '—') + '</td><td>' + esc(f.contato || '—') + '</td><td>' + esc(f.fornece || '—') + '</td><td>' + esc(f.endereco || '—') + '</td>' +
+    '<tr><td><b>' + esc(f.nome) + '</b></td><td>' + esc(f.contato || '—') + '</td><td>' + esc(f.fornece || '—') + '</td><td>' + esc(f.obs || '—') + '</td>' +
     '<td class="acoes"><button class="btn cinza pequeno" onclick="editarFornecedor(\'' + f.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirFornecedor(\'' + f.id + '\')" aria-label="Excluir">✕</button></td></tr>'
-  ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum fornecedor cadastrado.</div></td></tr>';
+  ).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum fornecedor cadastrado.</div></td></tr>';
   const dl = $('listaFornecedoresSugeridos');
   if(dl) dl.innerHTML = lista.map(f => '<option value="' + esc(f.nome) + '"></option>').join('');
-  const dlc = $('listaFornecedoresCNPJ');
-  if(dlc) dlc.innerHTML = lista.filter(f => f.cnpj).map(f => '<option value="' + esc(formatarCNPJ(f.cnpj)) + '"></option>').join('');
 }
 
 /* ---------- contas a pagar ---------- */
@@ -5811,43 +5386,29 @@ function confirmarImportacaoClientes(ctl){
   salvar('clientes'); renderClientes(); atualizarDatalists();
   toast(add + ' cliente(s) adicionado(s) ao cadastro. Complete o endereço quando puder.', 'ok', {ms: 7000});
 }
-// Aplica os itens marcados como "📦 Insumo" ao cadastro de Insumos (cria o que não existe, atualiza preço/unidade do que já existe).
-// Usado tanto ao salvar um cupom novo quanto ao editar um cupom já lançado.
-function atualizarPrecosInsumosDeItens(itensLista){
-  let atualizados = 0, criados = 0; const naoAchados = [];
-  itensLista.filter(l => l.insumo !== false).forEach(l => {
-    const ins = acharInsumoPorNome(l.nome);
-    if(!ins){
-      const novo = {id: uid(), nome: l.nome, unid: l.unid, qtd: l.qtd, valor: l.valor, precoBase: precoBaseDe(l.unid, l.qtd, l.valor), historicoPreco: []};
-      rotularInsumo(novo); registrarHistorico(novo); BD.insumos.push(novo); criados++;
-      return;
-    }
-    if(ins.origem){ naoAchados.push(l.nome + ' (calculado por receita)'); return; }
-    ins.unid = l.unid; ins.qtd = l.qtd; ins.valor = l.valor; ins.precoBase = precoBaseDe(l.unid, l.qtd, l.valor); rotularInsumo(ins); registrarHistorico(ins); atualizados++;
-  });
-  return {atualizados, criados, naoAchados};
-}
 function cadastrarCupom(){
   lerLinhasCupom();
   const numero = $('cupomNum').value.trim(); const cnpj = $('cupomCNPJ').value.trim(); const mercado = $('cupomMercado').value.trim();
   const data = $('cupomData').value || dataHoje(); const valor = parseNum($('cupomValor').value);
   if(valor <= 0) return toast('Informe o valor total da compra.', 'alerta');
   if(!numero && !mercado) return toast('Informe o nº do cupom ou o nome do mercado.', 'alerta');
-  const itensLista = LINHAS_CUPOM.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, precoUnit: parseNum(l.precoUnit) || null, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
-  const compra = {id: uid(), numero, cnpj, mercado, data, valor, itens: $('cupomItens').value.trim(), itensLista, formaPagamento: CUPOM_PAGAMENTO === 'vista' ? CUPOM_FORMA_PAGAMENTO : null};
-  // se o fornecedor já está cadastrado mas ainda não tem CNPJ salvo, aproveita o que foi digitado aqui pra completar o cadastro
-  if(mercado && cnpj){
-    const fExistente = acharFornecedorPorNome(mercado);
-    const cnpjD = somenteDigitos(cnpj);
-    if(fExistente && !fExistente.cnpj && cnpjD.length === 14){ fExistente.cnpj = cnpjD; salvar('fornecedores'); }
-  }
-  // se a soma dos itens não bate com o valor total do cupom (desconto/acréscimo), reparte essa diferença
-  // proporcionalmente entre os itens antes de atualizar o preço dos insumos e dividir insumos × diversos
-  const fatorCupom = fatorAjusteCupom(itensLista, valor);
-  const itensAjustados = itensComAjusteCupom(itensLista, valor);
-  const itensDiversos = itensAjustados.filter(l => l.insumo === false);
+  const itensLista = LINHAS_CUPOM.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
+  const compra = {id: uid(), numero, cnpj, mercado, data, valor, itens: $('cupomItens').value.trim(), itensLista};
+  let atualizados = 0, criados = 0; const naoAchados = [];
+  const itensDiversos = itensLista.filter(l => l.insumo === false);
   const somaDiversos = r2(soma(itensDiversos, l => l.valor));
-  const {atualizados, criados, naoAchados} = $('cupomAtualizarPrecos').checked ? atualizarPrecosInsumosDeItens(itensAjustados) : {atualizados: 0, criados: 0, naoAchados: []};
+  if($('cupomAtualizarPrecos').checked){
+    itensLista.filter(l => l.insumo !== false).forEach(l => {
+      const ins = acharInsumoPorNome(l.nome);
+      if(!ins){
+        const novo = {id: uid(), nome: l.nome, unid: l.unid, qtd: l.qtd, valor: l.valor, precoBase: precoBaseDe(l.unid, l.qtd, l.valor), historicoPreco: []};
+        rotularInsumo(novo); registrarHistorico(novo); BD.insumos.push(novo); criados++;
+        return;
+      }
+      if(ins.origem){ naoAchados.push(l.nome + ' (calculado por receita)'); return; }
+      ins.unid = l.unid; ins.qtd = l.qtd; ins.valor = l.valor; ins.precoBase = precoBaseDe(l.unid, l.qtd, l.valor); rotularInsumo(ins); registrarHistorico(ins); atualizados++;
+    });
+  }
   const valorInsumos = r2(Math.max(0, valor - somaDiversos));
   let parcelasGeradas = 0;
   if(CUPOM_PAGAMENTO === 'prazo'){
@@ -5879,11 +5440,11 @@ function cadastrarCupom(){
     const descBase = 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : '');
     const despesaIds = [];
     if(valorInsumos > 0){
-      const d = {id: uid(), data, desc: descBase, valor: valorInsumos, categoria: 'Insumos avulsos', compraId: compra.id, formaPagamento: CUPOM_FORMA_PAGAMENTO};
+      const d = {id: uid(), data, desc: descBase, valor: valorInsumos, categoria: 'Insumos avulsos', compraId: compra.id};
       BD.despesas.unshift(d); despesaIds.push(d.id);
     }
     if(somaDiversos > 0){
-      const d2 = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: compra.id, formaPagamento: CUPOM_FORMA_PAGAMENTO};
+      const d2 = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: compra.id};
       BD.despesas.unshift(d2); despesaIds.push(d2.id);
     }
     compra.despesaId = despesaIds[0] || null;
@@ -5892,108 +5453,29 @@ function cadastrarCupom(){
   BD.compras.unshift(compra);
   if(atualizados || criados){ recalcularTudo(); }
   ['cupomNum', 'cupomCNPJ', 'cupomMercado', 'cupomValor', 'cupomItens'].forEach(i => $(i).value = ''); LINHAS_CUPOM = []; renderLinhasCupom();
-  selecionarPagamentoCupom('vista'); selecionarFormaPagamentoCupom('dinheiro');
+  selecionarPagamentoCupom('vista');
   salvar('compras', 'despesas', 'insumos', 'fichas', 'contasPagar'); renderCompras();
-  toast('Cupom salvo.' + (parcelasGeradas ? ' ' + parcelasGeradas + ' parcela(s) criada(s) em Contas a pagar.' : '') + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (criados ? ' ' + criados + ' insumo(s) novo(s) cadastrado(s).' : '') + (somaDiversos ? ' ' + brl(somaDiversos) + ' em "Diversos" (não entrou no estoque de insumos).' : '') + (Math.abs(fatorCupom - 1) > 0.001 ? ' ' + (fatorCupom < 1 ? 'Desconto' : 'Acréscimo') + ' do cupom considerado proporcionalmente no preço dos insumos.' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
+  toast('Cupom salvo.' + (parcelasGeradas ? ' ' + parcelasGeradas + ' parcela(s) criada(s) em Contas a pagar.' : '') + (atualizados ? ' ' + atualizados + ' preço(s) de insumo atualizado(s).' : '') + (criados ? ' ' + criados + ' insumo(s) novo(s) cadastrado(s).' : '') + (somaDiversos ? ' ' + brl(somaDiversos) + ' em "Diversos" (não entrou no estoque de insumos).' : '') + (naoAchados.length ? ' Não atualizados: ' + naoAchados.join(', ') + '.' : ''), naoAchados.length ? 'alerta' : 'ok', {ms: 7000});
 }
 function selecionarPagamentoCupom(t){
   CUPOM_PAGAMENTO = t;
   document.querySelectorAll('#cupomPagamentoTipo .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   if($('cupomPrazoBloco')) $('cupomPrazoBloco').classList.toggle('oculto', t !== 'prazo');
   if($('cupomLancarDespesaWrap')) $('cupomLancarDespesaWrap').classList.toggle('oculto', t === 'prazo');
-  if($('cupomFormaWrap')) $('cupomFormaWrap').classList.toggle('oculto', t === 'prazo');
   if(t === 'prazo' && $('cupomPrimeiroVenc') && !$('cupomPrimeiroVenc').value) $('cupomPrimeiroVenc').value = dataHoje();
-}
-function selecionarFormaPagamentoCupom(f){
-  CUPOM_FORMA_PAGAMENTO = f;
-  document.querySelectorAll('#cupomFormaPagamento .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.f === f));
-}
-/* ---------- edição de cupom já salvo: inclui editar os itens (produto, qtd, preço, total) ---------- */
-let LINHAS_EDICAO_COMPRA = [];
-function lerLinhasEdicaoCompra(){
-  LINHAS_EDICAO_COMPRA = LINHAS_EDICAO_COMPRA.map((l, i) => ({
-    nome: ($('ecl_n' + i) ? $('ecl_n' + i).value : l.nome), qtd: ($('ecl_q' + i) ? $('ecl_q' + i).value : l.qtd),
-    unid: ($('ecl_u' + i) ? $('ecl_u' + i).value : l.unid), precoUnit: ($('ecl_p' + i) ? $('ecl_p' + i).value : l.precoUnit),
-    valor: ($('ecl_v' + i) ? $('ecl_v' + i).value : l.valor),
-    insumo: ($('ecl_i' + i) ? $('ecl_i' + i).checked : (l.insumo !== false))}));
-}
-function adicionarLinhaEdicaoCompra(){ lerLinhasEdicaoCompra(); LINHAS_EDICAO_COMPRA.push({nome: '', qtd: '', unid: 'kg', precoUnit: '', valor: '', insumo: true}); renderLinhasEdicaoCompra(); const i = LINHAS_EDICAO_COMPRA.length - 1; if($('ecl_n' + i)) $('ecl_n' + i).focus(); }
-function removerLinhaEdicaoCompra(i){ lerLinhasEdicaoCompra(); LINHAS_EDICAO_COMPRA.splice(i, 1); renderLinhasEdicaoCompra(); }
-function renderLinhasEdicaoCompra(){
-  const el = $('ecItensLista'); if(!el) return;
-  el.innerHTML = LINHAS_EDICAO_COMPRA.length ? LINHAS_EDICAO_COMPRA.map((l, i) => linhaCupomHTML('ecl_', i, l, 'removerLinhaEdicaoCompra')).join('') : '<div class="vazio">Nenhum item lançado neste cupom ainda.</div>';
-  LINHAS_EDICAO_COMPRA.forEach((l, i) => clAtualizarComparacao(i, 'ecl_'));
-  atualizarResumoCupom('ecl_');
 }
 function editarCompra(id){
   const c = BD.compras.find(x => x.id === id); if(!c) return;
-  LINHAS_EDICAO_COMPRA = clona(c.itensLista || []);
-  const campos = [
-    {id: 'data', rotulo: 'Data', tipo: 'data', valor: c.data},
-    {id: 'numero', rotulo: 'Nº cupom / NF', valor: c.numero},
-    {id: 'mercado', rotulo: 'Mercado / loja', valor: c.mercado},
-    {id: 'cnpj', rotulo: 'CNPJ', valor: c.cnpj}
-  ];
-  const campoValorHTML = '<label for="mf_valor">Valor total (R$)</label><input id="mf_valor" type="text" inputmode="decimal" value="' + esc(c.valor) + '" oninput="atualizarResumoCupom(\'ecl_\')" autocomplete="off">';
-  const campoForma = {id: 'forma', rotulo: 'Pago com', tipo: 'select', valor: c.formaPagamento || '', opcoes: [{v: '', t: '— não informado / a prazo —'}].concat(FORMAS.map(f => ({v: f, t: rotForma[f]})))};
-  const html = campos.map(campoHTML).join('') + campoValorHTML + campoHTML(campoForma) +
-    '<h3 style="margin:14px 0 4px">Itens comprados</h3>' +
-    '<div class="dica">Produto, quantidade e preço por unidade (ou o valor total) — um calcula o outro sozinho, e compara com o preço já cadastrado no insumo. Se a soma dos itens não bater com o "Valor total" (desconto/acréscimo), a diferença é repartida proporcionalmente entre os itens.</div>' +
-    '<div id="ecItensLista"></div>' +
-    '<div id="ecResumoCupom"></div>' +
-    '<button class="btn cinza pequeno" type="button" onclick="adicionarLinhaEdicaoCompra()" style="margin:6px 0">+ Adicionar item</button>' +
-    '<label class="linha"><input type="checkbox" id="ecAtualizarPrecos" checked> Atualizar o preço dos insumos com os itens acima</label>' +
-    campoHTML({id: 'itens', rotulo: 'Observações', tipo: 'area', valor: c.itens}) +
-    (c.contasPagarGrupoId || (c.contasPagarGrupoIds && c.contasPagarGrupoIds.length) ? '<div class="aviso">⚠️ Este cupom foi lançado "a prazo": as parcelas em Contas a pagar não são recalculadas automaticamente ao editar aqui — ajuste-as em "Contas a pagar" se precisar.</div>' : '');
-  abrirModal({
-    titulo: 'Editar cupom', html, largo: true,
-    aoAbrir: () => renderLinhasEdicaoCompra(),
-    botoes: [
-      {rotulo: 'Cancelar', classe: 'cinza'},
-      {rotulo: 'Salvar', fn: ctl => {
-        lerLinhasEdicaoCompra();
-        const data = ctl.el.querySelector('#mf_data').value;
-        const valor = parseNum(ctl.el.querySelector('#mf_valor').value);
-        if(!data || !(valor > 0)){ toast('Data e valor válidos, por favor.', 'alerta'); return false; }
-        const numero = ctl.el.querySelector('#mf_numero').value.trim();
-        const mercado = ctl.el.querySelector('#mf_mercado').value.trim();
-        const cnpj = ctl.el.querySelector('#mf_cnpj').value.trim();
-        const forma = ctl.el.querySelector('#mf_forma').value || null;
-        const obs = ctl.el.querySelector('#mf_itens').value.trim();
-        const itensLista = LINHAS_EDICAO_COMPRA.map(l => ({nome: String(l.nome).trim(), qtd: parseNum(l.qtd), unid: l.unid, precoUnit: parseNum(l.precoUnit) || null, valor: parseNum(l.valor), insumo: l.insumo !== false})).filter(l => l.nome && l.qtd > 0 && l.valor > 0);
-        const atualizarPrecos = ctl.el.querySelector('#ecAtualizarPrecos').checked;
-        // mesma lógica do lançamento: se a soma dos itens não bater com o valor total (desconto/acréscimo), reparte
-        // essa diferença proporcionalmente entre os itens antes de atualizar o preço dos insumos e dividir insumos × diversos
-        const itensAjustados = itensComAjusteCupom(itensLista, valor);
-        const r = atualizarPrecos ? atualizarPrecosInsumosDeItens(itensAjustados) : {atualizados: 0, criados: 0, naoAchados: []};
-        Object.assign(c, {data, numero, mercado, cnpj, valor, formaPagamento: forma, itens: obs, itensLista});
-        // despesa(s) vinculada(s) (compra à vista): reparte entre "Insumos avulsos" e "Diversos" do mesmo jeito que ao lançar o cupom
-        const itensDiversos = itensAjustados.filter(l => l.insumo === false);
-        const somaDiversos = r2(soma(itensDiversos, l => l.valor));
-        const valorInsumos = r2(Math.max(0, valor - somaDiversos));
-        const descBase = 'Compra: ' + (mercado || 'cupom') + (numero ? ' (nº ' + numero + ')' : '');
-        const idsAtuais = c.despesaIds || (c.despesaId ? [c.despesaId] : []);
-        const despesasAtuais = idsAtuais.map(did => BD.despesas.find(x => x.id === did)).filter(Boolean);
-        const dInsumos = despesasAtuais.find(x => x.categoria !== 'Diversos') || despesasAtuais[0];
-        const dDiversos = despesasAtuais.find(x => x.categoria === 'Diversos' && x !== dInsumos);
-        if(dInsumos){ dInsumos.data = data; dInsumos.valor = somaDiversos > 0 ? valorInsumos : valor; dInsumos.desc = descBase; if(forma) dInsumos.formaPagamento = forma; }
-        if(somaDiversos > 0){
-          if(dDiversos){ dDiversos.data = data; dDiversos.valor = somaDiversos; dDiversos.desc = descBase + ' (diversos)'; if(forma) dDiversos.formaPagamento = forma; }
-          else if(dInsumos){
-            const novaDesp = {id: uid(), data, desc: descBase + ' (diversos)', valor: somaDiversos, categoria: 'Diversos', compraId: c.id, formaPagamento: forma};
-            BD.despesas.unshift(novaDesp);
-            c.despesaIds = [dInsumos.id, novaDesp.id]; c.despesaId = dInsumos.id;
-          }
-        }else if(dDiversos){
-          BD.despesas = BD.despesas.filter(x => x.id !== dDiversos.id);
-          c.despesaIds = dInsumos ? [dInsumos.id] : [];
-        }
-        if(r.atualizados || r.criados) recalcularTudo();
-        salvar('compras', 'despesas', 'insumos', 'fichas'); renderCompras();
-        toast('Cupom atualizado.' + (r.atualizados ? ' ' + r.atualizados + ' preço(s) de insumo atualizado(s).' : '') + (r.criados ? ' ' + r.criados + ' insumo(s) novo(s) cadastrado(s).' : '') + (r.naoAchados.length ? ' Não atualizados: ' + r.naoAchados.join(', ') + '.' : ''), 'ok', {ms: 6000});
-      }}
-    ]
-  });
+  formModal({titulo: 'Editar cupom', campos: [
+    {id: 'data', rotulo: 'Data', tipo: 'data', valor: c.data}, {id: 'numero', rotulo: 'Nº cupom / NF', valor: c.numero}, {id: 'mercado', rotulo: 'Mercado / loja', valor: c.mercado},
+    {id: 'cnpj', rotulo: 'CNPJ', valor: c.cnpj}, {id: 'valor', rotulo: 'Valor total (R$)', tipo: 'numero', valor: c.valor}, {id: 'itens', rotulo: 'Observações', tipo: 'area', valor: c.itens}
+  ], salvar: v => {
+    if(!v.data || !(v.valor > 0)){ toast('Data e valor válidos, por favor.', 'alerta'); return false; }
+    Object.assign(c, {data: v.data, numero: v.numero, mercado: v.mercado, cnpj: v.cnpj, valor: v.valor, itens: v.itens});
+    const d = c.despesaId && BD.despesas.find(x => x.id === c.despesaId);
+    if(d){ d.data = v.data; d.valor = v.valor; d.desc = 'Compra: ' + (v.mercado || 'cupom') + (v.numero ? ' (nº ' + v.numero + ')' : ''); }
+    salvar('compras', 'despesas'); renderCompras();
+  }});
 }
 async function excluirCompra(id){
   const c = BD.compras.find(x => x.id === id); if(!c) return;
@@ -6678,7 +6160,7 @@ function renderCompras(){
   const q = norm($('pesquisaCupom').value);
   const lista = BD.compras.filter(c => !q || norm(c.numero).includes(q) || norm(c.cnpj).includes(q) || norm(c.mercado).includes(q)).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
   $('tabelaCompras').innerHTML = lista.length ? lista.map(c =>
-    '<tr><td>' + fmtData(c.data) + '</td><td>' + esc(c.numero) + '</td><td>' + esc(c.mercado) + ((c.itensLista || []).length ? ' <span class="tag" title="' + esc(c.itensLista.map(i => i.nome).join(', ')) + '">' + c.itensLista.length + ' item(ns)</span>' : '') + (c.formaPagamento ? ' <span class="tag cinza">' + esc(rotForma[c.formaPagamento] || c.formaPagamento) + '</span>' : (c.contasPagarGrupoId || (c.contasPagarGrupoIds && c.contasPagarGrupoIds.length) ? ' <span class="tag laranja">📅 a prazo</span>' : '')) + '</td><td>' + esc(c.cnpj || '—') + '</td><td class="n">' + brl(c.valor) + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarCompra(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirCompra(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>'
+    '<tr><td>' + fmtData(c.data) + '</td><td>' + esc(c.numero) + '</td><td>' + esc(c.mercado) + ((c.itensLista || []).length ? ' <span class="tag" title="' + esc(c.itensLista.map(i => i.nome).join(', ')) + '">' + c.itensLista.length + ' item(ns)</span>' : '') + '</td><td>' + esc(c.cnpj || '—') + '</td><td class="n">' + brl(c.valor) + '</td><td class="acoes"><button class="btn cinza pequeno" onclick="editarCompra(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirCompra(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>'
   ).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum cupom cadastrado.</div></td></tr>';
   $('somaCompras').textContent = brl(soma(lista, c => c.valor));
 }
@@ -6794,29 +6276,6 @@ async function arquivarDadosAntigos(){
     if(!v || !v.data) return;
     const ym = v.data.slice(0, 7);
     BD.config.arquivadoMeiMes[ym] = (BD.config.arquivadoMeiMes[ym] || 0) + (v.valorTotal || 0);
-  });
-  // guarda um RESUMO (só os valores: faturamento, custo, taxas, despesas, perdas, itens, pedidos)
-  // por mês do que for arquivado, pra o Painel/Resumo mensal continuarem corretos pra sempre,
-  // sem precisar manter o histórico completo de linhas de venda aqui dentro (ver resultadoMes)
-  if(!BD.config.resumoArquivadoMes) BD.config.resumoArquivadoMes = {};
-  const despesasArquivadas = BD.despesas.filter(antes), perdasArquivadas = BD.perdas.filter(antes);
-  const porMesArq = {};
-  const mesArq = ym => porMesArq[ym] || (porMesArq[ym] = {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, itens: 0, pedidosSet: new Set()});
-  vendasArquivadas.forEach(v => {
-    if(!v || !v.data) return;
-    const m = mesArq(v.data.slice(0, 7));
-    m.fat += (v.valorTotal || 0); m.custo += (v.custoTotal || 0); m.taxas += taxaVenda(v);
-    m.itens += (v.quantidade || 0); m.pedidosSet.add(String(v.pedidoId));
-  });
-  despesasArquivadas.forEach(d => { if(d && d.data) mesArq(d.data.slice(0, 7)).despesas += (d.valor || 0); });
-  perdasArquivadas.forEach(p => { if(p && p.data) mesArq(p.data.slice(0, 7)).perdas += (p.valor || 0); });
-  Object.keys(porMesArq).forEach(ym => {
-    const novo = porMesArq[ym], atual = BD.config.resumoArquivadoMes[ym] || {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, itens: 0, pedidos: 0};
-    BD.config.resumoArquivadoMes[ym] = {
-      fat: r2(atual.fat + novo.fat), custo: r2(atual.custo + novo.custo), taxas: r2(atual.taxas + novo.taxas),
-      despesas: r2(atual.despesas + novo.despesas), perdas: r2(atual.perdas + novo.perdas),
-      itens: atual.itens + novo.itens, pedidos: atual.pedidos + novo.pedidosSet.size
-    };
   });
   BD.vendas = BD.vendas.filter(x => !antes(x)); BD.compras = BD.compras.filter(x => !antes(x));
   BD.despesas = BD.despesas.filter(x => !antes(x)); BD.perdas = BD.perdas.filter(x => !antes(x));
@@ -7192,7 +6651,7 @@ function funilHTML(mes){
 function renderDashboard(){
   const selMes = $('dashMesSel'); if(selMes && !selMes.value) selMes.value = mesAtual();
   const mes = (selMes && selMes.value) || mesAtual(); const m = resultadoMes(mes), ant = resultadoMes(mesAnterior(mes));
-  $('dashTituloMes').innerHTML = '📊 Resumo de ' + esc(fmtMes(mes)) + (m.temArquivado ? ' <small class="suave">(inclui dados arquivados)</small>' : '');
+  $('dashTituloMes').textContent = '📊 Resumo de ' + fmtMes(mes);
   $('dashMes').innerHTML =
     cardHTML('Faturamento', brl(m.fat), '', '') .replace('</div></div>', '</div>' + (ant.fat > 0 ? '<div class="sub">' + deltaHTML(m.fat, ant.fat) + '</div>' : '') + '</div>') +
     cardHTML('Pedidos', m.pedidos, 'ticket médio ' + brl(m.pedidos ? m.fat / m.pedidos : 0)) +
@@ -7212,7 +6671,6 @@ function renderDashboard(){
     cardHTML('A receber (total)', brl(pend), pedidosPendentes().length + ' pedido(s) pendente(s)', pend > 0 ? 'laranja' : '') +
     cardHTML('A pagar (total)', brl(soma(cpAbertas, c => c.valor)), cpVencidas.length ? cpVencidas.length + ' vencida(s)' : cpAbertas.length + ' conta(s) em aberto', cpVencidas.length ? 'vermelho' : (cpAbertas.length ? 'laranja' : '')) +
     cardHTML('Custos fixos estimados', brl(custosFixosMensais()), 'por mês') +
-    cardHTML('Faturamento do ano (' + anoAtual() + ')', brl(ano), arquivadoAnoDash > 0 ? 'inclui ' + brl(arquivadoAnoDash) + ' já arquivado' : 'todas as vendas do ano') +
     cardHTML('Teto MEI usado', fmt(limite > 0 ? ano / limite * 100 : 0, 1) + '%', brl(ano) + ' de ' + brl(limite), ano / limite >= 0.9 ? 'vermelho' : '');
   const pe = pontoEquilibrio(mes);
   if(pe.fixos <= 0) $('dashPE').innerHTML = '<div class="aviso">📌 Cadastre seus <b>custos fixos mensais</b> (aba Custos) para ver o ponto de equilíbrio: quanto precisa vender no mês para cobrir os custos.</div>';
