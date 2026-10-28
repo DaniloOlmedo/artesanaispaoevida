@@ -1040,6 +1040,23 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <button class="btn laranja" type="button" onclick="organizarFichasEmpanada()">🥟 Organizar fichas de empanada (massa + estoque por sabor)</button>
       <button class="btn laranja" type="button" onclick="conferirComponentesSuspeitos()">⚠️ Conferir quantidades suspeitas nas fichas</button>
     </div>
+    <details id="equivPainel" class="equiv-painel" style="margin-top:12px">
+      <summary style="cursor:pointer;font-weight:700">📏 Quadro de equivalência de medidas (colher, xícara → gramas)</summary>
+      <div class="aviso" style="margin-top:8px">Use para transformar receitas em colher/xícara em peso na ficha técnica. Valores médios com a medida <b>rasa</b> (xícara de chá = 240 ml). Para água, leite e líquidos, 1 ml ≈ 1 g. 1 ovo ≈ 50 g (clara ≈ 30 g, gema ≈ 20 g). Seu produto pode variar: <b>pese uma vez e ajuste</b> o valor na tabela.</div>
+      <div class="linha-form" style="grid-template-columns:2fr 1fr 1.4fr 1fr auto;align-items:end">
+        <div><label for="eqIng">Ingrediente</label><select id="eqIng" onchange="eqCalcular()"></select></div>
+        <div><label for="eqQtd">Quantidade</label><input type="number" id="eqQtd" step="0.25" min="0" value="1" inputmode="decimal" oninput="eqCalcular()"></div>
+        <div><label for="eqMed">Medida</label><select id="eqMed" onchange="eqCalcular()"><option value="sopa">colher de sopa</option><option value="cha">colher de chá</option><option value="xic">xícara (chá)</option></select></div>
+        <div><label>Resultado</label><div id="eqRes" style="font-weight:700;font-size:1.15em;padding:8px 0">-</div></div>
+        <button class="btn pequeno" type="button" onclick="eqUsarNaFicha()" title="Preenche a quantidade e a unidade (g) do ingrediente da ficha aberta">➡️ Usar na ficha</button>
+      </div>
+      <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Ingrediente</th><th class="n">1 colher de sopa</th><th class="n">1 colher de chá</th><th class="n">1 xícara (chá)</th><th>Ação</th></tr></thead><tbody id="eqTabela"></tbody></table></div>
+      <div class="flex-linha" style="margin-top:8px">
+        <button class="btn cinza pequeno" type="button" onclick="eqAdicionar()">+ Adicionar ingrediente</button>
+        <button class="btn cinza pequeno" type="button" onclick="eqRestaurar()">↺ Restaurar valores padrão</button>
+      </div>
+      <div class="dica">Valores em gramas. Os ajustes ficam salvos neste aparelho, junto com as configurações do sistema.</div>
+    </details>
     <div id="semFicha" class="vazio" style="margin-top:12px">Digite o nome e clique para criar, ou escolha uma ficha na lista abaixo.</div>
     <div id="conteudoFicha" class="oculto">
       <hr>
@@ -2882,6 +2899,61 @@ function salvarCategoriaFicha(){
 function renderCorpoFicha(f){
   renderIngredientes(f); renderComponentesFicha(f); renderEmbalagens(f);
   renderResultadoFicha(f); renderResultadoPraticado(f);
+}
+/* ---------- quadro de equivalência de medidas (colher/xícara → g) ---------- */
+const EQUIV_PADRAO = [
+  // [nome, colher de sopa, colher de chá, xícara de chá] em gramas
+  ['Farinha de trigo', 8, 3, 120], ['Amido de milho', 8, 3, 130], ['Fubá', 8, 3, 120], ['Polvilho doce', 8, 3, 120],
+  ['Aveia em flocos', 6, 2, 80], ['Açúcar refinado', 12, 4, 180], ['Açúcar cristal', 15, 5, 200], ['Açúcar mascavo', 10, 3, 150],
+  ['Açúcar de confeiteiro', 10, 3, 140], ['Sal refinado', 18, 6, 290], ['Fermento biológico seco', 9, 3, 0],
+  ['Fermento químico em pó', 12, 4, 0], ['Bicarbonato de sódio', 15, 5, 0], ['Chocolate em pó / cacau', 6, 2, 90],
+  ['Manteiga / margarina', 15, 5, 200], ['Óleo / azeite', 14, 5, 216], ['Creme de leite', 20, 6, 240],
+  ['Requeijão cremoso', 30, 10, 240], ['Leite / água (líquidos)', 15, 5, 240], ['Leite em pó', 8, 3, 120],
+  ['Mel', 21, 7, 340], ['Queijo parmesão ralado', 6, 2, 90], ['Coco ralado', 6, 2, 90], ['Molho de tomate', 20, 7, 250],
+  ['Orégano seco', 3, 1, 0], ['Pimenta-do-reino', 6, 2, 0]
+].map(r => ({n: r[0], sopa: r[1], cha: r[2], xic: r[3]}));
+function eqLista(){
+  const c = BD.config;
+  if(!Array.isArray(c.equivMedidas) || !c.equivMedidas.length) return EQUIV_PADRAO.map(x => ({...x}));
+  return c.equivMedidas;
+}
+function eqSalvarLista(l){ BD.config.equivMedidas = l; salvar('config'); }
+function eqFmt(v){ return v > 0 ? String(Math.round(v * 100) / 100).replace('.', ',') : '—'; }
+function renderEquivalencias(){
+  const l = eqLista(); const sel = $('eqIng'); if(!sel) return;
+  const atual = sel.value;
+  sel.innerHTML = l.map((x, i) => '<option value="' + i + '">' + esc(x.n) + '</option>').join('');
+  if(atual !== '' && l[atual]) sel.value = atual;
+  $('eqTabela').innerHTML = l.map((x, i) => '<tr><td>' + esc(x.n) + '</td>' +
+    ['sopa', 'cha', 'xic'].map(k => '<td class="n"><input type="number" step="0.1" min="0" value="' + (x[k] || '') + '" placeholder="—" style="width:84px;text-align:right" aria-label="' + esc(x.n) + ' ' + k + '" onchange="eqEditar(' + i + ',\'' + k + '\',this.value)"></td>').join('') +
+    '<td><button class="btn vermelho pequeno" type="button" onclick="eqRemover(' + i + ')" aria-label="Remover ' + esc(x.n) + '">🗑️</button></td></tr>').join('');
+  eqCalcular();
+}
+function eqCalcular(){
+  const l = eqLista(); const x = l[$('eqIng').value]; const out = $('eqRes'); if(!x) { out.textContent = '-'; return; }
+  const med = $('eqMed').value; const g = x[med]; const q = parseNum($('eqQtd').value);
+  out.textContent = g > 0 ? eqFmt(q * g) + ' g' : 'sem valor para essa medida';
+}
+function eqEditar(i, k, v){ const l = eqLista().map(x => ({...x})); l[i][k] = Math.max(0, parseNum(v)); eqSalvarLista(l); renderEquivalencias(); }
+function eqRemover(i){ const l = eqLista().map(x => ({...x})); l.splice(i, 1); if(l.length) eqSalvarLista(l); else { delete BD.config.equivMedidas; salvar('config'); } renderEquivalencias(); }
+function eqAdicionar(){
+  formModal({titulo: 'Adicionar ingrediente', campos: [{id: 'nome', rotulo: 'Nome do ingrediente', valor: ''}], salvar: v => {
+    const nome = (v.nome || '').trim(); if(!nome) return false;
+    const l = eqLista().map(x => ({...x})); l.push({n: nome, sopa: 0, cha: 0, xic: 0}); eqSalvarLista(l); renderEquivalencias();
+    toast('Adicionado. Preencha os gramas na tabela.', 'ok');
+  }});
+}
+async function eqRestaurar(){
+  if(!await confirmar('Voltar a tabela de equivalências para os valores padrão? Seus ajustes e itens adicionados serão perdidos.', {titulo: 'Restaurar equivalências', ok: 'Restaurar', perigo: true})) return;
+  delete BD.config.equivMedidas; salvar('config'); renderEquivalencias();
+}
+function eqUsarNaFicha(){
+  const x = eqLista()[$('eqIng').value]; if(!x) return;
+  const g = x[$('eqMed').value] * parseNum($('eqQtd').value);
+  if(!(g > 0)) return toast('Sem valor em gramas para essa medida.', 'alerta');
+  if(!fichaAtual || $('conteudoFicha').classList.contains('oculto')) return toast('Abra uma ficha para usar o valor. O resultado é ' + eqFmt(g) + ' g.', 'alerta');
+  $('fichaIngQtd').value = Math.round(g * 100) / 100; $('fichaIngUn').value = 'g';
+  toast(eqFmt(g) + ' g preenchido na ficha. Escolha o ingrediente e clique em +.', 'ok');
 }
 function sugerirUnidadeFicha(){
   const ins = acharInsumoPorNome($('fichaIngNome').value);
@@ -8362,7 +8434,7 @@ function renderPagina(id){
       case 'fila': renderFila(); break;
       case 'atendimento': renderAtendimento(); break;
       case 'caixa': renderCaixa(); break;
-      case 'fichas': renderFichas(); renderProdutosSimples(); break;
+      case 'fichas': renderFichas(); renderProdutosSimples(); renderEquivalencias(); break;
       case 'precificacao': renderPrecificacao(); break;
       case 'insumos': renderInsumos(); break;
       case 'massa': renderMassa(); break;
