@@ -1790,7 +1790,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </div>
     <label for="syncFirebaseConfig">Configuração do Firebase (cole aqui)</label>
     <textarea id="syncFirebaseConfig" rows="4" placeholder="Cole aqui o bloco firebaseConfig = {...} do seu projeto Firebase" oninput="salvarConfigSync()"></textarea>
-    <div class="grupo-botoes" style="margin-top:8px"><button class="btn azul" type="button" onclick="syncConectar()">🔌 Conectar</button></div>
+    <div class="grupo-botoes" style="margin-top:8px"><button class="btn azul" type="button" onclick="syncConectar()">🔌 Conectar</button><button class="btn cinza" type="button" onclick="syncReenviarTudo()" title="Força reenviar tudo deste aparelho pra nuvem de novo. Use se desconfiar que algum pedido não está aparecendo nos outros aparelhos.">🔁 Reenviar tudo pra nuvem</button></div>
     <p id="statusSync" class="suave" style="margin-top:6px">Sincronização desativada.</p>
   </div>
   <div class="painel">
@@ -7053,14 +7053,26 @@ function syncEmpurrarTudo(){
   if(!_syncPronto || !_syncDb) return;
   const c = syncLerConfig(); if(!c.codigo) return;
   const base = _syncDb.collection('negocios').doc(c.codigo);
-  let lote = _syncDb.batch(); let n = 0;
-  function add(ref, dados){
-    lote.set(ref, dados, {merge: true}); n++;
-    if(n >= 400){ lote.commit().catch(() => {}); lote = _syncDb.batch(); n = 0; }
+  // Cada lote guarda, junto com o batch do Firestore, a lista do que está nele —
+  // só marcamos como "já enviado" (e persistimos isso) DEPOIS que o commit desse
+  // lote realmente for confirmado pelo servidor. Antes, se o commit falhasse (sem
+  // internet, instabilidade etc.), o erro era ignorado em silêncio e o item ficava
+  // marcado como enviado mesmo sem nunca ter chegado na nuvem — e como nada mudava
+  // mais nesse item localmente, ele nunca mais era reenviado. É esse o motivo de
+  // pedidos sumirem da sincronização entre aparelhos sem nenhum aviso.
+  const lotes = [];
+  let loteAtual, pendentesAtual, n;
+  function novoLote(){ loteAtual = _syncDb.batch(); pendentesAtual = []; n = 0; lotes.push({batch: loteAtual, pendentes: pendentesAtual}); }
+  novoLote();
+  function add(tipo, id, dados, txt){
+    loteAtual.set(base.collection(tipo).doc(id), dados, {merge: true});
+    pendentesAtual.push({tipo, id, txt, op: 'set'}); n++;
+    if(n >= 400) novoLote();
   }
-  function del(ref){
-    lote.delete(ref); n++;
-    if(n >= 400){ lote.commit().catch(() => {}); lote = _syncDb.batch(); n = 0; }
+  function del(tipo, id){
+    loteAtual.delete(base.collection(tipo).doc(id));
+    pendentesAtual.push({tipo, id, op: 'del'}); n++;
+    if(n >= 400) novoLote();
   }
   SYNC_TIPOS.forEach(tipo => {
     // Itens que a gente já tinha enviado/recebido antes, mas que sumiram do BD local
@@ -7068,24 +7080,43 @@ function syncEmpurrarTudo(){
     // "pull" (ou outro aparelho sincronizando) traz o item de volta.
     const idsAtuais = new Set((BD[tipo] || []).filter(it => it && it.id).map(it => String(it.id)));
     Object.keys(_syncUltimoEnviado[tipo]).forEach(id => {
-      if(!idsAtuais.has(id)){ del(base.collection(tipo).doc(id)); delete _syncUltimoEnviado[tipo][id]; }
+      if(!idsAtuais.has(id)) del(tipo, id);
     });
     (BD[tipo] || []).forEach(item => {
       if(!item || !item.id) return;
       const id = String(item.id), txt = JSON.stringify(item);
       if(_syncUltimoEnviado[tipo][id] === txt) return;
-      _syncUltimoEnviado[tipo][id] = txt;
-      add(base.collection(tipo).doc(id), item);
+      add(tipo, id, item, txt);
     });
   });
   Object.keys(BD.caixaDias || {}).forEach(dataKey => {
     const item = BD.caixaDias[dataKey], txt = JSON.stringify(item);
     if(_syncUltimoEnviado.caixaDias[dataKey] === txt) return;
-    _syncUltimoEnviado.caixaDias[dataKey] = txt;
-    add(base.collection('caixaDias').doc(dataKey), item);
+    add('caixaDias', dataKey, item, txt);
   });
-  if(n > 0) lote.commit().catch(() => {});
+  const comConteudo = lotes.filter(l => l.pendentes.length);
+  if(!comConteudo.length) return;
+  let falhouAlgum = false;
+  Promise.all(comConteudo.map(l => l.batch.commit().then(() => {
+    l.pendentes.forEach(p => {
+      if(p.op === 'del') delete _syncUltimoEnviado[p.tipo][p.id];
+      else _syncUltimoEnviado[p.tipo][p.id] = p.txt;
+    });
+  }).catch(err => { falhouAlgum = true; console.error('Falha ao enviar parte da sincronização:', err); }))).then(() => {
+    syncSalvarUltimoEnviado();
+    if(falhouAlgum){ syncStatus('⚠️ Parte dos dados não sincronizou (sem internet ou instável) — vai tentar de novo sozinho.'); syncAgendarEnvio(); }
+  });
+}
+// Tentativa periódica extra, pra não depender só de alguém mexer no aparelho pra reenviar o que falhou antes.
+setInterval(() => { if(_syncPronto) syncEmpurrarTudo(); }, 60000);
+// Esquece o que este aparelho "achava" que já tinha enviado e manda tudo de novo — usado quando
+// se desconfia que ficou algo preso por causa da falha antiga (ver comentário em syncEmpurrarTudo).
+function syncReenviarTudo(){
+  if(!_syncPronto) return toast('Ative e conecte a sincronização primeiro.', 'alerta');
+  SYNC_TIPOS.concat(['caixaDias']).forEach(tipo => { _syncUltimoEnviado[tipo] = {}; });
   syncSalvarUltimoEnviado();
+  syncEmpurrarTudo();
+  toast('Reenviando tudo deste aparelho pra nuvem...', 'ok');
 }
 
 /* =====================================================================
