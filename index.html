@@ -838,6 +838,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div class="grupo-botoes">
       <button class="btn laranja" type="button" onclick="reimprimirUltima()">🖨️ Reimprimir última comanda</button>
       <button class="btn cinza" type="button" onclick="exportarImagemUltima()" title="Pra quando a impressora não abre direto pelo botão Imprimir — gera uma imagem pra compartilhar no app dela">🖼️ Exportar última em imagem</button>
+      <button class="btn azul" type="button" onclick="viaClienteUltima()" title="Imprime só a via do cliente (com os valores e o QR do PIX se o pagamento estiver pendente) — use quando o cliente pedir a via dele">🧾 Via do cliente</button>
       <button class="btn vermelho" type="button" onclick="limparCarrinho()">🗑️ Cancelar pedido</button>
     </div>
   </div>
@@ -4553,18 +4554,45 @@ function comandaHTML(pid){
     p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.corte ? '<div class="corte-item">✂ CORTE: ' + esc(l.corte.toUpperCase()) + '</div>' : '') + (l.observacao ? '<div class="obs-caixa">' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
     '<div class="linha"></div><div class="total">' + status + (BD.config.valoresComanda ? '<br>TOTAL ' + brl(p.total) : '') + '</div>';
   if(BD.config.totemVias === 2){
-    let pixVia = '';
-    if(!p.pago && pixOk()){
-      const pixPagina = pixDoPedido(p.total, p.senha);
-      pixVia = '<div class="pix-via"><div class="pix-titulo">⚡ PAGAR COM PIX</div>' + qrSvg(pixPagina) + '<div class="pix-copiacola">' + esc(pixPagina) + '</div></div>';
-    }
-    h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div><div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div><div class="senha-c">Nº ' + p.senha + '</div><div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + prev + retirar +
-      '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto) + (l.corte ? ' (✂ ' + l.corte + ')' : '') + ' — ' + brl(l.valorTotal)).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
-      pixVia +
-      '<div class="via-msg">' + esc(BD.config.totemMensagem || 'Aguarde ser chamado pela senha.') + '</div>';
+    h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div>' + viaClienteHTML(pid);
   }
   if(BD.config.rodapeComanda) h += '<div class="via-msg">' + esc(BD.config.rodapeComanda) + '</div>';
   return h;
+}
+function viaClienteHTML(pid){
+  const p = agruparPedidos(linhasDoPedido(pid))[0]; if(!p) return '';
+  const l0 = p.linhas[0];
+  const formaTxt = l0.formaPagamento && l0.formaPagamento !== 'pendente' ? ' (' + (rotForma[l0.formaPagamento] || '').replace(/^\S+\s/, '').toUpperCase() + ')' : '';
+  const status = p.pago ? 'PAGO' + formaTxt : (l0.pagamentoPrevisto === 'pix' ? '*** AGUARDA PIX ' + brl(p.total) + ' ***' : '*** COBRAR ' + brl(p.total) + ' ***');
+  const prev = l0.estimativaMin && l0.criadoEm ? '<div class="prev">PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000) + '</div>' : '';
+  const retirar = l0.retirarEm ? '<div class="prev">RETIRAR ÀS ' + horaDeMs(l0.retirarEm) + '</div>' : '';
+  let pixVia = '';
+  if(!p.pago && pixOk()){
+    const pixPagina = pixDoPedido(p.total, p.senha);
+    pixVia = '<div class="pix-via"><div class="pix-titulo">⚡ PAGAR COM PIX</div>' + qrSvg(pixPagina) + '<div class="pix-copiacola">' + esc(pixPagina) + '</div></div>';
+  }
+  return '<div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div><div class="senha-c">Nº ' + p.senha + '</div><div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + prev + retirar +
+    '<div class="via-itens">' + p.linhas.map(l => l.quantidade + 'x ' + esc(l.produto) + (l.corte ? ' (✂ ' + l.corte + ')' : '') + ' — ' + brl(l.valorTotal)).join('<br>') + '</div><div class="total">' + status + '<br>TOTAL ' + brl(p.total) + '</div>' +
+    pixVia +
+    '<div class="via-msg">' + esc(BD.config.totemMensagem || 'Aguarde ser chamado pela senha.') + '</div>';
+}
+function imprimirViaCliente(pid){
+  const h = viaClienteHTML(pid); if(!h) return toast('Pedido não encontrado.', 'erro');
+  $('areaImpressao').innerHTML = h;
+  document.body.classList.add('print-comanda');
+  const fim = () => { document.body.classList.remove('print-comanda'); window.removeEventListener('afterprint', fim); };
+  window.addEventListener('afterprint', fim);
+  try{ window.print(); }catch(e){ toast('Não foi possível abrir a impressão neste aparelho.', 'erro'); }
+  setTimeout(fim, 1500);
+}
+function viaClienteUltima(){
+  let pid = ultimoPedidoImpresso;
+  if(!pid || !linhasDoPedido(pid).length){
+    const ult = BD.vendas.filter(v => !v.retroativo).sort((a, b) => Number(b.pedidoId) - Number(a.pedidoId))[0];
+    pid = ult ? ult.pedidoId : null;
+  }
+  if(!pid) return toast('Ainda não há pedidos para imprimir a via do cliente.', 'alerta');
+  imprimirViaCliente(pid);
 }
 function imprimirComandaPedido(pid){
   const h = comandaHTML(pid); if(!h) return toast('Pedido não encontrado.', 'erro');
@@ -4749,7 +4777,7 @@ function renderVendas(reset){
     html.push('<tr' + (p.pago ? '' : ' style="background:rgba(204,102,51,.10)"') + '><td>' + fmtData(p.data) + '<br><small class="suave">' + esc(p.horario) + '</small></td><td>' + (p.senha ? '<span class="senha">' + p.senha + '</span>' : '—') + '</td><td>' + esc(p.cliente) + (p.telefone ? '<br><small class="suave">' + esc(p.telefone) + '</small>' : '') + '</td><td>' + itens + '</td><td class="n"><b>' + brl(p.total) + '</b></td>' +
       '<td>' + (p.pago ? '<span class="tag">✅ ' + esc((rotForma[forma] || 'Pago').replace(/^\S+\s/, '')) + '</span>' : '<span class="tag laranja">⏳ pendente</span>') + (p.linhas[0].retroativo ? '<br><span class="tag cinza">histórico</span>' : '') + '</td>' +
       '<td class="acoes">' + (p.pago ? '' : '<button class="btn pequeno" onclick="receberPedido(\'' + pid + '\')">💰 Receber</button>') +
-      (p.linhas[0].retroativo ? '' : '<button class="btn cinza pequeno" onclick="imprimirComandaPedido(\'' + pid + '\')" aria-label="Imprimir comanda" title="Reimprimir">🖨️</button><button class="btn cinza pequeno" onclick="abrirExportarComandaImagem(\'' + pid + '\')" aria-label="Exportar comanda como imagem" title="Exportar como imagem (pra impressoras sem AirPrint)">🖼️</button>') +
+      (p.linhas[0].retroativo ? '' : '<button class="btn cinza pequeno" onclick="imprimirComandaPedido(\'' + pid + '\')" aria-label="Imprimir comanda" title="Reimprimir">🖨️</button><button class="btn cinza pequeno" onclick="abrirExportarComandaImagem(\'' + pid + '\')" aria-label="Exportar comanda como imagem" title="Exportar como imagem (pra impressoras sem AirPrint)">🖼️</button><button class="btn cinza pequeno" onclick="imprimirViaCliente(\'' + pid + '\')" aria-label="Imprimir via do cliente" title="Imprimir só a via do cliente (com PIX se pendente)">🧾</button>') +
       (p.telefone ? '<button class="btn cinza pequeno" onclick="abrirWhatsApp(\'' + pid + '\')" aria-label="Avisar no WhatsApp" title="Avisar no WhatsApp">💬</button>' : '') +
       '<button class="btn cinza pequeno" onclick="' + (p.linhas[0].retroativo ? 'editarRetro(\'' + p.linhas[0].id + '\')' : 'editarPedido(\'' + pid + '\')') + '" aria-label="Editar">✏️</button>' +
       (!p.linhas[0].retroativo && ['preparo', 'pronto'].includes(statusPedido(p)) ? '<button class="btn laranja pequeno" onclick="perderPedido(\'' + pid + '\')" title="Cliente desistiu — já foi produzido">🗑️ Perda</button>' : '') +
