@@ -202,6 +202,11 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 .senha{display:inline-block;background:var(--laranja);color:#fff;border-radius:8px;padding:3px 12px;font-weight:800;font-size:1.05rem}
 .observacao-venda{border:2px solid var(--laranja);background:rgba(204,102,51,.08);padding:8px;border-radius:6px}
 
+/* Dois painéis lado a lado (ex: Contagem do depósito + Fechamento do dia), um embaixo do outro em telas estreitas */
+.duas-colunas{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.duas-colunas>.painel{margin-bottom:0}
+@media(max-width:860px){.duas-colunas{grid-template-columns:1fr}}
+
 /* Gráficos */
 .graficos{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
 .grafico h3{margin-top:0}
@@ -1384,15 +1389,17 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div id="sugestoesComponentes"></div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Depósito</th><th class="n">Estoque do dia</th><th class="n">Mínimo</th><th>Ações</th></tr></thead><tbody id="tabelaComponentesEstoque"></tbody></table></div>
   </div>
-  <div class="painel">
-    <h2>📦 Contagem do depósito (ex: toda sexta-feira)</h2>
-    <div class="aviso">Conte o que tem guardado em casa — farinha, passata, fubá, massas congeladas, empanadas prontas congeladas etc. — e lança o número aqui pra cada item. Se ainda não estiver na lista, cadastre ali em cima primeiro (ou puxe da caixa de sugestões). Se faltar menos do que devia (estragou, venceu), registre como perda; se é só ajuste, use "Só ajustar".</div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Depósito (sistema)</th><th class="n">Contagem física</th><th class="n">Diferença</th><th>Ação</th></tr></thead><tbody id="tabelaContagemDeposito"></tbody></table></div>
-  </div>
-  <div class="painel">
-    <h2>🧮 Fechamento do dia — bateu a contagem?</h2>
-    <div class="aviso">Quando voltar da feira, conte o que sobrou de verdade de cada item e compare com o que o sistema acha que tem. Se sobrou <b>menos</b> do que devia (quebrou, estragou, ficou pra trás), registre como perda — o custo entra no resultado do mês. Se é só sobra que ainda vai vender, use "Só ajustar" — corrige o número sem mexer no resultado.</div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Sistema</th><th class="n">Contagem física</th><th class="n">Diferença</th><th>Ação</th></tr></thead><tbody id="tabelaFechamentoDia"></tbody></table></div>
+  <div class="duas-colunas">
+    <div class="painel">
+      <h2>📦 Contagem do depósito (ex: toda sexta-feira)</h2>
+      <div class="aviso">Conte o que tem guardado em casa — farinha, passata, fubá, massas congeladas, empanadas prontas congeladas etc. — e lança o número aqui pra cada item. Se ainda não estiver na lista, cadastre ali em cima primeiro (ou puxe da caixa de sugestões). Se faltar menos do que devia (estragou, venceu), registre como perda; se é só ajuste, use "Só ajustar".</div>
+      <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Depósito (sistema)</th><th class="n">Contagem física</th><th class="n">Diferença</th><th>Ação</th></tr></thead><tbody id="tabelaContagemDeposito"></tbody></table></div>
+    </div>
+    <div class="painel">
+      <h2>🧮 Fechamento do dia — bateu a contagem?</h2>
+      <div class="aviso">Quando voltar da feira, conte o que sobrou de verdade de cada item e compare com o que o sistema acha que tem. Se sobrou <b>menos</b> do que devia (quebrou, estragou, ficou pra trás), registre como perda — o custo entra no resultado do mês. Se é só sobra que ainda vai vender, use "Só ajustar" — corrige o número sem mexer no resultado.</div>
+      <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Componente</th><th class="n">Sistema</th><th class="n">Contagem física</th><th class="n">Diferença</th><th>Ação</th></tr></thead><tbody id="tabelaFechamentoDia"></tbody></table></div>
+    </div>
   </div>
   <div class="painel">
     <h2>🗑️ Sobras e perdas registradas</h2>
