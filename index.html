@@ -1261,6 +1261,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div class="dica" style="margin-bottom:8px">Use o botão "Perda" na linha do componente. A perda desconta do estoque e entra no resultado do mês.</div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Componente</th><th class="n">Qtd</th><th>Motivo</th><th class="n">Valor R$</th><th></th></tr></thead><tbody id="tabelaPerdas"></tbody></table></div>
   </div>
+  <div class="painel">
+    <h2>⚖️ Taras — peso dos recipientes</h2>
+    <div class="aviso">Cadastre o <b>peso do recipiente vazio (tara)</b>. Na saída, pese o recipiente <b>cheio</b>; na volta, pese de novo. O sistema tira a tara, calcula quanto foi consumido e <b>desconta do estoque do dia</b> do produto vinculado.</div>
+    <div style="margin-bottom:8px"><button class="btn" type="button" onclick="novaTara()">➕ Nova tara</button></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Recipiente</th><th class="n">Tara</th><th>Produto no estoque</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="tabelaTaras"></tbody></table></div>
+    <h3 style="margin-top:14px">Últimos consumos</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Recipiente</th><th class="n">Saiu (líq.)</th><th class="n">Voltou (líq.)</th><th class="n">Consumido</th><th>Descontado</th></tr></thead><tbody id="tabelaTarasHist"></tbody></table></div>
+  </div>
 </section>
 
 <!-- ============ ETIQUETAS ============ -->
@@ -1808,10 +1816,10 @@ const CHAVES = {
   vendas:'vendas', compras:'compras', estoque:'estoque', estoqueComponentes:'estoqueComponentes', despesas:'despesas',
   config:'config', produtos:'produtos', perdas:'perdas', caixaDias:'caixaDias', totemStats:'totemStats', locais:'locais', fornecedores:'fornecedores', clientes:'clientes',
   etiquetaSabores:'etiquetaSabores', etiquetaLotes:'etiquetaLotes',
-  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas', contasPagar:'contasPagar', conferenciasCartao:'conferenciasCartao', conciliacao:'conciliacao', dasMei:'dasMei'
+  nutriIngredientes:'nutriIngredientes', nutriReceitas:'nutriReceitas', contasPagar:'contasPagar', conferenciasCartao:'conferenciasCartao', conciliacao:'conciliacao', dasMei:'dasMei', taras:'taras'
 };
 const CHAVES_ANTIGAS = ['custos','taxas','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas'];
-const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[], conciliacao:[], dasMei:[]};
+const PADRAO_TIPO = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[], conciliacao:[], dasMei:[], taras:[]};
 const CONFIG_PADRAO = {
   arredondar:'90', taxaBase:'credito', volumeMensal:0, semEstoque:false, backupFechar:true,
   valoresComanda:false, imprimirAuto:false, meiLimite:81000, meiMeses:12, tema:'auto', consumoPadrao:'viagem', rodapeComanda:'',
@@ -1836,7 +1844,7 @@ const PRODUTOS_INICIAIS = [
   {nome:'💧 Água com Gás', preco:5.00, custo:0, categoria:'Bebidas'},
   {nome:'💧 Água sem Gás', preco:4.00, custo:0, categoria:'Bebidas'}
 ];
-const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[], conciliacao:[], dasMei:[]};
+const BD = {custos:[], taxas:{}, insumos:[], fichas:[], formulasMassa:[], receitaMassa:[], vendas:[], compras:[], estoque:[], estoqueComponentes:[], despesas:[], config:{}, produtos:[], perdas:[], caixaDias:{}, totemStats:{}, locais:[], fornecedores:[], clientes:[], etiquetaSabores:[], etiquetaLotes:[], nutriIngredientes:[], nutriReceitas:[], contasPagar:[], conferenciasCartao:[], conciliacao:[], dasMei:[], taras:[]};
 const ESTADO = {erroGravacao:false, leituraCorrompida:[], avisoBackupFechado:false, ultimoSnapshot:0};
 let fichaAtual = null;      // id da ficha aberta
 let carrinhoAtual = [];
@@ -2111,7 +2119,7 @@ function acharInsumo(ref){ // ref: {insumoId, nome}
   return acharInsumoPorNome(ref.nome);
 }
 function normalizarBD(){
-  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei'];
+  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei','taras'];
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
@@ -2119,7 +2127,7 @@ function normalizarBD(){
   const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
-  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei'].forEach(k => {
+  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei','taras'].forEach(k => {
     BD[k].forEach(x => { if(x && typeof x === 'object' && !x.id) x.id = uid(); });
   });
   BD.custos.forEach(c => { c.val = parseNum(c.val); });
@@ -3796,7 +3804,7 @@ function renderEstoque(){
     const compP = componenteEstoque(p.nome);
     return '<tr><td>' + fmtData(p.data) + '</td><td>' + esc(p.nome) + '</td><td class="n">' + (compP ? fmtCompQtd(compP, p.qtd) : fmt(p.qtd, 2)) + '</td><td>' + esc(p.motivo) + '</td><td class="n">' + (p.valor > 0 ? brl(p.valor) : '—') + '</td><td><button class="btn vermelho pequeno" onclick="removerPerda(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="6"><div class="vazio">Nenhuma perda registrada.</div></td></tr>';
-  renderContagemDeposito(); renderFechamentoDia();
+  renderContagemDeposito(); renderFechamentoDia(); renderTaras();
 }
 
 /* ---------- consumo por venda ---------- */
@@ -6403,7 +6411,7 @@ function mesclarVendasArquivo(event){
    estoque) — fichas, insumos e configurações continuam só deste
    aparelho, como sempre.
    ===================================================================== */
-const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao', 'dasMei', 'estoqueComponentes'];
+const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao', 'dasMei', 'estoqueComponentes', 'taras'];
 const SYNC_CHAVE_LS = 'syncConfig';
 // Guarda, por registro, qual foi a última versão sincronizada com sucesso — e isso
 // precisa SOBREVIVER a um recarregar de página. Sem persistir isso, todo aparelho que
@@ -6414,7 +6422,7 @@ const SYNC_CHAVE_LS = 'syncConfig';
 // mundo. É esse o motivo de pedidos "pagos" voltarem a aparecer como "pendentes".
 const SYNC_ULTIMO_CHAVE_LS = 'syncUltimoEnviado';
 let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null, _syncSalvarUltimoTimer = null;
-const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}, dasMei: {}, estoqueComponentes: {}};
+const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}, dasMei: {}, estoqueComponentes: {}, taras: {}};
 function syncCarregarUltimoEnviado(){
   try{
     const t = JSON.parse(localStorage.getItem(SYNC_ULTIMO_CHAVE_LS));
@@ -8058,6 +8066,108 @@ function verDetalheLocal(i){
    ===================================================================== */
 
 /* =====================================================================
+   TARAS — peso de recipientes (cuba, vidro...) para medir consumo
+   ===================================================================== */
+const TARAS_PADRAO = [{nome: 'Cuba GNV', peso: 308, comp: 'frango'}, {nome: 'Vidro de molho', peso: 490, comp: 'molho'}, {nome: 'Bisnaga de geleia (com tampa)', peso: 18, comp: 'geleia'}, {nome: 'Bag de requeijão', peso: 1510, comp: 'requeijão'}, {nome: 'Vidro de pimenta biquinho (sem tampa)', peso: 278, comp: 'pimenta biquinho'}, {nome: 'Saquinho de geleia', peso: 0.02, comp: 'geleia'}];
+// gramas → unidade de contagem do componente (ml tratado como g; 'un' usa gPorUn da tara)
+function taraParaUnid(t, g){
+  const c = t.comp ? componenteEstoque(t.comp) : null; const u = unidComp(c);
+  if(u === 'g' || u === 'ml') return g;
+  if(u === 'kg' || u === 'l') return g / 1000;
+  return t.gPorUn > 0 ? g / t.gPorUn : null;
+}
+function tarasSemear(){
+  // cada tara padrão é semeada uma única vez (mesmo se você apagar depois, não volta)
+  const feitas = Array.isArray(BD.config.tarasSemeadas) ? BD.config.tarasSemeadas : (BD.config.tarasSemeado ? ['Cuba GNV', 'Vidro de molho'] : []);
+  let mudou = false;
+  TARAS_PADRAO.forEach(t => {
+    if(feitas.includes(t.nome)) return;
+    feitas.push(t.nome); mudou = true;
+    if(!BD.taras.some(x => norm(x.nome) === norm(t.nome))) BD.taras.push({id: uid(), nome: t.nome, peso: t.peso, comp: t.comp, gPorUn: 0, saida: null, hist: []});
+  });
+  if(mudou || !Array.isArray(BD.config.tarasSemeadas)){ BD.config.tarasSemeadas = feitas; salvar('taras', 'config'); }
+}
+function fmtG(g){ return fmt(g, Number.isInteger(g) ? 0 : (Math.abs(g) < 1 ? 2 : 1)) + ' g'; }
+function renderTaras(){
+  const tb = $('tabelaTaras'); if(!tb) return;
+  tarasSemear();
+  const lista = BD.taras.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  tb.innerHTML = lista.length ? lista.map(t => {
+    const sit = t.saida ? '<span class="tag laranja">na rua — saiu ' + fmtG(t.saida.liquido) + ' (' + fmtData(t.saida.data) + ')</span>' : '<span class="tag">em casa</span>';
+    const acao = t.saida
+      ? '<button class="btn laranja pequeno" onclick="taraVolta(\'' + t.id + '\')">⬇️ Registrar volta</button><button class="btn cinza pequeno" onclick="taraCancelarSaida(\'' + t.id + '\')">↩️</button>'
+      : '<button class="btn pequeno" onclick="taraSaida(\'' + t.id + '\')">⬆️ Registrar saída</button>';
+    return '<tr><td><b>' + esc(t.nome) + '</b></td><td class="n">' + fmtG(t.peso) + '</td><td>' + (t.comp ? esc(t.comp) : '—') + '</td><td>' + sit + '</td><td class="acoes">' + acao +
+      '<button class="btn cinza pequeno" onclick="editarTara(\'' + t.id + '\')">✏️</button><button class="btn cinza pequeno" onclick="excluirTara(\'' + t.id + '\')">🗑️</button></td></tr>';
+  }).join('') : '<tr><td colspan="5"><div class="vazio">Nenhuma tara cadastrada.</div></td></tr>';
+  const hist = [];
+  BD.taras.forEach(t => (t.hist || []).forEach(h => hist.push(Object.assign({nome: t.nome}, h))));
+  hist.sort((a, b) => String(b.ts || b.data).localeCompare(String(a.ts || a.data)));
+  const th = $('tabelaTarasHist');
+  if(th) th.innerHTML = hist.length ? hist.slice(0, 30).map(h => '<tr><td>' + fmtData(h.data) + '</td><td>' + esc(h.nome) + '</td><td class="n">' + fmtG(h.saiu) + '</td><td class="n">' + fmtG(h.voltou) + '</td><td class="n"><b>' + fmtG(h.consumido) + '</b></td><td>' + (h.desc ? esc(h.desc) : '—') + '</td></tr>').join('') : '<tr><td colspan="6"><div class="vazio">Ainda sem registros.</div></td></tr>';
+}
+function camposTara(t){
+  return [
+    {id: 'nome', rotulo: 'Nome do recipiente (ex.: Cuba GNV)', valor: t ? t.nome : ''},
+    {id: 'peso', rotulo: 'Peso do recipiente vazio, com tampa (g)', tipo: 'numero', valor: t ? String(t.peso) : ''},
+    {id: 'comp', rotulo: 'Produto no estoque que ele carrega (nome do componente)', valor: t ? (t.comp || '') : ''},
+    {id: 'gPorUn', rotulo: 'Só se o estoque for em "un": gramas por unidade (ex.: 150)', tipo: 'numero', valor: t && t.gPorUn ? String(t.gPorUn) : ''}
+  ];
+}
+function validarTara(v){
+  if(!v.nome){ toast('Informe o nome.', 'alerta'); return false; }
+  if(!(v.peso > 0)){ toast('Informe o peso da tara em gramas.', 'alerta'); return false; }
+  return true;
+}
+function novaTara(){
+  formModal({titulo: 'Nova tara', campos: camposTara(null), salvar: v => {
+    if(!validarTara(v)) return false;
+    BD.taras.push({id: uid(), nome: v.nome, peso: v.peso, comp: v.comp, gPorUn: v.gPorUn > 0 ? v.gPorUn : 0, saida: null, hist: []});
+    salvar('taras'); renderTaras(); toast('Tara cadastrada.', 'ok');
+  }});
+}
+function editarTara(id){
+  const t = BD.taras.find(x => x.id === id); if(!t) return;
+  formModal({titulo: 'Editar tara', campos: camposTara(t), salvar: v => {
+    if(!validarTara(v)) return false;
+    t.nome = v.nome; t.peso = v.peso; t.comp = v.comp; t.gPorUn = v.gPorUn > 0 ? v.gPorUn : 0;
+    salvar('taras'); renderTaras(); toast('Tara atualizada.', 'ok');
+  }});
+}
+async function excluirTara(id){
+  const t = BD.taras.find(x => x.id === id); if(!t) return;
+  if(!await confirmar('Excluir a tara "' + t.nome + '"?', {perigo: true, ok: 'Excluir'})) return;
+  BD.taras = BD.taras.filter(x => x.id !== id); salvar('taras'); renderTaras();
+}
+function taraSaida(id){
+  const t = BD.taras.find(x => x.id === id); if(!t) return;
+  formModal({titulo: 'Saída — ' + t.nome, aviso: 'Pese o recipiente <b>cheio</b>. Tara: <b>' + fmtG(t.peso) + '</b>.', campos: [{id: 'bruto', rotulo: 'Peso cheio na balança (g)', tipo: 'numero', valor: ''}], salvar: v => {
+    if(!(v.bruto > t.peso)){ toast('O peso cheio precisa ser maior que a tara (' + fmtG(t.peso) + ').', 'alerta'); return false; }
+    t.saida = {data: dataHoje(), bruto: v.bruto, liquido: arred6(v.bruto - t.peso)};
+    salvar('taras'); renderTaras(); toast('Saída registrada: ' + fmtG(t.saida.liquido) + ' líquidos.', 'ok');
+  }});
+}
+function taraCancelarSaida(id){
+  const t = BD.taras.find(x => x.id === id); if(!t) return;
+  t.saida = null; salvar('taras'); renderTaras(); toast('Saída desfeita.', 'ok');
+}
+function taraVolta(id){
+  const t = BD.taras.find(x => x.id === id); if(!t || !t.saida) return;
+  formModal({titulo: 'Volta — ' + t.nome, aviso: 'Saiu com <b>' + fmtG(t.saida.liquido) + '</b> líquidos. Pese o recipiente de volta (com o que sobrou).', campos: [{id: 'bruto', rotulo: 'Peso na volta (g)', tipo: 'numero', valor: ''}], salvar: v => {
+    if(v.bruto === null || !(v.bruto >= t.peso)){ toast('O peso da volta não pode ser menor que a tara (' + fmtG(t.peso) + ').', 'alerta'); return false; }
+    const voltou = arred6(v.bruto - t.peso);
+    if(voltou > t.saida.liquido + 1e-9){ toast('Voltou mais do que saiu — confira os pesos.', 'alerta'); return false; }
+    const consumido = arred6(t.saida.liquido - voltou);
+    let desc = '';
+    const c = t.comp ? componenteEstoque(t.comp) : null; const q = taraParaUnid(t, consumido);
+    if(c && q !== null){ c.qtd = arred6(c.qtd - q); desc = '−' + fmtCompQtd(c, arred6(q)) + ' de ' + c.nome; salvar('estoqueComponentes'); }
+    else if(t.comp) desc = 'não descontou (confira o produto/unidade)';
+    t.hist = t.hist || []; t.hist.unshift({data: dataHoje(), ts: new Date().toISOString(), saiu: t.saida.liquido, voltou, consumido, desc}); t.hist = t.hist.slice(0, 30);
+    t.saida = null; salvar('taras'); renderEstoque(); atualizarBadges(); toast('Consumo: ' + fmtG(consumido) + (desc ? ' — ' + desc : ''), 'ok');
+  }});
+}
+
+/* =====================================================================
    SUB-ABAS (telas longas divididas em blocos, no estilo do Início)
    ===================================================================== */
 const SUBABAS = {
@@ -8065,7 +8175,7 @@ const SUBABAS = {
   caixa: [['💵','Fechamento',['Fechamento de caixa']], ['💳','Cartão',['Conferência']], ['📅','Mês',['Resumo mensal']], ['📊','Limite MEI',['limite MEI']], ['🧾','DAS-MEI',['DAS-MEI']], ['🧾','Recibo',['Recibo']]],
   compras: [['💳','Contas a pagar',['Contas a pagar']], ['🚚','Fornecedores',['Fornecedores']], ['🧾','Compras e cupons',['Compras e cupons','Cupons cadastrados']]],
   custos: [['📉','Despesas reais',['Despesas reais']], ['💰','Custos fixos',['Custos fixos']], ['💳','Taxas',['Taxas de pagamento']], ['⚙️','Preferências',['Preferências']], ['🏷️','Identidade',['Identidade']], ['🖥️','Totem',['Totem']]],
-  estoque: [['📦','Cadastro',['Estoque —']], ['🔢','Contagem',['Contagem','Fechamento do dia']], ['🗑️','Perdas',['Sobras']]],
+  estoque: [['📦','Cadastro',['Estoque —']], ['🔢','Contagem',['Contagem','Fechamento do dia']], ['🗑️','Perdas',['Sobras']], ['⚖️','Taras',['Taras —']]],
   vendas: [['🛒','Pedido',['Tirar pedido']], ['👨‍🍳','Fila',[],'fila'], ['📋','Registrados',['Pedidos registrados']], ['📝','Histórico',['retroativa','históricos']]],
   nutricional: [['🔬','Tabela',['Tabela nutricional']], ['📂','Receitas',['Receitas salvas']], ['🧪','Ingredientes',['Ingredientes']]],
   conciliacao: [['📥','Importar',['Importar extrato']], ['🏦','Conciliar',['Conciliar']], ['🔎','Faltando no banco',['não apareceu']], ['🔍','Auditoria de taxas',['Auditoria']], ['📖','Manual',['Manual']]]
