@@ -4521,35 +4521,99 @@ function renderVendas(reset){
   $('resumoVendasPeriodo').innerHTML = '<h4>Resumo do filtro</h4><div class="linha-kv"><span>Pedidos / itens</span><b>' + pedidos.length + ' / ' + soma(linhas, l => l.quantidade) + '</b></div><div class="linha-kv"><span>Faturamento</span><b>' + brl(fat) + '</b></div><div class="linha-kv"><span>A receber (pendente)</span><b class="' + (pend > 0 ? 'alerta' : '') + '">' + brl(pend) + '</b></div><div class="linha-kv"><span>Lucro estimado (após custos e taxas)</span><b>' + brl(soma(linhas, lucroVenda)) + '</b></div>';
   $('senhaAtual').textContent = proximaSenha();
 }
-function atualizarRecebimentoDinheiro(total){
-  const formaEl = $('rp_forma'); if(!formaEl) return;
-  const dinheiro = formaEl.value === 'dinheiro';
-  const bloco = $('rp_blocoDinheiro'); if(bloco) bloco.classList.toggle('oculto', !dinheiro);
-  const trocoDiv = $('rp_troco'); if(!trocoDiv) return;
-  trocoDiv.className = ''; trocoDiv.innerHTML = '';
-  if(!dinheiro) return;
-  const rec = parseNum($('rp_recebido').value);
-  if(rec > 0){
-    if(rec + 1e-9 >= total){ trocoDiv.className = 'aviso ok-a'; trocoDiv.innerHTML = '💵 <b>Troco: ' + brl(r2(rec - total)) + '</b> (recebido ' + brl(rec) + ' − ' + brl(total) + ')'; }
-    else { trocoDiv.className = 'aviso erro-a'; trocoDiv.innerHTML = '⚠️ Faltam <b>' + brl(r2(total - rec)) + '</b> em dinheiro.'; }
+/* ---------- receber pagamento (pode dividir entre várias pessoas / formas) ---------- */
+let RP = null; // {total, linhas, formas: [forma...], valores: [texto...] (todas menos a última)}
+function rpValores(){
+  const n = RP.formas.length; const v = [];
+  let usado = 0;
+  for(let i = 0; i < n - 1; i++){ const x = r2(parseNum(RP.valores[i])); v.push(x); usado = r2(usado + x); }
+  v.push(r2(RP.total - usado));
+  return v;
+}
+function rpOpcoes(sel){ return FORMAS.map(f => '<option value="' + f + '"' + (f === sel ? ' selected' : '') + '>' + rotForma[f] + '</option>').join(''); }
+function rpMontar(){
+  const n = RP.formas.length; const vals = rpValores();
+  let h = '';
+  for(let i = 0; i < n; i++){
+    const ultima = i === n - 1;
+    h += '<div class="linha" style="display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap">' +
+      (n > 1 ? '<b style="min-width:70px">Pessoa ' + (i + 1) + '</b>' : '') +
+      '<select id="rp_forma' + i + '" onchange="rpMudouForma(' + i + ')" aria-label="Forma de pagamento ' + (i + 1) + '">' + rpOpcoes(RP.formas[i]) + '</select>' +
+      (n > 1 ? (ultima ? '<span id="rp_val' + i + '" style="min-width:90px"><b>' + brl(vals[i]) + '</b> <small class="suave">(resto)</small></span>'
+        : '<input id="rp_val' + i + '" type="text" inputmode="decimal" placeholder="valor R$" autocomplete="off" style="width:110px" value="' + esc(RP.valores[i]) + '" oninput="rpMudouValor(' + i + ',this.value)" aria-label="Valor da pessoa ' + (i + 1) + '">') +
+        '<button type="button" class="btn cinza pequeno" onclick="rpRemover(' + i + ')" title="Tirar esta pessoa">✕</button>' : '') +
+      '</div>';
   }
+  $('rp_lista').innerHTML = h;
+  rpAtualizar();
+}
+function rpAtualizar(){
+  const n = RP.formas.length; const vals = rpValores();
+  const ult = $('rp_val' + (n - 1)); if(n > 1 && ult) ult.innerHTML = '<b>' + brl(vals[n - 1]) + '</b> <small class="suave">(resto)</small>';
+  const st = $('rp_status'); let ok = true;
+  if(n > 1){
+    const invalido = vals.some(x => !(x > 0));
+    ok = !invalido;
+    st.className = ok ? 'aviso ok-a' : 'aviso erro-a';
+    st.innerHTML = ok ? '✅ Soma fecha em <b>' + brl(RP.total) + '</b>' : '⚠️ Cada pessoa precisa ter valor maior que zero e a soma não pode passar de <b>' + brl(RP.total) + '</b>.';
+  }else{ st.className = ''; st.innerHTML = ''; }
+  const dinheiro = r2(vals.reduce((t, x, i) => t + ($('rp_forma' + i) && $('rp_forma' + i).value === 'dinheiro' ? x : 0), 0));
+  const bloco = $('rp_blocoDinheiro'); const trocoDiv = $('rp_troco');
+  const temDin = RP.formas.some((_, i) => $('rp_forma' + i) && $('rp_forma' + i).value === 'dinheiro');
+  bloco.classList.toggle('oculto', !temDin);
+  trocoDiv.className = ''; trocoDiv.innerHTML = '';
+  if(temDin){
+    const rec = parseNum($('rp_recebido').value);
+    if(rec > 0){
+      if(rec + 1e-9 >= dinheiro){ trocoDiv.className = 'aviso ok-a'; trocoDiv.innerHTML = '💵 <b>Troco: ' + brl(r2(rec - dinheiro)) + '</b> (recebido ' + brl(rec) + ' − ' + brl(dinheiro) + ' em dinheiro)'; }
+      else { trocoDiv.className = 'aviso erro-a'; trocoDiv.innerHTML = '⚠️ Faltam <b>' + brl(r2(dinheiro - rec)) + '</b> em dinheiro.'; }
+    }
+  }
+}
+function rpMudouForma(i){ RP.formas[i] = $('rp_forma' + i).value; rpAtualizar(); }
+function rpMudouValor(i, v){ RP.valores[i] = v; rpAtualizar(); }
+function rpAdicionar(){
+  if(RP.formas.length >= 10) return;
+  const vals = rpValores(); const n = RP.formas.length;
+  // a antiga "última" vira manual: começa com a metade do que sobrava pra ela (divisão ao meio), a nova fica com o resto
+  const resto = vals[n - 1];
+  const metade = r2(resto / 2);
+  RP.valores[n - 1] = metade > 0 ? metade.toFixed(2).replace('.', ',') : '';
+  RP.formas.push(RP.formas[n - 1] === 'pix' ? 'dinheiro' : 'pix');
+  rpMontar();
+}
+function rpDividirIgual(){
+  const n = RP.formas.length; if(n < 2) return;
+  const parte = Math.floor(RP.total / n * 100) / 100;
+  for(let i = 0; i < n - 1; i++) RP.valores[i] = parte.toFixed(2).replace('.', ',');
+  rpMontar();
+}
+function rpRemover(i){
+  if(RP.formas.length <= 1) return;
+  RP.formas.splice(i, 1); RP.valores.splice(i, 1);
+  if(RP.formas.length > 1) RP.valores.length = RP.formas.length - 1; else RP.valores = [];
+  rpMontar();
 }
 function receberPedido(pid, formaPadrao, aoConcluir){
   const linhas = linhasDoPedido(pid); if(!linhas.length) return;
   const total = r2(soma(linhas, l => l.valorTotal));
-  const forma0 = formaPadrao || 'pix';
+  RP = {total, linhas, formas: [formaPadrao || 'pix'], valores: []};
   const html = '<div class="aviso">' + (linhas[0].cliente ? esc(linhas[0].cliente) + ' • ' : '') + 'pedido de ' + fmtData(linhas[0].data) + '</div>' +
-    '<label for="rp_forma">Forma de pagamento</label><select id="rp_forma" onchange="atualizarRecebimentoDinheiro(' + total + ')">' +
-    FORMAS.map(f => '<option value="' + f + '"' + (f === forma0 ? ' selected' : '') + '>' + rotForma[f] + '</option>').join('') + '</select>' +
-    '<div id="rp_blocoDinheiro" class="oculto"><label for="rp_recebido">Valor recebido (R$)</label><input id="rp_recebido" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" oninput="atualizarRecebimentoDinheiro(' + total + ')"><div id="rp_troco"></div></div>';
+    '<label>Forma de pagamento</label><div id="rp_lista"></div><div id="rp_status" style="margin:6px 0"></div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"><button type="button" class="btn cinza pequeno" onclick="rpAdicionar()">➕ Dividir com mais uma pessoa</button>' +
+    '<button type="button" class="btn cinza pequeno" onclick="rpDividirIgual()" title="Divide o total em partes iguais entre as pessoas">⚖️ Dividir igualmente</button></div>' +
+    '<div id="rp_blocoDinheiro" class="oculto"><label for="rp_recebido">Valor recebido em dinheiro (R$)</label><input id="rp_recebido" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" oninput="rpAtualizar()"><div id="rp_troco"></div></div>';
   abrirModal({titulo: 'Receber pagamento — ' + brl(total), html, botoes: [
     {rotulo: 'Cancelar', classe: 'cinza'},
     {rotulo: 'Confirmar recebimento', fn: ctl => {
-      const forma = ctl.el.querySelector('#rp_forma').value;
-      aplicarPagamento(linhas, [{forma, valor: total}], dataHoje());
-      salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); refreshFila(); toast('Pagamento de ' + brl(total) + ' registrado.', 'ok'); if(aoConcluir) aoConcluir();
+      const vals = rpValores();
+      if(vals.some(x => !(x > 0))){ toast('Confira os valores: cada pessoa precisa ter valor maior que zero e a soma tem que fechar o total.', 'alerta'); return false; }
+      const pagamentos = RP.formas.map((f, i) => ({forma: f, valor: vals[i]}));
+      aplicarPagamento(linhas, pagamentos, dataHoje());
+      salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); refreshFila();
+      toast('Pagamento de ' + brl(total) + (pagamentos.length > 1 ? ' registrado, dividido em ' + pagamentos.length + '.' : ' registrado.'), 'ok'); if(aoConcluir) aoConcluir();
     }}
-  ], aoAbrir: () => atualizarRecebimentoDinheiro(total)});
+  ], aoAbrir: () => rpMontar()});
 }
 function editarPedido(pid){
   const linhas = linhasDoPedido(pid); if(!linhas.length) return;
