@@ -1075,6 +1075,13 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   </div>
 
   <div class="painel">
+    <div class="cab-painel"><h2>🗓️ Resumo do ano</h2>
+      <div><select id="anoResumo" style="width:auto" onchange="renderResumoAno()" aria-label="Ano do resumo"></select></div></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Vendido</th><th class="n">Compras de insumos</th><th class="n">Taxas e impostos</th><th class="n">Despesas</th><th class="n">Lucro líquido</th></tr></thead><tbody id="tabelaResumoAno"></tbody></table></div>
+    <div class="aviso" id="avisoResumoAno"></div>
+  </div>
+
+  <div class="painel">
     <div class="cab-painel"><h2>📅 Resumo mensal — resultado real</h2>
       <div><input type="month" id="mesResumo" style="width:auto" onchange="renderResumoMensal()" aria-label="Mês do resumo"></div></div>
     <div class="resultado" id="resumoMensal"></div>
@@ -5357,21 +5364,41 @@ function resultadoMes(mes){
   // soma o resumo arquivado desse mês (se algum dado desse mês já foi arquivado), pra o total
   // continuar certo mesmo sem o histórico completo de linhas de venda (ver arquivarDadosAntigos)
   const arq = (BD.config.resumoArquivadoMes || {})[mes];
+  const comprasMes = r2(soma(BD.compras.filter(c => (c.data || '').startsWith(mes)), c => c.valor) + (arq ? (arq.compras || 0) : 0));
   if(arq){
     const fat = r2(r.fat + arq.fat), custo = r2(r.custo + arq.custo), taxas = r2(r.taxas + arq.taxas);
     const despTot = r2(desp + arq.despesas), perdasTot = r2(perdas + arq.perdas);
     return {...r, fat, custo, taxas, lucro: fat - custo - taxas, itens: r.itens + arq.itens, pedidos: r.pedidos + arq.pedidos,
-      linhas, despesas: despTot, perdas: perdasTot, liquido: fat - custo - taxas - despTot - perdasTot,
+      linhas, compras: comprasMes, despesas: despTot, perdas: perdasTot, liquido: fat - custo - taxas - despTot - perdasTot,
       temArquivado: true};
   }
-  return {...r, linhas, despesas: desp, perdas, liquido: r.fat - r.custo - r.taxas - desp - perdas};
+  return {...r, linhas, compras: comprasMes, despesas: desp, perdas, liquido: r.fat - r.custo - r.taxas - desp - perdas};
 }
 function deltaHTML(atual, anterior){
   if(!(anterior > 0)) return '';
   const p = (atual - anterior) / anterior * 100;
   return '<span class="delta ' + (p >= 0 ? 'up' : 'down') + '">' + (p >= 0 ? '▲ +' : '▼ ') + fmt(p, 0) + '% vs mês anterior</span>';
 }
+function renderResumoAno(){
+  const sel = $('anoResumo'); if(!sel) return;
+  const anos = new Set([mesAtual().slice(0, 4)]);
+  [BD.vendas, BD.compras, BD.despesas].forEach(l => l.forEach(x => { if(x && x.data) anos.add(x.data.slice(0, 4)); }));
+  Object.keys(BD.config.resumoArquivadoMes || {}).forEach(m => anos.add(m.slice(0, 4)));
+  const lista = [...anos].sort().reverse(); const atual = sel.value && lista.includes(sel.value) ? sel.value : lista[0];
+  sel.innerHTML = lista.map(a => '<option' + (a === atual ? ' selected' : '') + '>' + a + '</option>').join('');
+  const tot = {fat: 0, compras: 0, taxas: 0, desp: 0, liq: 0}; let linhas = '';
+  for(let i = 1; i <= 12; i++){
+    const mes = atual + '-' + String(i).padStart(2, '0'); const m = resultadoMes(mes);
+    if(!(m.fat || m.compras || m.taxas || m.despesas || m.perdas)) continue;
+    tot.fat += m.fat; tot.compras += m.compras; tot.taxas += m.taxas; tot.desp += m.despesas + m.perdas; tot.liq += m.liquido;
+    linhas += '<tr><td>' + fmtMes(mes) + (m.temArquivado ? ' 📦' : '') + '</td><td class="n">' + brl(m.fat) + '</td><td class="n">' + brl(m.compras) + '</td><td class="n">' + brl(m.taxas) + '</td><td class="n">' + brl(m.despesas + m.perdas) + '</td><td class="n ' + (m.liquido < 0 ? 'erro' : 'ok') + '">' + brl(m.liquido) + '</td></tr>';
+  }
+  linhas += '<tr><td><b>TOTAL ' + atual + '</b></td><td class="n"><b>' + brl(tot.fat) + '</b></td><td class="n"><b>' + brl(tot.compras) + '</b></td><td class="n"><b>' + brl(tot.taxas) + '</b></td><td class="n"><b>' + brl(tot.desp) + '</b></td><td class="n ' + (tot.liq < 0 ? 'erro' : 'ok') + '"><b>' + brl(tot.liq) + '</b></td></tr>';
+  $('tabelaResumoAno').innerHTML = linhas;
+  $('avisoResumoAno').innerHTML = '📦 = mês com dados arquivados (já somados). "Compras de insumos" é só informativa: o que foi pago à vista já entra em Despesas, então o lucro não conta duas vezes. Meses arquivados antes desta versão não têm o total de compras guardado.';
+}
 function renderResumoMensal(){
+  renderResumoAno();
   const mes = $('mesResumo').value || mesAtual();
   const m = resultadoMes(mes), ant = resultadoMes(mesAnterior(mes));
   const linha = (t, v, cls, b) => '<div class="linha-kv"><span>' + t + '</span><' + (b ? 'b' : 'span') + ' class="' + (cls || '') + '">' + v + '</' + (b ? 'b' : 'span') + '></div>';
@@ -7115,7 +7142,7 @@ async function arquivarDadosAntigos(){
   if(!BD.config.resumoArquivadoMes) BD.config.resumoArquivadoMes = {};
   const despesasArquivadas = BD.despesas.filter(antes), perdasArquivadas = BD.perdas.filter(antes);
   const porMesArq = {};
-  const mesArq = ym => porMesArq[ym] || (porMesArq[ym] = {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, itens: 0, pedidosSet: new Set()});
+  const mesArq = ym => porMesArq[ym] || (porMesArq[ym] = {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, compras: 0, itens: 0, pedidosSet: new Set()});
   vendasArquivadas.forEach(v => {
     if(!v || !v.data) return;
     const m = mesArq(v.data.slice(0, 7));
@@ -7124,11 +7151,13 @@ async function arquivarDadosAntigos(){
   });
   despesasArquivadas.forEach(d => { if(d && d.data) mesArq(d.data.slice(0, 7)).despesas += (d.valor || 0); });
   perdasArquivadas.forEach(p => { if(p && p.data) mesArq(p.data.slice(0, 7)).perdas += (p.valor || 0); });
+  BD.compras.filter(antes).forEach(c => { if(c && c.data) mesArq(c.data.slice(0, 7)).compras += (Number(c.valor) || 0); });
   Object.keys(porMesArq).forEach(ym => {
-    const novo = porMesArq[ym], atual = BD.config.resumoArquivadoMes[ym] || {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, itens: 0, pedidos: 0};
+    const novo = porMesArq[ym], atual = BD.config.resumoArquivadoMes[ym] || {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, compras: 0, itens: 0, pedidos: 0};
     BD.config.resumoArquivadoMes[ym] = {
       fat: r2(atual.fat + novo.fat), custo: r2(atual.custo + novo.custo), taxas: r2(atual.taxas + novo.taxas),
       despesas: r2(atual.despesas + novo.despesas), perdas: r2(atual.perdas + novo.perdas),
+      compras: r2((atual.compras || 0) + novo.compras),
       itens: atual.itens + novo.itens, pedidos: atual.pedidos + novo.pedidosSet.size
     };
   });
