@@ -615,7 +615,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <li><b>Saúde do negócio</b> e <b>Metas</b>: avisos automáticos e meta × realizado.</li>
       <li><b>Simulador "e se...?"</b>: teste mudanças (preço, volume) sem mexer em nada de verdade.</li>
       <li><b>Estoque acabando</b> e <b>Top 5</b>: o que repor e o que mais vende/dá lucro.</li>
-      <li>Mais abaixo: <b>Resumo do ano</b>, <b>Resumo mensal</b>, <b>Limite MEI</b>, <b>DAS-MEI</b> e <b>Conferência do cartão</b>.</li>
+      <li>Botões no topo: <b>Ano</b>, <b>Mês</b>, <b>Limite MEI</b>, <b>DAS-MEI</b> e <b>Cartão</b>.</li>
     </ul>
   </div></details>
   <div id="dashPendencias"></div>
@@ -5380,8 +5380,17 @@ function deltaHTML(atual, anterior){
   const p = (atual - anterior) / anterior * 100;
   return '<span class="delta ' + (p >= 0 ? 'up' : 'down') + '">' + (p >= 0 ? '▲ +' : '▼ ') + fmt(p, 0) + '% vs mês anterior</span>';
 }
+// Correção única: totais de compras dos meses já arquivados (o arquivamento antigo não guardava esse total)
+const COMPRAS_ARQUIVADAS_MES = {"2026-10": 1413.05, "2026-08": 3374.69, "2026-09": 3703.6, "2026-07": 3955.01, "2026-06": 3290.96, "2026-03": 2804.53, "2026-04": 2586.95, "2026-05": 2977.62, "2026-01": 650.73, "2026-02": 204.31};
+function corrigirComprasArquivadas(){
+  if(BD.config.comprasArqMigradas) return;
+  const r = BD.config.resumoArquivadoMes || {};
+  Object.keys(COMPRAS_ARQUIVADAS_MES).forEach(ym => { if(r[ym] && !r[ym].compras) r[ym].compras = COMPRAS_ARQUIVADAS_MES[ym]; });
+  BD.config.comprasArqMigradas = true; salvar('config');
+}
 function renderResumoAno(){
   const sel = $('anoResumo'); if(!sel) return;
+  corrigirComprasArquivadas();
   const anos = new Set([mesAtual().slice(0, 4)]);
   [BD.vendas, BD.compras, BD.despesas].forEach(l => l.forEach(x => { if(x && x.data) anos.add(x.data.slice(0, 4)); }));
   Object.keys(BD.config.resumoArquivadoMes || {}).forEach(m => anos.add(m.slice(0, 4)));
@@ -8989,8 +8998,8 @@ function taraVolta(id){
    SUB-ABAS (telas longas divididas em blocos, no estilo do Início)
    ===================================================================== */
 const SUBABAS = {
-  dashboard: [['📊','Visão geral',['Resumo','Funil']], ['💳','Finanças',['Situação']], ['🚦','Saúde e metas',['Saúde','Metas']], ['🧪','Simulador',['Simulador']], ['📈','Movimento',['Movimento','Estoque acabando','Top 5']]],
-  caixa: [['💵','Fechamento',['Fechamento de caixa']], ['💳','Cartão',['Conferência']], ['📅','Mês',['Resumo mensal']], ['📊','Limite MEI',['limite MEI']], ['🧾','DAS-MEI',['DAS-MEI']], ['🧾','Recibo',['Recibo']]],
+  dashboard: [['📊','Visão geral',['Resumo de','Resumo do mês','Funil']], ['💳','Finanças',['Situação']], ['🚦','Saúde e metas',['Saúde','Metas']], ['🧪','Simulador',['Simulador']], ['📈','Movimento',['Movimento','Estoque acabando','Top 5']], ['🗓️','Ano',['Resumo do ano']], ['📅','Mês',['Resumo mensal']], ['📊','Limite MEI',['limite MEI']], ['🧾','DAS-MEI',['DAS-MEI']], ['💳','Cartão',['Conferência']]],
+  caixa: [['💵','Fechamento',['Fechamento de caixa']], ['🧾','Recibo',['Recibo']]],
   compras: [['💳','Contas a pagar',['Contas a pagar']], ['🚚','Fornecedores',['Fornecedores']], ['🧾','Compras e cupons',['Compras e cupons','Cupons cadastrados']]],
   custos: [['📉','Despesas reais',['Despesas reais']], ['💰','Custos fixos',['Custos fixos']], ['💳','Taxas',['Taxas de pagamento']], ['⚙️','Preferências',['Preferências']], ['🏷️','Identidade',['Identidade']], ['🖥️','Totem',['Totem']]],
   estoque: [['📦','Cadastro',['Estoque —']], ['🥟','Empanadas',['Empanadas —']], ['⚖️','Taras',['Taras —']], ['🔢','Contagem',['Contagem','Fechamento do dia']], ['🗑️','Perdas',['Sobras']]],
