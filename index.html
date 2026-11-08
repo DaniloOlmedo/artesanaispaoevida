@@ -7588,9 +7588,10 @@ async function lancarVendaRetroativa(){
 
 /* ---------- comanda retroativa: vários itens do mesmo pedido, um pagamento só (pra bater com o voucher do cartão) ---------- */
 let COMANDA_RETRO = [];
+let RETRO_ULT_LOCAL = '';
 function abrirComandaRetroativa(){
   COMANDA_RETRO = [];
-  const opcoesLocais = '<option value="">-- Não informado --</option>' + BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(l => '<option value="' + l.id + '">' + esc(l.nome) + '</option>').join('');
+  const opcoesLocais = '<option value="">-- Não informado --</option>' + BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(l => '<option value="' + l.id + '"' + (l.id === RETRO_ULT_LOCAL ? ' selected' : '') + '>' + esc(l.nome) + '</option>').join('');
   const html = '<div class="bloco-calc">' +
     '<div><label for="crc_cliente">Cliente</label><input type="text" id="crc_cliente" list="listaClientesDL" placeholder="Ex: Michele"></div>' +
     '<div><label for="crc_data">Data da venda</label><input type="date" id="crc_data" value="' + ($('retroData').value || dataHoje()) + '"></div>' +
@@ -7683,7 +7684,7 @@ async function finalizarComandaRetroativa(ctl){
   if(!COMANDA_RETRO.length) return void toast('Adicione ao menos um item à comanda.', 'alerta') || false;
   if(data > dataHoje() && !await confirmar('A data ' + fmtData(data) + ' é no futuro. Lançar mesmo assim?', {ok: 'Lançar mesmo assim'})) return false;
   if($('retroData')) $('retroData').value = data;
-  const localId = ctl.el.querySelector('#crc_local').value; const localObj = localId ? BD.locais.find(l => l.id === localId) : null;
+  const localId = ctl.el.querySelector('#crc_local').value; RETRO_ULT_LOCAL = localId; const localObj = localId ? BD.locais.find(l => l.id === localId) : null;
   const consumo = ctl.el.querySelector('#crc_consumo').value; const forma = ctl.el.querySelector('#crc_forma').value;
   const pid = 'r' + uid();
   const linhas = COMANDA_RETRO.map(it => {
