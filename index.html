@@ -615,6 +615,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <li><b>Saúde do negócio</b> e <b>Metas</b>: avisos automáticos e meta × realizado.</li>
       <li><b>Simulador "e se...?"</b>: teste mudanças (preço, volume) sem mexer em nada de verdade.</li>
       <li><b>Estoque acabando</b> e <b>Top 5</b>: o que repor e o que mais vende/dá lucro.</li>
+      <li>Mais abaixo: <b>Resumo do ano</b>, <b>Resumo mensal</b>, <b>Limite MEI</b>, <b>DAS-MEI</b> e <b>Conferência do cartão</b>.</li>
     </ul>
   </div></details>
   <div id="dashPendencias"></div>
@@ -657,6 +658,78 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   <div class="graficos">
     <div class="painel"><h2>🏆 Top 5 mais vendidos (mês)</h2><div id="topVendidos"></div></div>
     <div class="painel"><h2>💰 Top 5 mais lucrativos (mês)</h2><div id="topLucrativos"></div></div>
+  </div>
+
+
+  <div class="painel">
+    <div class="cab-painel"><h2>🗓️ Resumo do ano</h2>
+      <div><select id="anoResumo" style="width:auto" onchange="renderResumoAno()" aria-label="Ano do resumo"></select></div></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Vendido</th><th class="n">Compras de insumos</th><th class="n">Taxas e impostos</th><th class="n">Despesas</th><th class="n">Lucro líquido</th></tr></thead><tbody id="tabelaResumoAno"></tbody></table></div>
+    <div class="aviso" id="avisoResumoAno"></div>
+  </div>
+
+  <div class="painel">
+    <div class="cab-painel"><h2>📅 Resumo mensal — resultado real</h2>
+      <div><input type="month" id="mesResumo" style="width:auto" onchange="renderResumoMensal()" aria-label="Mês do resumo"></div></div>
+    <div class="resultado" id="resumoMensal"></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Faturamento</th><th class="n">Lucro (após custos e taxas)</th></tr></thead><tbody id="tabelaResumoMensal"></tbody></table></div>
+    <div class="grupo-botoes">
+      <button class="btn" type="button" onclick="imprimirRelatorioMensal()">🖨️ Imprimir relatório mensal completo</button>
+      <button class="btn cinza" type="button" onclick="exportarCSV('vendas')">⬇️ Vendas do mês (CSV)</button>
+      <button class="btn cinza" type="button" onclick="imprimirRelatorioMEI()">🖨️ Relatório de receitas brutas (MEI)</button>
+    </div>
+  </div>
+
+  <div class="painel">
+    <h2>📊 Controle do limite MEI</h2>
+    <div class="aviso">Compara o faturamento bruto do ano com o teto do MEI. Confira sempre o valor vigente no site da Receita/Portal do Empreendedor.</div>
+    <div class="bloco-calc">
+      <div><label for="meiLimite">Teto anual MEI (R$)</label><input type="number" step="1" id="meiLimite" inputmode="numeric" oninput="salvarConfigMei()"></div>
+      <div><label for="meiMeses">Meses de atividade no ano</label><input type="number" min="1" max="12" step="1" id="meiMeses" inputmode="numeric" oninput="salvarConfigMei()"><div class="dica">Se abriu o MEI este ano, o teto é proporcional aos meses ativos. Se não, deixe 12.</div></div>
+    </div>
+    <div class="grade" id="meiCards" style="margin-top:12px"></div>
+    <div id="meiBarra"></div>
+    <p id="meiAlerta" style="font-weight:700;margin-top:8px"></p>
+    <p id="meiProjecaoTexto" style="margin-top:6px"></p>
+    <h3>De onde vem o faturamento (mês a mês)</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Faturamento</th><th class="n">Vendas normais</th><th class="n">Históricos lançados</th><th class="n">Acumulado</th><th></th></tr></thead><tbody id="meiMesAMes"></tbody></table></div>
+    <div class="dica">"Históricos" são os lançamentos retroativos. Clique em <b>Ver</b> para abrir a lista daquele mês e conferir/corrigir cada um.</div>
+  </div>
+
+  <div class="painel">
+    <h2>🧾 Controle do DAS-MEI</h2>
+    <div class="aviso">Isso aqui é só um controle de pagamento, pra não perder o prazo — a emissão e o pagamento real do boleto são sempre feitos no <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" target="_blank" rel="noopener">Portal do Empreendedor (gov.br)</a>, que exige login com CPF/senha gov.br ou certificado digital. Não é possível gerar o boleto oficial por aqui.</div>
+    <div class="bloco-calc">
+      <div><label for="dasMeiAtividade">Atividade do MEI</label>
+        <select id="dasMeiAtividade" onchange="salvarAtividadeDasMei()">
+          <option value="comercio">Comércio/Indústria (ICMS)</option>
+          <option value="servico">Serviços (ISS)</option>
+          <option value="ambos">Comércio e Serviços</option>
+        </select>
+      </div>
+      <div class="fixo" style="align-self:flex-end"><button class="btn cinza" type="button" onclick="window.open('https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao','_blank')">🔗 Emitir/pagar no Portal do Empreendedor</button></div>
+    </div>
+    <div class="dica">Valores de referência 2026 (INSS 5% do salário mínimo + ICMS/ISS fixo): Comércio/Indústria R$ 82,05 · Serviços R$ 86,05 · Comércio e Serviços R$ 87,05. Confira sempre o valor exato no Portal antes de pagar — ele pode mudar com o salário mínimo.</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Competência</th><th>Vencimento</th><th class="n">Valor</th><th>Status</th><th></th></tr></thead><tbody id="dasMeiCorpo"></tbody></table></div>
+  </div>
+
+  <div class="painel">
+    <div class="cab-painel"><h2>💳 Conferência do cartão</h2></div>
+    <div class="aviso">Confere se a taxa que a maquininha realmente descontou bate com a taxa configurada em "Custos". O campo "Vendido" vem pré-preenchido com o que o sistema tem registrado nesse período, mas <b>pode ser substituído</b> pelo total que a própria Getnet/Infinipay informam (mais confiável se alguma venda foi marcada com a forma de pagamento errada).</div>
+    <div class="bloco-calc">
+      <div><label for="ccForma">Maquininha / forma</label><select id="ccForma" onchange="renderConferenciaCartao(true)"><option value="debito">💳 Débito — Get Net</option><option value="credito">💳 Crédito — Infinit Pay</option></select></div>
+      <div><label for="ccDe">De</label><input type="date" id="ccDe" onchange="renderConferenciaCartao(true)"></div>
+      <div><label for="ccAte">Até</label><input type="date" id="ccAte" onchange="renderConferenciaCartao(true)"></div>
+      <div><label for="ccVendido">Vendido no período (R$)</label><input type="number" step="0.01" id="ccVendido" inputmode="decimal" oninput="renderConferenciaCartao()"><div class="dica">Pré-preenchido pelo sistema — ajuste se a Getnet/Infinipay informar outro total.</div></div>
+      <div><label for="ccRecebido">Valor que caiu na conta (R$)</label><input type="number" step="0.01" id="ccRecebido" inputmode="decimal" oninput="renderConferenciaCartao()"></div>
+    </div>
+    <div class="resultado" id="ccResultado"></div>
+    <div class="flex-linha" style="margin-top:8px">
+      <div style="flex:3"><label for="ccObs">Observação</label><input type="text" id="ccObs" placeholder="Ex: extrato de 01 a 07/10"></div>
+      <div class="fixo"><button class="btn" type="button" onclick="salvarConferenciaCartao()">💾 Salvar conferência</button></div>
+    </div>
+    <h3>Histórico de conferências</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Período</th><th>Maquininha</th><th class="n">Vendido</th><th class="n">Taxa esperada</th><th class="n">Líquido esperado</th><th class="n">Caiu na conta</th><th class="n">Diferença</th><th>Obs.</th><th></th></tr></thead><tbody id="tabelaConferenciasCartao"></tbody></table></div>
   </div>
 </section>
 
@@ -1014,11 +1087,9 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </ol>
     <p>Mais abaixo, nesta mesma aba:</p>
     <ul>
-      <li><b>💳 Conferência do cartão</b>: confere se a taxa que a maquininha descontou bate com a cadastrada.</li>
-      <li><b>📅 Resumo mensal</b>: resultado real do mês, com relatórios pra imprimir/exportar.</li>
       <li><b>🧾 Recibo de consumo</b>: emite comprovante pro cliente pedir reembolso.</li>
-      <li><b>📊 Limite MEI</b> e <b>🧾 DAS-MEI</b>: acompanha o teto anual e o vencimento da guia (a emissão em si é sempre no Portal do Empreendedor).</li>
     </ul>
+    <p>Conferência do cartão, resumos do mês/ano, Limite MEI e DAS-MEI ficam na aba <b>📊 Painel</b>.</p>
   </div></details>
   <div class="painel">
     <div class="cab-painel">
@@ -1056,44 +1127,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   </div>
 
   <div class="painel">
-    <div class="cab-painel"><h2>💳 Conferência do cartão</h2></div>
-    <div class="aviso">Confere se a taxa que a maquininha realmente descontou bate com a taxa configurada em "Custos". O campo "Vendido" vem pré-preenchido com o que o sistema tem registrado nesse período, mas <b>pode ser substituído</b> pelo total que a própria Getnet/Infinipay informam (mais confiável se alguma venda foi marcada com a forma de pagamento errada).</div>
-    <div class="bloco-calc">
-      <div><label for="ccForma">Maquininha / forma</label><select id="ccForma" onchange="renderConferenciaCartao(true)"><option value="debito">💳 Débito — Get Net</option><option value="credito">💳 Crédito — Infinit Pay</option></select></div>
-      <div><label for="ccDe">De</label><input type="date" id="ccDe" onchange="renderConferenciaCartao(true)"></div>
-      <div><label for="ccAte">Até</label><input type="date" id="ccAte" onchange="renderConferenciaCartao(true)"></div>
-      <div><label for="ccVendido">Vendido no período (R$)</label><input type="number" step="0.01" id="ccVendido" inputmode="decimal" oninput="renderConferenciaCartao()"><div class="dica">Pré-preenchido pelo sistema — ajuste se a Getnet/Infinipay informar outro total.</div></div>
-      <div><label for="ccRecebido">Valor que caiu na conta (R$)</label><input type="number" step="0.01" id="ccRecebido" inputmode="decimal" oninput="renderConferenciaCartao()"></div>
-    </div>
-    <div class="resultado" id="ccResultado"></div>
-    <div class="flex-linha" style="margin-top:8px">
-      <div style="flex:3"><label for="ccObs">Observação</label><input type="text" id="ccObs" placeholder="Ex: extrato de 01 a 07/10"></div>
-      <div class="fixo"><button class="btn" type="button" onclick="salvarConferenciaCartao()">💾 Salvar conferência</button></div>
-    </div>
-    <h3>Histórico de conferências</h3>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Período</th><th>Maquininha</th><th class="n">Vendido</th><th class="n">Taxa esperada</th><th class="n">Líquido esperado</th><th class="n">Caiu na conta</th><th class="n">Diferença</th><th>Obs.</th><th></th></tr></thead><tbody id="tabelaConferenciasCartao"></tbody></table></div>
-  </div>
-
-  <div class="painel">
-    <div class="cab-painel"><h2>🗓️ Resumo do ano</h2>
-      <div><select id="anoResumo" style="width:auto" onchange="renderResumoAno()" aria-label="Ano do resumo"></select></div></div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Vendido</th><th class="n">Compras de insumos</th><th class="n">Taxas e impostos</th><th class="n">Despesas</th><th class="n">Lucro líquido</th></tr></thead><tbody id="tabelaResumoAno"></tbody></table></div>
-    <div class="aviso" id="avisoResumoAno"></div>
-  </div>
-
-  <div class="painel">
-    <div class="cab-painel"><h2>📅 Resumo mensal — resultado real</h2>
-      <div><input type="month" id="mesResumo" style="width:auto" onchange="renderResumoMensal()" aria-label="Mês do resumo"></div></div>
-    <div class="resultado" id="resumoMensal"></div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Faturamento</th><th class="n">Lucro (após custos e taxas)</th></tr></thead><tbody id="tabelaResumoMensal"></tbody></table></div>
-    <div class="grupo-botoes">
-      <button class="btn" type="button" onclick="imprimirRelatorioMensal()">🖨️ Imprimir relatório mensal completo</button>
-      <button class="btn cinza" type="button" onclick="exportarCSV('vendas')">⬇️ Vendas do mês (CSV)</button>
-      <button class="btn cinza" type="button" onclick="imprimirRelatorioMEI()">🖨️ Relatório de receitas brutas (MEI)</button>
-    </div>
-  </div>
-
-  <div class="painel">
     <h2>🧾 Recibo de consumo para cliente</h2>
     <div class="aviso">Gera um recibo simples com os consumos já pagos por um cliente num período — útil quando pedem comprovante pra reembolso ou prestação de contas (condomínio, empresa etc.). Se preencher o CNPJ em "Preferências" acima, ele aparece no recibo.</div>
     <div class="bloco-calc">
@@ -1104,38 +1137,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <button class="btn" type="button" onclick="imprimirReciboConsumo()">🖨️ Emitir recibo</button>
   </div>
 
-  <div class="painel">
-    <h2>📊 Controle do limite MEI</h2>
-    <div class="aviso">Compara o faturamento bruto do ano com o teto do MEI. Confira sempre o valor vigente no site da Receita/Portal do Empreendedor.</div>
-    <div class="bloco-calc">
-      <div><label for="meiLimite">Teto anual MEI (R$)</label><input type="number" step="1" id="meiLimite" inputmode="numeric" oninput="salvarConfigMei()"></div>
-      <div><label for="meiMeses">Meses de atividade no ano</label><input type="number" min="1" max="12" step="1" id="meiMeses" inputmode="numeric" oninput="salvarConfigMei()"><div class="dica">Se abriu o MEI este ano, o teto é proporcional aos meses ativos. Se não, deixe 12.</div></div>
-    </div>
-    <div class="grade" id="meiCards" style="margin-top:12px"></div>
-    <div id="meiBarra"></div>
-    <p id="meiAlerta" style="font-weight:700;margin-top:8px"></p>
-    <p id="meiProjecaoTexto" style="margin-top:6px"></p>
-    <h3>De onde vem o faturamento (mês a mês)</h3>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Faturamento</th><th class="n">Vendas normais</th><th class="n">Históricos lançados</th><th class="n">Acumulado</th><th></th></tr></thead><tbody id="meiMesAMes"></tbody></table></div>
-    <div class="dica">"Históricos" são os lançamentos retroativos. Clique em <b>Ver</b> para abrir a lista daquele mês e conferir/corrigir cada um.</div>
-  </div>
-
-  <div class="painel">
-    <h2>🧾 Controle do DAS-MEI</h2>
-    <div class="aviso">Isso aqui é só um controle de pagamento, pra não perder o prazo — a emissão e o pagamento real do boleto são sempre feitos no <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" target="_blank" rel="noopener">Portal do Empreendedor (gov.br)</a>, que exige login com CPF/senha gov.br ou certificado digital. Não é possível gerar o boleto oficial por aqui.</div>
-    <div class="bloco-calc">
-      <div><label for="dasMeiAtividade">Atividade do MEI</label>
-        <select id="dasMeiAtividade" onchange="salvarAtividadeDasMei()">
-          <option value="comercio">Comércio/Indústria (ICMS)</option>
-          <option value="servico">Serviços (ISS)</option>
-          <option value="ambos">Comércio e Serviços</option>
-        </select>
-      </div>
-      <div class="fixo" style="align-self:flex-end"><button class="btn cinza" type="button" onclick="window.open('https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao','_blank')">🔗 Emitir/pagar no Portal do Empreendedor</button></div>
-    </div>
-    <div class="dica">Valores de referência 2026 (INSS 5% do salário mínimo + ICMS/ISS fixo): Comércio/Indústria R$ 82,05 · Serviços R$ 86,05 · Comércio e Serviços R$ 87,05. Confira sempre o valor exato no Portal antes de pagar — ele pode mudar com o salário mínimo.</div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Competência</th><th>Vencimento</th><th class="n">Valor</th><th>Status</th><th></th></tr></thead><tbody id="dasMeiCorpo"></tbody></table></div>
-  </div>
 </section>
 
 <!-- ============ FICHAS ============ -->
@@ -9454,7 +9455,7 @@ function renderPagina(id){
   try{
     switch(id){
       case 'inicio': renderInicio(); break;
-      case 'dashboard': renderDashboard(); break;
+      case 'dashboard': renderDashboard(); if(!$('mesResumo').value) $('mesResumo').value = mesAtual(); renderResumoMensal(); renderMei(); renderDasMei(); renderConferenciaCartao(); renderConferenciasCartaoLista(); break;
       case 'vendas': renderVendasPagina(); break;
       case 'locais': renderLocais(); break;
       case 'clientes': renderClientes(); break;
