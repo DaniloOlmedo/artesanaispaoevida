@@ -2278,10 +2278,16 @@ function listarPontos(){
     const t = localStorage.getItem(d.chave); if(!t) return;
     try{
       const b = JSON.parse(t);
-      out.push({...d, criadoEm: b.criadoEm, motivo: b.motivo || '', resumo: resumoDados(b.dados || {})});
+      out.push({...d, criadoEm: b.criadoEm, motivo: b.motivo || '', resumo: resumoDados(b.dados || {}), kb: (d.chave.length + t.length) * 2 / 1024});
     }catch(e){}
   });
   return out;
+}
+async function apagarPonto(chave){
+  if(!['backupAnterior', 'backupPreMigracao', 'backupAutomatico'].includes(chave)) return;
+  if(!await confirmar('Apagar este ponto de restauração? Você não poderá mais voltar a esse estado por aqui. Seus dados atuais não são mexidos. Só apague se já baixou um backup recente.', {titulo: 'Apagar ponto de restauração', ok: 'Apagar', perigo: true})) return;
+  try{ localStorage.removeItem(chave); }catch(e){}
+  renderDados(); toast('Ponto apagado. Espaço liberado.', 'ok');
 }
 async function restaurarPonto(chave){
   const t = localStorage.getItem(chave);
@@ -7042,8 +7048,8 @@ function renderDados(){
   else { const el = $('persistStatus'); if(el) el.textContent = 'não suportado'; }
   const pontos = listarPontos();
   $('listaRestauracao').innerHTML = pontos.length ? pontos.map(p =>
-    '<div class="card" style="margin-bottom:8px"><h3>' + esc(p.rotulo) + '</h3><div class="sub">' + (p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : 'data desconhecida') + (p.motivo ? ' — ' + esc(p.motivo) : '') + '</div><div class="sub">' + p.resumo.insumos + ' insumos • ' + p.resumo.fichas + ' fichas • ' + p.resumo.formulasMassa + ' massas • ' + p.resumo.vendas + ' vendas • ' + p.resumo.despesas + ' despesas</div><button class="btn laranja pequeno" style="margin-top:6px" onclick="restaurarPonto(\'' + p.chave + '\')">↩️ Restaurar este ponto</button></div>'
-  ).join('') : '<div class="vazio">Ainda não há pontos de restauração.</div>';
+    '<div class="card" style="margin-bottom:8px"><h3>' + esc(p.rotulo) + '</h3><div class="sub">' + (p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : 'data desconhecida') + (p.motivo ? ' — ' + esc(p.motivo) : '') + '</div><div class="sub">' + p.resumo.insumos + ' insumos • ' + p.resumo.fichas + ' fichas • ' + p.resumo.formulasMassa + ' massas • ' + p.resumo.vendas + ' vendas • ' + p.resumo.despesas + ' despesas</div><button class="btn laranja pequeno" style="margin-top:6px" onclick="restaurarPonto(\'' + p.chave + '\')">↩️ Restaurar este ponto</button> <button class="btn vermelho pequeno" style="margin-top:6px" onclick="apagarPonto(\'' + p.chave + '\')">🗑️ Apagar (libera ' + fmt(p.kb, 0) + ' KB)</button></div>'
+  ).join('') + '<div class="dica">Cada ponto é uma cópia completa dos dados e ocupa espaço no navegador. Depois de baixar o backup e o arquivo de arquivamento, pode apagar os pontos para liberar espaço.</div>' : '<div class="vazio">Ainda não há pontos de restauração.</div>';
   renderDiagnostico();
 }
 
