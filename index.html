@@ -1708,6 +1708,12 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <label class="linha"><input type="checkbox" id="cfgBackupFechar" onchange="salvarConfig()"> Baixar backup automaticamente ao fechar o dia</label>
     <label class="linha"><input type="checkbox" id="cfgValoresComanda" onchange="salvarConfig()"> Mostrar valores (total) na comanda impressa</label>
     <div class="bloco-calc"><div><label for="cfgVias">Vias impressas em cada comanda</label><select id="cfgVias" onchange="salvarConfig()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente, para levar/pendurar)</option></select><div class="dica">Escolha "1 (só cozinha)" para imprimir só a via do estabelecimento e economizar papel.</div></div></div>
+    <div class="bloco-calc"><div><label>🖨️ Impressão direta neste computador (Chrome ou Edge)</label>
+      <label class="linha"><input type="checkbox" id="cfgImpDireta" onchange="impDiretaSalvar()"> Imprimir a comanda direto na impressora (sem janela de impressão e sem papel em branco)</label>
+      <label class="linha"><input type="checkbox" id="cfgImpDiretaCorte" onchange="impDiretaSalvar()"> Minha impressora tem corte automático (guilhotina)</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn" id="btnImpDiretaConectar" onclick="impDiretaConectar()">🔌 Conectar impressora</button><button type="button" class="btn cinza" id="btnImpDiretaTestar" onclick="impDiretaTestar()">🧪 Testar impressão</button></div>
+      <div class="dica" id="impDiretaStatus"></div>
+      <div class="dica">Vale só para este aparelho (não muda nos outros). Usa a porta COM da impressora Bluetooth ou USB. Funciona para a comanda da cozinha (1 via); via do cliente, etiquetas e relatórios continuam saindo pela janela de impressão normal.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgRodape">Mensagem extra no fim da comanda — opcional</label><input type="text" id="cfgRodape" placeholder="Deixe vazio para não imprimir nada" oninput="salvarConfig()"><div class="dica">Se ficar em branco, nada é impresso após a linha de corte, evitando desperdício de papel.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgCNPJ">CNPJ do seu negócio (MEI) — opcional</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0000-00" oninput="salvarConfig()"><div class="dica">Aparece no recibo de consumo emitido pra cliente (aba Caixa). Deixe vazio se ainda não tiver CNPJ.</div></div></div>
   </div>
@@ -3018,6 +3024,7 @@ function carregarConfigNaTela(){
   $('cfgVias').value = String(c.totemVias || 2);
   $('cfgRodape').value = c.rodapeComanda || '';
   $('cfgCNPJ').value = c.negocioCNPJ || '';
+  impDiretaCarregarUI();
 }
 function salvarConfig(){
   const c = BD.config;
@@ -4962,7 +4969,143 @@ function viaClienteUltima(){
   if(!pid) return toast('Ainda não há pedidos para imprimir a via do cliente.', 'alerta');
   imprimirViaCliente(pid);
 }
+/* ---------- impressão direta (Web Serial → ESC/POS) ----------
+   Só funciona em computador com Chrome/Edge (Web Serial). Envia a imagem da comanda direto pela porta COM
+   da impressora térmica (Bluetooth ou USB), sem janela de impressão e sem gastar papel em branco.
+   Fica ligada só neste aparelho (localStorage) — não vai para a sincronização entre aparelhos. */
+const IMPDIR = {porta: null, ocupado: false};
+function impDiretaSuportada(){ return !!(navigator.serial && navigator.serial.requestPort); }
+function impDiretaAtiva(){ try{ return impDiretaSuportada() && localStorage.getItem('pvImpDireta') === '1'; }catch(e){ return false; } }
+function impDiretaCorteAtivo(){ try{ return localStorage.getItem('pvImpDiretaCorte') === '1'; }catch(e){ return false; } }
+function impDiretaStatus(txt, ok){
+  const el = $('impDiretaStatus'); if(!el) return;
+  el.textContent = txt; el.style.color = ok === true ? '#1f7a3a' : (ok === false ? '#b3261e' : '');
+}
+function impDiretaCarregarUI(){
+  const box = $('cfgImpDireta'); if(!box) return;
+  const sup = impDiretaSuportada();
+  box.checked = impDiretaAtiva(); box.disabled = !sup;
+  if($('cfgImpDiretaCorte')) $('cfgImpDiretaCorte').checked = impDiretaCorteAtivo();
+  ['btnImpDiretaConectar', 'btnImpDiretaTestar'].forEach(id => { if($(id)) $(id).disabled = !sup; });
+  impDiretaStatus(sup ? 'Clique em "Conectar impressora" e escolha a porta COM da impressora (ex.: COM3).' : 'Este navegador não permite impressão direta (use o Chrome ou o Edge no computador).', sup ? null : false);
+}
+function impDiretaSalvar(){
+  try{
+    localStorage.setItem('pvImpDireta', $('cfgImpDireta').checked ? '1' : '0');
+    localStorage.setItem('pvImpDiretaCorte', $('cfgImpDiretaCorte') && $('cfgImpDiretaCorte').checked ? '1' : '0');
+  }catch(e){ toast('Não foi possível guardar esta opção neste navegador.', 'erro'); }
+}
+async function impDiretaConectar(){
+  if(!impDiretaSuportada()) return toast('Este navegador não permite impressão direta.', 'alerta');
+  try{
+    IMPDIR.porta = await navigator.serial.requestPort();
+    impDiretaStatus('✅ Porta escolhida. Clique em "Testar impressão" para conferir.', true);
+    toast('Porta da impressora escolhida.', 'ok');
+  }catch(e){
+    if(e && e.name === 'NotFoundError') impDiretaStatus('Nenhuma porta foi escolhida.', null);
+    else { impDiretaStatus('Não foi possível escolher a porta: ' + (e && e.message ? e.message : e), false); }
+  }
+}
+async function impDiretaPorta(){
+  if(IMPDIR.porta) return IMPDIR.porta;
+  const ja = await navigator.serial.getPorts();
+  if(ja.length === 1){ IMPDIR.porta = ja[0]; return IMPDIR.porta; }
+  // várias portas autorizadas, ou nenhuma: pede ao usuário (só funciona logo depois de um clique)
+  IMPDIR.porta = await navigator.serial.requestPort();
+  return IMPDIR.porta;
+}
+/* Converte um canvas (preto sobre branco) em comandos ESC/POS: iniciar + imagem em faixas (GS v 0) + avanço de papel (+ corte opcional). */
+function canvasParaEscPos(cv, opts){
+  opts = opts || {};
+  const W = Math.ceil(cv.width / 8) * 8, H = cv.height;
+  const px = cv.getContext('2d').getImageData(0, 0, cv.width, H).data;
+  const bytesLinha = W / 8, FAIXA = 128;
+  const partes = [Uint8Array.of(0x1B, 0x40)];
+  for(let y0 = 0; y0 < H; y0 += FAIXA){
+    const h = Math.min(FAIXA, H - y0);
+    const dados = new Uint8Array(bytesLinha * h);
+    for(let y = 0; y < h; y++){
+      for(let x = 0; x < cv.width; x++){
+        const i = ((y0 + y) * cv.width + x) * 4;
+        if(px[i + 3] < 128) continue;
+        const lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+        if(lum < 160) dados[y * bytesLinha + (x >> 3)] |= 0x80 >> (x & 7);
+      }
+    }
+    partes.push(Uint8Array.of(0x1D, 0x76, 0x30, 0x00, bytesLinha & 255, bytesLinha >> 8, h & 255, h >> 8), dados);
+  }
+  partes.push(Uint8Array.of(0x1B, 0x64, opts.feed == null ? 5 : opts.feed));
+  if(opts.corte) partes.push(Uint8Array.of(0x1D, 0x56, 0x42, 0x00));
+  let total = 0; partes.forEach(p => { total += p.length; });
+  const out = new Uint8Array(total); let o = 0;
+  partes.forEach(p => { out.set(p, o); o += p.length; });
+  return out;
+}
+async function impDiretaEnviar(bytes){
+  const porta = await impDiretaPorta();
+  if(!porta.writable) await porta.open({baudRate: 115200, flowControl: 'none', bufferSize: 65536});
+  const w = porta.writable.getWriter();
+  try{
+    const TAM = 2048;
+    for(let i = 0; i < bytes.length; i += TAM) await w.write(bytes.subarray(i, i + TAM));
+  } finally { try{ w.releaseLock(); }catch(e){} }
+  // deixa a impressora terminar de receber antes de soltar a porta (assim o driver do Windows também pode usá-la depois)
+  await new Promise(r => setTimeout(r, 400));
+  try{ await porta.close(); }catch(e){}
+}
+async function impDiretaImprimirCanvas(cv){
+  if(IMPDIR.ocupado) throw new Error('A impressora ainda está recebendo a impressão anterior.');
+  IMPDIR.ocupado = true;
+  try{ await impDiretaEnviar(canvasParaEscPos(cv, {corte: impDiretaCorteAtivo()})); }
+  finally{ IMPDIR.ocupado = false; }
+}
+function impDiretaCanvasTeste(){
+  const cv = document.createElement('canvas'); cv.width = 576; cv.height = 260;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 576, 260); ctx.fillStyle = '#000'; ctx.strokeStyle = '#000';
+  ctx.lineWidth = 3; ctx.strokeRect(2, 2, 572, 256);
+  ctx.textAlign = 'center'; ctx.font = 'bold 34px "Courier New", monospace';
+  ctx.fillText('TESTE DE IMPRESSÃO', 288, 70);
+  ctx.font = '22px "Courier New", monospace';
+  ctx.fillText(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio()).trim(), 288, 112);
+  ctx.fillText('Impressão direta pela porta COM', 288, 150);
+  ctx.fillText('Se a moldura está inteira, está certo.', 288, 188);
+  ctx.font = '18px "Courier New", monospace';
+  ctx.fillText(new Date().toLocaleString('pt-BR'), 288, 228);
+  return cv;
+}
+function impDiretaMensagemErro(e){
+  const n = e && e.name, m = e && e.message ? e.message : String(e);
+  if(n === 'NetworkError' || /failed to open/i.test(m)) return 'Não consegui abrir a porta. Confira se a impressora está ligada (luz BT acesa) e se nenhum outro programa está usando a COM.';
+  return m;
+}
+async function impDiretaTestar(){
+  if(!impDiretaSuportada()) return toast('Este navegador não permite impressão direta.', 'alerta');
+  impDiretaStatus('Enviando teste…', null);
+  try{
+    await impDiretaImprimirCanvas(impDiretaCanvasTeste());
+    impDiretaStatus('✅ Teste enviado. Se saiu a moldura inteira, é só marcar "Imprimir direto".', true);
+  }catch(e){
+    if(e && e.name === 'NotFoundError') return impDiretaStatus('Nenhuma porta foi escolhida.', null);
+    impDiretaStatus('⚠️ ' + impDiretaMensagemErro(e), false);
+  }
+}
 function imprimirComandaPedido(pid){
+  // Impressão direta (só se ligada neste aparelho) e só para a via da cozinha; senão, segue o caminho de sempre.
+  if(impDiretaAtiva() && BD.config.totemVias !== 2){
+    const cv = desenharComandaImagem(pid);
+    if(cv){
+      impDiretaImprimirCanvas(cv).catch(e => {
+        if(e && e.name === 'NotFoundError') return toast('Nenhuma porta de impressora foi escolhida. A comanda não foi impressa.', 'alerta', {ms: 6000});
+        toast('Impressão direta falhou: ' + impDiretaMensagemErro(e) + ' Abrindo a impressão normal.', 'alerta', {ms: 8000});
+        imprimirComandaPedidoPadrao(pid);
+      });
+      return;
+    }
+  }
+  imprimirComandaPedidoPadrao(pid);
+}
+function imprimirComandaPedidoPadrao(pid){
   const h = comandaHTML(pid); if(!h) return toast('Pedido não encontrado.', 'erro');
   $('areaImpressao').innerHTML = h;
   document.body.classList.add('print-comanda');
@@ -5547,9 +5690,18 @@ function corrigirComprasArquivadas(){
   Object.keys(COMPRAS_ARQUIVADAS_MES).forEach(ym => { if(r[ym] && !r[ym].compras) r[ym].compras = COMPRAS_ARQUIVADAS_MES[ym]; });
   BD.config.comprasArqMigradas = true; salvar('config');
 }
+// Correção única: vendas de jan e jun/2026 estavam zeradas no resumo arquivado (valores vieram do backup histórico)
+const VENDAS_ARQUIVADAS_MES = {"2026-01": {fat: 3005, custo: 1580.21, itens: 110, pedidos: 18}, "2026-06": {fat: 3145, custo: 1297.75, itens: 134, pedidos: 54}};
+function corrigirVendasArquivadas(){
+  if(BD.config.vendasArqMigradas) return;
+  const r = BD.config.resumoArquivadoMes || {};
+  Object.keys(VENDAS_ARQUIVADAS_MES).forEach(ym => { if(r[ym] && !r[ym].fat) Object.assign(r[ym], VENDAS_ARQUIVADAS_MES[ym]); });
+  BD.config.vendasArqMigradas = true; salvar('config');
+}
 function renderResumoAno(){
   const sel = $('anoResumo'); if(!sel) return;
   corrigirComprasArquivadas();
+  corrigirVendasArquivadas();
   const anos = new Set([mesAtual().slice(0, 4)]);
   [BD.vendas, BD.compras, BD.despesas].forEach(l => l.forEach(x => { if(x && x.data) anos.add(x.data.slice(0, 4)); }));
   Object.keys(BD.config.resumoArquivadoMes || {}).forEach(m => anos.add(m.slice(0, 4)));
