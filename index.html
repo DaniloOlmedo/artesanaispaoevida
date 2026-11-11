@@ -1711,6 +1711,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div class="bloco-calc"><div><label>🖨️ Impressão direta neste computador (Chrome ou Edge)</label>
       <label class="linha"><input type="checkbox" id="cfgImpDireta" onchange="impDiretaSalvar()"> Imprimir a comanda direto na impressora (sem janela de impressão e sem papel em branco)</label>
       <label class="linha"><input type="checkbox" id="cfgImpDiretaCorte" onchange="impDiretaSalvar()"> Minha impressora tem corte automático (guilhotina)</label>
+      <div class="bloco-calc"><div><label for="cfgImpDiretaAvanco">Papel a avançar no fim da comanda (para dar espaço de picotar)</label><input type="number" id="cfgImpDiretaAvanco" min="0" max="40" step="1" value="8" onchange="impDiretaSalvar()"><div class="dica">Cada unidade é cerca de 4 mm. Aumente se o texto ainda ficar dentro da impressora na hora de rasgar.</div></div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn" id="btnImpDiretaConectar" onclick="impDiretaConectar()">🔌 Conectar impressora</button><button type="button" class="btn cinza" id="btnImpDiretaTestar" onclick="impDiretaTestar()">🧪 Testar impressão</button></div>
       <div class="dica" id="impDiretaStatus"></div>
       <div class="dica">Vale só para este aparelho (não muda nos outros). Usa a porta COM da impressora Bluetooth ou USB. Funciona para a comanda da cozinha (1 via); via do cliente, etiquetas e relatórios continuam saindo pela janela de impressão normal.</div></div></div>
@@ -4976,6 +4977,7 @@ function viaClienteUltima(){
 const IMPDIR = {porta: null, ocupado: false};
 function impDiretaSuportada(){ return !!(navigator.serial && navigator.serial.requestPort); }
 function impDiretaAtiva(){ try{ return impDiretaSuportada() && localStorage.getItem('pvImpDireta') === '1'; }catch(e){ return false; } }
+function impDiretaAvanco(){ try{ const n = parseInt(localStorage.getItem('pvImpDiretaAvanco'), 10); if(n >= 0 && n <= 40) return n; }catch(e){} return 8; }
 function impDiretaCorteAtivo(){ try{ return localStorage.getItem('pvImpDiretaCorte') === '1'; }catch(e){ return false; } }
 function impDiretaStatus(txt, ok){
   const el = $('impDiretaStatus'); if(!el) return;
@@ -4986,12 +4988,14 @@ function impDiretaCarregarUI(){
   const sup = impDiretaSuportada();
   box.checked = impDiretaAtiva(); box.disabled = !sup;
   if($('cfgImpDiretaCorte')) $('cfgImpDiretaCorte').checked = impDiretaCorteAtivo();
+  if($('cfgImpDiretaAvanco')) $('cfgImpDiretaAvanco').value = impDiretaAvanco();
   ['btnImpDiretaConectar', 'btnImpDiretaTestar'].forEach(id => { if($(id)) $(id).disabled = !sup; });
   impDiretaStatus(sup ? 'Clique em "Conectar impressora" e escolha a porta COM da impressora (ex.: COM3).' : 'Este navegador não permite impressão direta (use o Chrome ou o Edge no computador).', sup ? null : false);
 }
 function impDiretaSalvar(){
   try{
     localStorage.setItem('pvImpDireta', $('cfgImpDireta').checked ? '1' : '0');
+    if($('cfgImpDiretaAvanco')){ let n = parseInt($('cfgImpDiretaAvanco').value, 10); if(!(n >= 0)) n = 8; localStorage.setItem('pvImpDiretaAvanco', String(Math.min(40, n))); }
     localStorage.setItem('pvImpDiretaCorte', $('cfgImpDiretaCorte') && $('cfgImpDiretaCorte').checked ? '1' : '0');
   }catch(e){ toast('Não foi possível guardar esta opção neste navegador.', 'erro'); }
 }
@@ -5029,7 +5033,7 @@ function canvasParaEscPos(cv, opts){
         const i = ((y0 + y) * cv.width + x) * 4;
         if(px[i + 3] < 128) continue;
         const lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
-        if(lum < 160) dados[y * bytesLinha + (x >> 3)] |= 0x80 >> (x & 7);
+        if(lum < 200) dados[y * bytesLinha + (x >> 3)] |= 0x80 >> (x & 7);
       }
     }
     partes.push(Uint8Array.of(0x1D, 0x76, 0x30, 0x00, bytesLinha & 255, bytesLinha >> 8, h & 255, h >> 8), dados);
@@ -5062,7 +5066,7 @@ async function impDiretaEnviar(bytes){
 async function impDiretaImprimirCanvas(cv){
   if(IMPDIR.ocupado) throw new Error('A impressora ainda está recebendo a impressão anterior.');
   IMPDIR.ocupado = true;
-  try{ await impDiretaEnviar(canvasParaEscPos(cv, {corte: impDiretaCorteAtivo()})); }
+  try{ await impDiretaEnviar(canvasParaEscPos(cv, {corte: impDiretaCorteAtivo(), feed: impDiretaAvanco()})); }
   finally{ IMPDIR.ocupado = false; }
 }
 function impDiretaCanvasTeste(){
@@ -5148,20 +5152,20 @@ function comandaLinhasImagem(pid){
   const add = (texto, opts) => L.push(Object.assign({texto, tam: 20, negrito: false, centro: true, espacoAntes: 0}, opts || {}));
   const linha = () => L.push({linha: true, espacoAntes: 6});
   add(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim(), {tam: 38, negrito: true});
-  if(l0.local) add('📍 ' + l0.local.toUpperCase(), {tam: 22});
-  if(totem) add('PEDIDO PELO TOTEM', {tam: 22});
+  if(l0.local) add('📍 ' + l0.local.toUpperCase(), {tam: 22, negrito: true});
+  if(totem) add('PEDIDO PELO TOTEM', {tam: 22, negrito: true});
   if(p.senha) add('Nº ' + p.senha, {tam: 46, negrito: true, espacoAntes: 6});
-  add(fmtData(p.data) + ' - ' + p.horario, {tam: 22});
-  if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 22});
-  if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 22});
+  add(fmtData(p.data) + ' - ' + p.horario, {tam: 22, negrito: true});
+  if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 22, negrito: true});
+  if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 22, negrito: true});
   linha();
   add(p.cliente.toUpperCase(), {tam: 32, negrito: true});
-  if(p.telefone) add('Tel: ' + p.telefone, {tam: 22});
+  if(p.telefone) add('Tel: ' + p.telefone, {tam: 22, negrito: true});
   linha();
   p.linhas.forEach(l => {
     add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 28, centro: false, negrito: true, espacoAntes: 6});
     const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
-    if(cons) add('[' + cons + ']', {tam: 20, centro: false});
+    if(cons) add('[' + cons + ']', {tam: 22, centro: false, negrito: true});
     if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 20, centro: false, negrito: true});
     if(l.observacao) add(l.observacao.toUpperCase(), {tam: 22, centro: false, negrito: true, espacoAntes: 4, caixa: true});
   });
