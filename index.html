@@ -5019,7 +5019,7 @@ function canvasParaEscPos(cv, opts){
   opts = opts || {};
   const W = Math.ceil(cv.width / 8) * 8, H = cv.height;
   const px = cv.getContext('2d').getImageData(0, 0, cv.width, H).data;
-  const bytesLinha = W / 8, FAIXA = 128;
+  const bytesLinha = W / 8, FAIXA = 32;
   const partes = [Uint8Array.of(0x1B, 0x40)];
   for(let y0 = 0; y0 < H; y0 += FAIXA){
     const h = Math.min(FAIXA, H - y0);
@@ -5046,11 +5046,17 @@ async function impDiretaEnviar(bytes){
   if(!porta.writable) await porta.open({baudRate: 115200, flowControl: 'none', bufferSize: 65536});
   const w = porta.writable.getWriter();
   try{
-    const TAM = 2048;
-    for(let i = 0; i < bytes.length; i += TAM) await w.write(bytes.subarray(i, i + TAM));
+    // a impressora tem buffer pequeno e a porta Bluetooth não tem controle de fluxo: envia em pedaços pequenos com pausa
+    let TAM = 256, PAUSA = 20;
+    try{ const p = parseInt(localStorage.getItem('pvImpDiretaPausa'), 10); if(p >= 0 && p <= 500) PAUSA = p; }catch(e){}
+    try{ const t = parseInt(localStorage.getItem('pvImpDiretaTam'), 10); if(t >= 32 && t <= 4096) TAM = t; }catch(e){}
+    for(let i = 0; i < bytes.length; i += TAM){
+      await w.write(bytes.subarray(i, i + TAM));
+      if(PAUSA) await new Promise(r => setTimeout(r, PAUSA));
+    }
   } finally { try{ w.releaseLock(); }catch(e){} }
   // deixa a impressora terminar de receber antes de soltar a porta (assim o driver do Windows também pode usá-la depois)
-  await new Promise(r => setTimeout(r, 400));
+  await new Promise(r => setTimeout(r, 1200));
   try{ await porta.close(); }catch(e){}
 }
 async function impDiretaImprimirCanvas(cv){
