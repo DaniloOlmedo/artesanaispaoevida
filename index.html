@@ -4932,7 +4932,7 @@ function comandaHTML(pid){
   if(BD.config.totemVias === 2){
     h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div>' + viaClienteHTML(pid);
   }
-  if(BD.config.rodapeComanda) h += '<div class="via-msg">' + esc(BD.config.rodapeComanda) + '</div>';
+  if(BD.config.rodapeComanda) h += '<div class="via-msg" style="font-size:18px;font-weight:bold;margin-top:10px">' + esc(BD.config.rodapeComanda) + '</div>';
   return h;
 }
 function viaClienteHTML(pid){
@@ -4998,11 +4998,13 @@ function impDiretaSalvar(){
     if($('cfgImpDiretaAvanco')){ let n = parseInt($('cfgImpDiretaAvanco').value, 10); if(!(n >= 0)) n = 8; localStorage.setItem('pvImpDiretaAvanco', String(Math.min(40, n))); }
     localStorage.setItem('pvImpDiretaCorte', $('cfgImpDiretaCorte') && $('cfgImpDiretaCorte').checked ? '1' : '0');
   }catch(e){ toast('Não foi possível guardar esta opção neste navegador.', 'erro'); }
+  impDiretaFaixaAtualizar();
 }
 async function impDiretaConectar(){
   if(!impDiretaSuportada()) return toast('Este navegador não permite impressão direta.', 'alerta');
   try{
     IMPDIR.porta = await navigator.serial.requestPort();
+    impDiretaFaixaAtualizar();
     impDiretaStatus('✅ Porta escolhida. Clique em "Testar impressão" para conferir.', true);
     toast('Porta da impressora escolhida.', 'ok');
   }catch(e){
@@ -5013,7 +5015,7 @@ async function impDiretaConectar(){
 async function impDiretaPorta(){
   if(IMPDIR.porta) return IMPDIR.porta;
   const ja = await navigator.serial.getPorts();
-  if(ja.length === 1){ IMPDIR.porta = ja[0]; return IMPDIR.porta; }
+  if(ja.length >= 1){ IMPDIR.porta = ja[ja.length - 1]; return IMPDIR.porta; }
   // várias portas autorizadas, ou nenhuma: pede ao usuário (só funciona logo depois de um clique)
   IMPDIR.porta = await navigator.serial.requestPort();
   return IMPDIR.porta;
@@ -5100,6 +5102,26 @@ async function impDiretaTestar(){
     impDiretaStatus('⚠️ ' + impDiretaMensagemErro(e), false);
   }
 }
+
+/* Faixa de aviso: o Chrome pode "esquecer" a porta COM quando a página é fechada/recarregada. Enquanto a impressão direta
+   estiver ligada e nenhuma porta estiver autorizada, mostra um botão fixo para reconectar com um clique. */
+async function impDiretaFaixaAtualizar(){
+  let f = document.getElementById('impDiretaFaixa');
+  const precisa = impDiretaAtiva() && !IMPDIR.porta && await (async () => { try{ return (await navigator.serial.getPorts()).length === 0; }catch(e){ return false; } })();
+  if(!precisa){ if(f) f.style.display = 'none'; return; }
+  if(!f){
+    f = document.createElement('button'); f.id = 'impDiretaFaixa'; f.type = 'button';
+    f.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;background:#b3261e;color:#fff;border:0;border-radius:24px;padding:10px 18px;font:600 15px system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer';
+    f.textContent = '🖨️ Impressora desconectada — toque para conectar';
+    f.onclick = async () => { await impDiretaConectar(); impDiretaFaixaAtualizar(); };
+    document.body.appendChild(f);
+  }
+  f.style.display = '';
+}
+if(typeof window !== 'undefined' && impDiretaSuportada()){
+  window.addEventListener('load', () => setTimeout(impDiretaFaixaAtualizar, 1500));
+  try{ navigator.serial.addEventListener('connect', () => impDiretaFaixaAtualizar()); }catch(e){}
+}
 function imprimirComandaPedido(pid){
   // Impressão direta (só se ligada neste aparelho) e só para a via da cozinha; senão, segue o caminho de sempre.
   if(impDiretaAtiva() && BD.config.totemVias !== 2){
@@ -5172,7 +5194,7 @@ function comandaLinhasImagem(pid){
   linha();
   add(status, {tam: 28, negrito: true, espacoAntes: 4});
   if(BD.config.valoresComanda) add('TOTAL ' + brl(p.total), {tam: 32, negrito: true});
-  if(BD.config.rodapeComanda) add(BD.config.rodapeComanda, {tam: 19, espacoAntes: 6});
+  if(BD.config.rodapeComanda){ linha(); add(BD.config.rodapeComanda, {tam: 28, negrito: true, espacoAntes: 6}); }
   return L;
 }
 function desenharComandaImagem(pid){
