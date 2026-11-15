@@ -549,6 +549,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   <button class="nav-btn" data-p="custos" onclick="irPara('custos')">💰 Custos</button>
   <button class="nav-btn" data-p="clientes" onclick="irPara('clientes')">👤 Clientes</button>
   <button class="nav-btn" data-p="locais" onclick="irPara('locais')">📍 Locais</button>
+  <button class="nav-btn" data-p="planonegocio" onclick="irPara('planonegocio')">📝 Plano de Negócio</button>
   <button class="nav-btn" data-p="dados" onclick="irPara('dados')">💾 Dados</button>
 </nav>
 
@@ -600,6 +601,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
         <button type="button" class="botao-inicio" data-p="custos" onclick="irPara('custos')"><span class="emoji">💰</span><span class="rotulo">Custos</span></button>
         <button type="button" class="botao-inicio" data-p="clientes" onclick="irPara('clientes')"><span class="emoji">👤</span><span class="rotulo">Clientes</span></button>
         <button type="button" class="botao-inicio" data-p="locais" onclick="irPara('locais')"><span class="emoji">📍</span><span class="rotulo">Locais</span></button>
+        <button type="button" class="botao-inicio" data-p="planonegocio" onclick="irPara('planonegocio')"><span class="emoji">📝</span><span class="rotulo">Plano de Negócio</span></button>
         <button type="button" class="botao-inicio" data-p="dados" onclick="irPara('dados')"><span class="emoji">💾</span><span class="rotulo">Dados</span></button>
       </div>
     </div>
@@ -1798,6 +1800,98 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   </div>
 </section>
 
+<!-- ============ PLANO DE NEGÓCIO (compra do trailer / Banco do Povo) ============ -->
+<section id="planonegocio" class="pagina">
+  <details class="ajuda-aba"><summary>❓ Como usar — 📝 Plano de Negócio</summary><div class="ajuda-corpo">
+    <p>Monta planos de negócio e diagnóstico financeiro para pedir microcrédito do Banco do Povo (curso Qualifica SP – Empreenda), usando os números reais já cadastrados no sistema. Cada finalidade (trailer, capital de giro, equipamento...) fica num plano separado, com seu próprio status.</p>
+    <ul>
+      <li>O Banco do Povo financia no máximo <b>R$ 21 mil por operação</b>.</li>
+      <li>Se parte do valor for financiada por outra fonte (fábrica, fornecedor), preencha as parcelas quando tiver as condições — enquanto isso, fica como pendência.</li>
+      <li>O diagnóstico financeiro e a capacidade de pagamento são calculados automaticamente a partir das vendas, custos e despesas já lançadas no sistema.</li>
+      <li>O status (rascunho, enviado, aprovado...) ajuda a lembrar o que já foi feito em cada plano.</li>
+    </ul>
+  </div></details>
+
+  <div class="painel" id="pcListaWrap">
+    <div class="cab-painel"><h2>📝 Planos de crédito</h2><button class="btn" type="button" onclick="novoPlanoCredito()">+ Novo plano</button></div>
+    <div class="aviso">Um plano por finalidade — ex.: um para o trailer, outro para capital de giro. Nada aqui é enviado automaticamente ao Banco do Povo; é só organização e cálculo.</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Finalidade</th><th>Status</th><th class="n">Valor total</th><th class="n">Pedido ao Banco do Povo</th><th>Pendências</th><th></th></tr></thead><tbody id="tabelaPlanosCredito"></tbody></table></div>
+  </div>
+
+  <div id="pcDetalheWrap" class="oculto">
+    <button class="btn cinza pequeno" type="button" onclick="voltarListaPlanos()">← Voltar à lista de planos</button>
+
+    <div class="painel">
+      <div class="cab-painel"><h2 id="pcTituloDetalhe">📝 Plano</h2></div>
+      <div class="bloco-calc">
+        <div><label for="pcFinalidade">Finalidade</label><input type="text" id="pcFinalidade" list="listaFinalidadesCredito" onchange="salvarCampoPlano('finalidade', this.value)"></div>
+        <div><label for="pcStatus">Status</label><select id="pcStatus" onchange="salvarCampoPlano('status', this.value)">
+          <option value="rascunho">📝 Rascunho</option>
+          <option value="enviado">📤 Enviado ao Banco do Povo</option>
+          <option value="aprovado">✅ Aprovado</option>
+          <option value="reprovado">❌ Reprovado</option>
+          <option value="concluido">🏁 Concluído / usado</option>
+        </select></div>
+      </div>
+      <datalist id="listaFinalidadesCredito"><option value="Trailer"><option value="Capital de giro"><option value="Equipamento"><option value="Reforma"><option value="Outro"></datalist>
+      <div id="pcPendenciasDetalhe"></div>
+    </div>
+
+    <div class="painel">
+      <h2>💰 Valor necessário</h2>
+      <div class="bloco-calc">
+        <div><label for="pcValorTotal">Valor total necessário (R$)</label><input type="text" inputmode="decimal" id="pcValorTotal" onchange="salvarCampoPlano('valorTotal', this.value)"></div>
+        <div><label for="pcValorBP">Pedido ao Banco do Povo (R$)</label><input type="text" inputmode="decimal" id="pcValorBP" onchange="salvarCampoPlano('valorBP', this.value)"><div class="dica">Máximo R$ 21.000,00 por operação.</div></div>
+      </div>
+      <h3 style="margin-top:14px">Condições do empréstimo do Banco do Povo</h3>
+      <div class="bloco-calc">
+        <div><label for="pcPrazoBP">Prazo (meses)</label><input type="number" min="1" max="60" step="1" inputmode="numeric" id="pcPrazoBP" onchange="salvarCampoPlano('prazoBP', this.value)"><div class="dica">Empreenda Rápido: até 30 meses.</div></div>
+        <div><label for="pcJurosBP">Juros (% ao mês)</label><input type="text" inputmode="decimal" id="pcJurosBP" onchange="salvarCampoPlano('jurosBP', this.value)"><div class="dica">A partir de 0,35% ao mês — confirme a taxa no atendimento.</div></div>
+      </div>
+      <h3 style="margin-top:14px">Saldo financiado por outra fonte (fornecedor, fábrica etc. — se houver)</h3>
+      <div class="aviso" id="pcAvisoSemOutraFonte">Ainda sem as condições dessa outra fonte — preencha quando tiver o número de parcelas e o valor de cada uma.</div>
+      <div class="bloco-calc">
+        <div><label for="pcParcelasOutro">Quantidade de parcelas</label><input type="number" min="0" step="1" inputmode="numeric" id="pcParcelasOutro" onchange="salvarCampoPlano('parcelasOutro', this.value)"></div>
+        <div><label for="pcParcelaOutro">Valor de cada parcela (R$)</label><input type="text" inputmode="decimal" id="pcParcelaOutro" onchange="salvarCampoPlano('parcelaOutro', this.value)"><div class="dica">Deixe em branco pra eu dividir o saldo igualmente pelas parcelas.</div></div>
+      </div>
+      <div id="pcResumoInvestimento"></div>
+    </div>
+
+    <div class="painel">
+      <h2>📊 Diagnóstico financeiro atual</h2>
+      <div class="aviso">Média dos últimos meses com vendas registradas no sistema — é a base real que embasa o plano.</div>
+      <div class="grade" id="pcDiagnostico"></div>
+    </div>
+
+    <div class="painel">
+      <h2>📈 Projeção com o crédito</h2>
+      <div class="bloco-calc">
+        <div><label for="pcCrescimento">Efeito esperado no lucro líquido mensal (%)</label><input type="number" min="0" step="1" inputmode="numeric" id="pcCrescimento" onchange="salvarCampoPlano('crescimento', this.value)"><div class="dica">Estimativa conservadora. Deixe 0 se o crédito for só reserva/fôlego, sem ganho direto esperado.</div></div>
+      </div>
+      <div id="pcProjecao"></div>
+    </div>
+
+    <div class="painel">
+      <h2>💳 Capacidade de pagamento</h2>
+      <div id="pcCapacidade"></div>
+    </div>
+
+    <div class="painel">
+      <h2>📝 Texto do plano de negócio</h2>
+      <div class="aviso">Siga a estrutura do curso Qualifica SP – Empreenda. Os dois campos abaixo são livres — escreva com suas palavras; o resto do texto é preenchido automaticamente com os números do sistema.</div>
+      <div><label for="pcResumo">Resumo do negócio e objetivo do crédito</label>
+        <textarea id="pcResumo" rows="4" onchange="salvarCampoPlano('resumo', this.value)" placeholder="Ex.: Produção artesanal de pães, pizzas e empanadas (MEI), vendida às quartas em condomínios e às quintas na Praça Santa Rita, em Olímpia-SP, além de entregas. Descreva aqui o objetivo deste crédito."></textarea></div>
+      <div style="margin-top:10px"><label for="pcMercado">Mercado e operação (onde e como vende, diferencial)</label>
+        <textarea id="pcMercado" rows="4" onchange="salvarCampoPlano('mercado', this.value)" placeholder="Ex.: Pizza broto 20 cm com fermentação natural (massa madre, 72h), insumos selecionados e forno a gás na hora da venda; empanadas com receita exclusiva peruana. Vendas às quartas em condomínios e às quintas na feira da Praça Santa Rita, Olímpia-SP, com entrega."></textarea></div>
+      <div class="grupo-botoes" style="margin-top:12px">
+        <button class="btn" type="button" onclick="copiarPlanoCredito()">📋 Copiar texto do plano</button>
+        <button class="btn cinza" type="button" onclick="baixarPlanoCredito()">⬇️ Baixar como .txt</button>
+      </div>
+      <div class="tabela-wrap" style="margin-top:12px"><pre id="pcTextoPreview" style="white-space:pre-wrap;font-family:inherit;padding:14px;margin:0"></pre></div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ DADOS ============ -->
 <section id="dados" class="pagina">
   <details class="ajuda-aba"><summary>❓ Como usar — 💾 Dados</summary><div class="ajuda-corpo">
@@ -2155,7 +2249,11 @@ const CONFIG_PADRAO = {
   // plano comercial: 'base' (grátis/barato) ou destravado com código -> recursos avançados (totem, fila, indicadores)
   recursosAvancados:false,
   // local de venda (feira/condomínio/trailer): qual está selecionado agora
-  localAtual:''
+  localAtual:'',
+  // Plano de Negócio — compra do trailer (Banco do Povo + parcelamento da fábrica)
+  planoTrailerValor:28000, planoTrailerEntrada:21000, planoTrailerParcelas:0, planoTrailerParcela:0, planoTrailerCrescimento:20,
+  planoTrailerPrazoBP:30, planoTrailerJurosBP:0.35, planoTrailerResumo:'', planoTrailerMercado:'',
+  planosCredito:[]
 };
 const PRODUTOS_INICIAIS = [
   {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custo:0, categoria:'Bebidas'},
@@ -3074,6 +3172,224 @@ function renderDespesas(){
   const porCat = {}; lista.forEach(d => { porCat[d.categoria] = (porCat[d.categoria] || 0) + d.valor; });
   const cats = Object.entries(porCat).sort((a, b) => b[1] - a[1]);
   $('resumoDespesasCat').innerHTML = cats.length ? '<h3>Por categoria</h3>' + cats.map(([c, v]) => '<div class="linha-kv"><span>' + esc(c) + '</span><b>' + brl(v) + '</b></div>').join('') : '';
+}
+
+/* ---------- PLANO DE NEGÓCIO (vários planos de crédito: trailer, capital de giro, etc.) ---------- */
+const STATUS_PLANO_CREDITO = {rascunho: '📝 Rascunho', enviado: '📤 Enviado ao Banco do Povo', aprovado: '✅ Aprovado', reprovado: '❌ Reprovado', concluido: '🏁 Concluído / usado'};
+let PLANO_CREDITO_ABERTO = null;
+function migrarPlanoCreditoUnico(){
+  if(!Array.isArray(BD.config.planosCredito) || BD.config.planosCredito === CONFIG_PADRAO.planosCredito) BD.config.planosCredito = [];
+  if(BD.config.planosCredito.length) return;
+  const c = BD.config;
+  const tinhaDados = c.planoTrailerResumo || c.planoTrailerMercado || (c.planoTrailerParcelas > 0) ||
+    (c.planoTrailerEntrada && c.planoTrailerEntrada !== 21000) || (c.planoTrailerValor && c.planoTrailerValor !== 28000);
+  if(!tinhaDados) return;
+  BD.config.planosCredito.push({
+    id: uid(), finalidade: 'Trailer', status: 'rascunho', criadoEm: dataHoje(),
+    valorTotal: c.planoTrailerValor || 0, valorBP: c.planoTrailerEntrada || 0,
+    prazoBP: c.planoTrailerPrazoBP || 30, jurosBP: c.planoTrailerJurosBP || 0.35,
+    parcelasOutro: c.planoTrailerParcelas || 0, parcelaOutro: c.planoTrailerParcela || 0,
+    crescimento: c.planoTrailerCrescimento || 20, resumo: c.planoTrailerResumo || '', mercado: c.planoTrailerMercado || ''
+  });
+  salvar('config');
+}
+function novoPlanoCredito(){
+  formModal({titulo: 'Novo plano de crédito', campos: [
+    {id: 'finalidade', rotulo: 'Finalidade (ex.: Trailer, Capital de giro, Equipamento)', valor: '', lista: 'listaFinalidadesCredito'}
+  ], salvar: v => {
+    if(!v.finalidade){ toast('Informe a finalidade.', 'alerta'); return false; }
+    const p = {id: uid(), finalidade: v.finalidade, status: 'rascunho', criadoEm: dataHoje(),
+      valorTotal: 0, valorBP: 0, prazoBP: 30, jurosBP: 0.35, parcelasOutro: 0, parcelaOutro: 0, crescimento: 0, resumo: '', mercado: ''};
+    BD.config.planosCredito.push(p); salvarAgora('config');
+    PLANO_CREDITO_ABERTO = p.id; renderPlanoNegocio();
+  }});
+}
+function abrirPlanoCredito(id){ PLANO_CREDITO_ABERTO = id; renderPlanoNegocio(); }
+function voltarListaPlanos(){ PLANO_CREDITO_ABERTO = null; renderPlanoNegocio(); }
+async function excluirPlanoCredito(id){
+  const p = BD.config.planosCredito.find(x => x.id === id); if(!p) return;
+  if(!await confirmar('Excluir o plano "' + p.finalidade + '"? Essa ação não pode ser desfeita.', {perigo: true})) return;
+  BD.config.planosCredito = BD.config.planosCredito.filter(x => x.id !== id);
+  if(PLANO_CREDITO_ABERTO === id) PLANO_CREDITO_ABERTO = null;
+  salvarAgora('config'); renderPlanoNegocio(); toast('Plano excluído.', 'ok');
+}
+function duplicarPlanoCredito(id){
+  const p = BD.config.planosCredito.find(x => x.id === id); if(!p) return;
+  const copia = {...p, id: uid(), finalidade: p.finalidade + ' (cópia)', status: 'rascunho', criadoEm: dataHoje()};
+  BD.config.planosCredito.push(copia); salvarAgora('config'); PLANO_CREDITO_ABERTO = copia.id; renderPlanoNegocio();
+  toast('Plano duplicado.', 'ok');
+}
+function planoAtual(){ return BD.config.planosCredito.find(x => x.id === PLANO_CREDITO_ABERTO) || null; }
+function salvarCampoPlanoLista(id, status){
+  const p = BD.config.planosCredito.find(x => x.id === id); if(!p) return;
+  p.status = status; salvar('config'); renderPlanoNegocio();
+}
+function salvarCampoPlano(campo, v){
+  const p = planoAtual(); if(!p) return;
+  const camposTexto = ['finalidade', 'status', 'resumo', 'mercado'];
+  p[campo] = camposTexto.includes(campo) ? String(v || '') : Math.max(0, parseNum(v));
+  salvar('config'); renderPlanoNegocio();
+}
+function mediaFinanceiraRecente(nMeses){
+  let mes = mesAtual(); const vals = [];
+  for(let i = 0; i < 24 && vals.length < nMeses; i++){
+    const m = resultadoMes(mes);
+    if(m.fat > 0) vals.push(m);
+    mes = mesAnterior(mes);
+  }
+  if(!vals.length) return null;
+  const fat = soma(vals, v => v.fat) / vals.length, liquido = soma(vals, v => v.liquido) / vals.length;
+  const custo = soma(vals, v => v.custo) / vals.length, taxas = soma(vals, v => v.taxas) / vals.length;
+  const despesas = soma(vals, v => v.despesas) / vals.length;
+  return {fat, liquido, custo, taxas, despesas, meses: vals.length, margem: fat > 0 ? liquido / fat * 100 : 0};
+}
+function parcelaPrice(valorPresente, taxaMensalPerc, meses){
+  const i = (taxaMensalPerc || 0) / 100;
+  if(!(valorPresente > 0) || !(meses > 0)) return 0;
+  if(i <= 0) return valorPresente / meses;
+  return valorPresente * i / (1 - Math.pow(1 + i, -meses));
+}
+function planoCreditoCalculo(p){
+  const valorTotal = p.valorTotal || 0;
+  const valorBP = p.valorBP || 0;
+  const saldoOutro = Math.max(0, valorTotal - valorBP);
+  const parcelasOutro = Math.round(p.parcelasOutro || 0);
+  let parcelaOutro = p.parcelaOutro || 0;
+  if(!parcelaOutro && parcelasOutro > 0) parcelaOutro = saldoOutro / parcelasOutro;
+  const prazoBP = Math.max(1, Math.round(p.prazoBP || 30));
+  const jurosBP = p.jurosBP || 0;
+  const parcelaBP = parcelaPrice(valorBP, jurosBP, prazoBP);
+  const excedeBancoPovo = valorBP > 21000;
+  const media = mediaFinanceiraRecente(3);
+  const crescimento = p.crescimento || 0;
+  const liquidoProjetado = media ? media.liquido * (1 + crescimento / 100) : 0;
+  const totalParcelaMensal = parcelaOutro + parcelaBP;
+  const base = media ? Math.max(liquidoProjetado, media.liquido) : 0;
+  const comprometimento = (media && base > 0) ? totalParcelaMensal / base * 100 : null;
+  return {valorTotal, valorBP, saldoOutro, parcelasOutro, parcelaOutro, prazoBP, jurosBP, parcelaBP, excedeBancoPovo,
+    media, crescimento, liquidoProjetado, totalParcelaMensal, comprometimento};
+}
+function pendenciasPlano(p, calc){
+  const pend = [];
+  if(!p.resumo) pend.push('falta o resumo do objetivo do crédito');
+  if(!p.mercado) pend.push('falta descrever mercado/operação');
+  if(calc.excedeBancoPovo) pend.push('valor pedido passa do limite de R$ 21.000 do Banco do Povo');
+  if(calc.saldoOutro > 0 && calc.parcelasOutro <= 0) pend.push('faltam as condições de financiamento do saldo (nº de parcelas)');
+  return pend;
+}
+function textoPlanoCredito(p){
+  const calc = planoCreditoCalculo(p);
+  const nome = BD.config.negocioNome || ($('marcaTitulo') ? $('marcaTitulo').textContent.trim() : '');
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const L = [];
+  L.push('PLANO DE NEGÓCIO — ' + nome.toUpperCase());
+  L.push('Finalidade do crédito: ' + p.finalidade);
+  L.push('Preparado em ' + hoje + ' — Qualifica SP · Empreenda / Banco do Povo Paulista');
+  L.push('');
+  L.push('1) RESUMO DO NEGÓCIO E OBJETIVO DO CRÉDITO');
+  L.push(p.resumo || '(preencha o resumo do negócio e o objetivo do crédito na tela do sistema)');
+  L.push('');
+  L.push('2) MERCADO E OPERAÇÃO');
+  L.push(p.mercado || '(preencha onde e como o negócio vende, e o diferencial dos produtos)');
+  L.push('');
+  L.push('3) DIAGNÓSTICO FINANCEIRO ATUAL');
+  if(calc.media){
+    L.push('Faturamento médio mensal (últimos ' + calc.media.meses + ' mês(es) com vendas): ' + brl(calc.media.fat));
+    L.push('Lucro líquido médio mensal: ' + brl(calc.media.liquido) + ' (margem ' + fmt(calc.media.margem, 1) + '%)');
+    L.push('Despesas médias mensais: ' + brl(calc.media.despesas));
+  } else L.push('Ainda sem vendas suficientes registradas no sistema para calcular a média.');
+  L.push('');
+  L.push('4) VALOR NECESSÁRIO');
+  L.push('Valor total: ' + brl(calc.valorTotal));
+  L.push('Pedido ao Banco do Povo: ' + brl(calc.valorBP) + (calc.excedeBancoPovo ? ' ⚠️ acima do limite de R$ 21.000,00 por operação' : ''));
+  L.push('  Parcela estimada do empréstimo (Price): ' + brl(calc.parcelaBP) + '/mês em ' + calc.prazoBP + ' parcelas (juros ' + fmt(calc.jurosBP, 2) + '% a.m.)');
+  if(calc.saldoOutro > 0) L.push('Saldo financiado por outra fonte: ' + brl(calc.saldoOutro) + (calc.parcelasOutro > 0 ? ' em ' + calc.parcelasOutro + ' parcelas de ' + brl(calc.parcelaOutro) : ' (condições ainda não definidas)'));
+  L.push('');
+  L.push('5) PROJEÇÃO COM O CRÉDITO (efeito esperado de ' + fmt(calc.crescimento, 0) + '% no lucro líquido mensal)');
+  L.push(calc.media ? 'Lucro líquido mensal projetado: ' + brl(calc.liquidoProjetado) : 'Sem base de vendas para projetar ainda.');
+  L.push('');
+  L.push('6) CAPACIDADE DE PAGAMENTO');
+  L.push('Comprometimento mensal total (empréstimo + outra fonte): ' + brl(calc.totalParcelaMensal));
+  L.push(calc.comprometimento !== null ? '% do lucro líquido comprometido com as parcelas: ' + fmt(calc.comprometimento, 1) + '%' : 'Ainda sem lucro líquido médio para calcular o percentual comprometido.');
+  return L.join('\n');
+}
+function copiarPlanoCredito(){
+  const p = planoAtual(); if(!p) return;
+  const t = textoPlanoCredito(p);
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => toast('Texto do plano copiado.', 'ok')).catch(() => toast('Não foi possível copiar automaticamente — selecione o texto abaixo.', 'alerta'));
+  else toast('Selecione o texto abaixo e copie manualmente.', 'alerta');
+}
+function baixarPlanoCredito(){
+  const p = planoAtual(); if(!p) return;
+  const blob = new Blob([textoPlanoCredito(p)], {type: 'text/plain;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'plano-de-negocio-' + norm(p.finalidade).replace(/\s+/g, '-') + '-' + mesAtual() + '.txt';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function renderListaPlanos(){
+  const lista = BD.config.planosCredito.slice().sort((a, b) => (b.criadoEm || '').localeCompare(a.criadoEm || ''));
+  $('tabelaPlanosCredito').innerHTML = lista.length ? lista.map(p => {
+    const calc = planoCreditoCalculo(p); const pend = pendenciasPlano(p, calc);
+    return '<tr><td>' + esc(p.finalidade) + '</td><td>' +
+      '<select onchange="salvarCampoPlanoLista(\'' + p.id + '\', this.value)" style="width:auto" aria-label="Status">' +
+      Object.entries(STATUS_PLANO_CREDITO).map(([k, v]) => '<option value="' + k + '"' + (k === p.status ? ' selected' : '') + '>' + v + '</option>').join('') +
+      '</select></td>' +
+      '<td class="n">' + brl(calc.valorTotal) + '</td><td class="n">' + brl(calc.valorBP) + '</td>' +
+      '<td>' + (pend.length ? '<span class="selo-status pendente">' + pend.length + ' pendência(s)</span>' : '<span class="selo-status conciliado">ok</span>') + '</td>' +
+      '<td class="acoes"><button class="btn pequeno" onclick="abrirPlanoCredito(\'' + p.id + '\')">Abrir</button> <button class="btn cinza pequeno" onclick="duplicarPlanoCredito(\'' + p.id + '\')" aria-label="Duplicar">⧉</button> <button class="btn vermelho pequeno" onclick="excluirPlanoCredito(\'' + p.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+  }).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum plano ainda. Clique em "+ Novo plano".</div></td></tr>';
+}
+function renderDetalhePlano(){
+  const p = planoAtual(); if(!p) return;
+  $('pcTituloDetalhe').textContent = '📝 ' + p.finalidade;
+  if($('pcFinalidade') && document.activeElement !== $('pcFinalidade')) $('pcFinalidade').value = p.finalidade;
+  if($('pcStatus') && document.activeElement !== $('pcStatus')) $('pcStatus').value = p.status;
+  const camposNum = {pcValorTotal: 'valorTotal', pcValorBP: 'valorBP', pcPrazoBP: 'prazoBP', pcJurosBP: 'jurosBP', pcParcelasOutro: 'parcelasOutro', pcParcelaOutro: 'parcelaOutro', pcCrescimento: 'crescimento'};
+  Object.entries(camposNum).forEach(([id, campo]) => { const el = $(id); if(el && document.activeElement !== el) el.value = p[campo] ? String(p[campo]).replace('.', ',') : (campo === 'parcelaOutro' ? '' : '0'); });
+  if($('pcResumo') && document.activeElement !== $('pcResumo')) $('pcResumo').value = p.resumo || '';
+  if($('pcMercado') && document.activeElement !== $('pcMercado')) $('pcMercado').value = p.mercado || '';
+
+  const calc = planoCreditoCalculo(p);
+  const pend = pendenciasPlano(p, calc);
+  $('pcPendenciasDetalhe').innerHTML = pend.length ? '<div class="aviso alerta-a">⚠️ ' + pend.map(esc).join(' • ') + '</div>' : '<div class="aviso ok-a">✅ Sem pendências de preenchimento.</div>';
+  $('pcAvisoSemOutraFonte').classList.toggle('oculto', calc.parcelasOutro > 0 || calc.saldoOutro <= 0);
+
+  $('pcResumoInvestimento').innerHTML =
+    '<div class="linha-kv"><span>Valor total necessário</span><b>' + brl(calc.valorTotal) + '</b></div>' +
+    '<div class="linha-kv"><span>(−) Pedido ao Banco do Povo</span><b>' + brl(calc.valorBP) + '</b></div>' +
+    '<div class="linha-kv"><span>= Saldo por outra fonte</span><b>' + brl(calc.saldoOutro) + '</b></div>' +
+    (calc.excedeBancoPovo ? '<div class="aviso alerta-a">⚠️ O valor pedido (' + brl(calc.valorBP) + ') passa do limite de R$ 21.000,00 por operação do Banco do Povo.</div>' : '') +
+    (calc.parcelasOutro > 0 ? '<div class="linha-kv"><span>Parcelas da outra fonte</span><b>' + calc.parcelasOutro + ' × ' + brl(calc.parcelaOutro) + '</b></div>' : '');
+
+  if(!calc.media){
+    $('pcDiagnostico').innerHTML = '<div class="aviso">Ainda não há vendas registradas no sistema para calcular o diagnóstico financeiro.</div>';
+    $('pcProjecao').innerHTML = ''; $('pcCapacidade').innerHTML = '';
+  } else {
+    $('pcDiagnostico').innerHTML =
+      cardHTML('Faturamento médio mensal', brl(calc.media.fat), 'média de ' + calc.media.meses + ' mês(es) com vendas') +
+      cardHTML('Lucro líquido médio', brl(calc.media.liquido), 'margem ' + fmt(calc.media.margem, 1) + '%', calc.media.liquido < 0 ? 'vermelho' : '') +
+      cardHTML('Despesas médias mensais', brl(calc.media.despesas), '');
+
+    $('pcProjecao').innerHTML =
+      '<div class="linha-kv"><span>Lucro líquido mensal projetado com o crédito</span><b class="' + (calc.liquidoProjetado < 0 ? 'erro' : 'ok') + '">' + brl(calc.liquidoProjetado) + '</b></div>';
+
+    const cor = calc.comprometimento === null ? '' : (calc.comprometimento <= 20 ? 'verde' : (calc.comprometimento <= 40 ? 'laranja' : 'vermelho'));
+    const msg = calc.comprometimento === null ? '' : (calc.comprometimento <= 20 ? 'Tranquilo: as parcelas cabem confortavelmente no lucro projetado.' : (calc.comprometimento <= 40 ? 'Atenção: as parcelas tomam uma parte relevante do lucro — qualquer queda nas vendas aperta o caixa.' : 'Risco alto: as parcelas comprometem a maior parte do lucro projetado. Vale reavaliar o valor pedido, o prazo ou a expectativa de ganho.'));
+    $('pcCapacidade').innerHTML =
+      '<div class="linha-kv"><span>Parcela do empréstimo (Banco do Povo, estimada)</span><b>' + brl(calc.parcelaBP) + '/mês</b></div>' +
+      (calc.parcelaOutro > 0 ? '<div class="linha-kv"><span>Parcela da outra fonte</span><b>' + brl(calc.parcelaOutro) + '/mês</b></div>' : '') +
+      '<div class="linha-kv"><span><b>Total comprometido por mês</b></span><b>' + brl(calc.totalParcelaMensal) + '</b></div>' +
+      (calc.comprometimento !== null ? '<div class="barra ' + cor + '"><i style="width:' + Math.min(100, calc.comprometimento) + '%"></i></div><div class="linha-kv"><span>% do lucro líquido comprometido</span><b>' + fmt(calc.comprometimento, 1) + '%</b></div><p class="pequeno-txt suave">' + msg + '</p>' : '');
+  }
+  $('pcTextoPreview').textContent = textoPlanoCredito(p);
+}
+function renderPlanoNegocio(){
+  migrarPlanoCreditoUnico();
+  if(PLANO_CREDITO_ABERTO && !planoAtual()) PLANO_CREDITO_ABERTO = null;
+  $('pcListaWrap').classList.toggle('oculto', !!PLANO_CREDITO_ABERTO);
+  $('pcDetalheWrap').classList.toggle('oculto', !PLANO_CREDITO_ABERTO);
+  if(PLANO_CREDITO_ABERTO) renderDetalhePlano(); else renderListaPlanos();
 }
 
 /* ---------- INSUMOS ---------- */
@@ -9785,7 +10101,7 @@ function renderConcFaltando(mes, temExtrato){
     ? '<p class="suave pequeno-txt">Itens do sistema em ' + fmtMes(mes) + ' sem correspondência no extrato. Pode ser dinheiro vivo, depósito ainda não caído ou extrato incompleto.</p>' + linhas.map(x => '<div class="linha-kv"><span>' + fmtData(x.data) + ' — ' + esc(x.txt) + '</span></div>').join('')
     : '<div class="aviso ok-a">✅ Tudo o que foi lançado em ' + fmtMes(mes) + ' tem correspondência no extrato.</div>';
 }
-const PAGINAS = ['inicio', 'locais', 'clientes', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'etiquetas', 'nutricional', 'compras', 'conciliacao', 'custos', 'dados'];
+const PAGINAS = ['inicio', 'locais', 'clientes', 'dashboard', 'vendas', 'fila', 'atendimento', 'caixa', 'fichas', 'precificacao', 'insumos', 'massa', 'estoque', 'etiquetas', 'nutricional', 'compras', 'conciliacao', 'custos', 'planonegocio', 'dados'];
 let _pagina = 'inicio';
 const paginaAtual = () => _pagina;
 
@@ -9824,6 +10140,7 @@ function renderPagina(id){
       case 'nutricional': renderNutricional(); break;
       case 'compras': renderCompras(); break;
       case 'custos': renderCustos(); break;
+      case 'planonegocio': renderPlanoNegocio(); break;
       case 'conciliacao': renderConciliacao(); break;
       case 'dados': renderDados(); break;
     }
