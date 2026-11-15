@@ -1719,6 +1719,12 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <div class="dica">Vale só para este aparelho (não muda nos outros). Usa a porta COM da impressora Bluetooth ou USB. Funciona para a comanda da cozinha (1 via); via do cliente, etiquetas e relatórios continuam saindo pela janela de impressão normal.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgRodape">Mensagem extra no fim da comanda — opcional</label><input type="text" id="cfgRodape" placeholder="Deixe vazio para não imprimir nada" oninput="salvarConfig()"><div class="dica">Se ficar em branco, nada é impresso após a linha de corte, evitando desperdício de papel.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgCNPJ">CNPJ do seu negócio (MEI) — opcional</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0000-00" oninput="salvarConfig()"><div class="dica">Aparece no recibo de consumo emitido pra cliente (aba Caixa). Deixe vazio se ainda não tiver CNPJ.</div></div></div>
+    <h3 style="margin-top:14px">Seus dados (usados no Plano de Negócio, para pedir crédito)</h3>
+    <div class="bloco-calc">
+      <div><label for="cfgResponsavelNome">Seu nome completo</label><input type="text" id="cfgResponsavelNome" oninput="salvarConfig()"></div>
+      <div><label for="cfgResponsavelCPF">Seu CPF</label><input type="text" id="cfgResponsavelCPF" placeholder="000.000.000-00" oninput="salvarConfig()"></div>
+      <div><label for="cfgNegocioCidade">Cidade do negócio</label><input type="text" id="cfgNegocioCidade" placeholder="Ex: Olímpia" oninput="salvarConfig()"></div>
+    </div>
   </div>
 
   <div id="planoResumo"></div>
@@ -1812,6 +1818,44 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </ul>
   </div></details>
 
+  <div class="painel" id="pcPerfilWrap">
+    <details class="ajuda-aba" open><summary><h2 style="display:inline">🧾 Seu perfil de negócio (preenche uma vez, usado em todos os planos)</h2></summary><div class="ajuda-corpo" style="padding-top:4px">
+    <div class="aviso">Preencha estes dados uma única vez, seguindo os mesmos passos do curso Qualifica SP – Empreenda. Toda vez que você criar um novo plano (capital de giro, equipamento, etc.), esse perfil é reaproveitado automaticamente — só o que for específico de cada crédito fica dentro do plano.</div>
+    <h3>Dados gerais</h3>
+    <div class="bloco-calc">
+      <div><label for="ppResponsavelNome">Seu nome completo</label><input type="text" id="ppResponsavelNome" onchange="salvarCfgEPerfil('responsavelNome', this.value)"></div>
+      <div><label for="ppResponsavelCPF">Seu CPF</label><input type="text" id="ppResponsavelCPF" placeholder="000.000.000-00" onchange="salvarCfgEPerfil('responsavelCPF', this.value)"></div>
+      <div><label for="ppCidade">Cidade do negócio</label><input type="text" id="ppCidade" placeholder="Ex: Olímpia" onchange="salvarCfgEPerfil('negocioCidade', this.value)"></div>
+    </div>
+    <div class="bloco-calc">
+      <div><label for="ppStatusPessoal">Seu status pessoal</label><select id="ppStatusPessoal" onchange="salvarCampoPerfil('statusPessoal', this.value)">
+        <option value="">Não definido</option><option value="mei-dedicacao-integral">MEI de dedicação integral ao negócio</option>
+        <option value="mei-outro-emprego">MEI + também tenho emprego/CLT</option><option value="autonomo-sem-mei">Autônomo, ainda sem MEI</option><option value="outro">Outro</option>
+      </select></div>
+      <div><label for="ppStatusEmpresa">Status da empresa</label><select id="ppStatusEmpresa" onchange="salvarCampoPerfil('statusEmpresa', this.value)">
+        <option value="">Não definido</option><option value="mei-ativo">MEI ativo</option><option value="abrindo">Em processo de abertura</option>
+        <option value="pretendo-abrir">Pretendo abrir</option><option value="outro">Outro</option>
+      </select></div>
+      <div><label for="ppSetor">Setor de atuação</label><input type="text" id="ppSetor" onchange="salvarCampoPerfil('setor', this.value)"></div>
+    </div>
+    <h3 style="margin-top:14px">Identidade do negócio</h3>
+    <div><label for="ppProposito">Propósito (o que vende, para quem, como entrega e por quê)</label><textarea id="ppProposito" rows="3" onchange="salvarCampoPerfil('proposito', this.value)"></textarea></div>
+    <div style="margin-top:8px"><label for="ppPropostaValor">Proposta de valor (o que é único no seu negócio)</label><textarea id="ppPropostaValor" rows="2" onchange="salvarCampoPerfil('propostaValor', this.value)"></textarea></div>
+    <div style="margin-top:8px"><label for="ppPublicoAlvo">Público-alvo (perfil do cliente ideal)</label><textarea id="ppPublicoAlvo" rows="3" onchange="salvarCampoPerfil('publicoAlvo', this.value)"></textarea></div>
+    <h3 style="margin-top:14px">Mercado</h3>
+    <div><label for="ppConcorrentes">Principais concorrentes (pontos fortes, fracos e oportunidades de cada um)</label><textarea id="ppConcorrentes" rows="4" onchange="salvarCampoPerfil('concorrentes', this.value)"></textarea></div>
+    <div style="margin-top:8px"><label for="ppDiferencial">Diferencial competitivo</label><textarea id="ppDiferencial" rows="2" onchange="salvarCampoPerfil('diferencial', this.value)"></textarea></div>
+    <h3 style="margin-top:14px">Contato</h3>
+    <div class="bloco-calc">
+      <div><label for="ppContatoEmail">E-mail</label><input type="text" id="ppContatoEmail" onchange="salvarCampoPerfil('contatoEmail', this.value)"></div>
+      <div><label for="ppContatoWhats">WhatsApp</label><input type="text" id="ppContatoWhats" onchange="salvarCampoPerfil('contatoWhats', this.value)"></div>
+      <div><label for="ppContatoInsta">Instagram/site</label><input type="text" id="ppContatoInsta" onchange="salvarCampoPerfil('contatoInsta', this.value)"></div>
+    </div>
+    <h3 style="margin-top:14px">Seu sonho mensal</h3>
+    <div class="bloco-calc"><div><label for="ppSonhoMensal">Quanto você quer poder retirar por mês, no seu sonho (R$)</label><input type="text" inputmode="decimal" id="ppSonhoMensal" onchange="salvarCampoPerfil('sonhoMensal', this.value)"><div class="dica">Usado para calcular a meta de vendas de cada plano de crescimento.</div></div></div>
+    </div></details>
+  </div>
+
   <div class="painel" id="pcListaWrap">
     <div class="cab-painel"><h2>📝 Planos de crédito</h2><button class="btn" type="button" onclick="novoPlanoCredito()">+ Novo plano</button></div>
     <div class="aviso">Um plano por finalidade — ex.: um para o trailer, outro para capital de giro. Nada aqui é enviado automaticamente ao Banco do Povo; é só organização e cálculo.</div>
@@ -1864,9 +1908,20 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </div>
 
     <div class="painel">
+      <h2>🌱 Como vai crescer com este crédito</h2>
+      <div class="aviso">Mesmos passos do curso (Aula 20) — mas calculado com os preços reais das suas fichas e o custo/lucro reais do sistema, em vez de digitar tudo à mão.</div>
+      <div><label for="pcEstrategia">Estratégia (o que vai fazer para vender mais)</label><textarea id="pcEstrategia" rows="2" onchange="salvarCampoPlano('estrategiaCrescimento', this.value)" placeholder="Ex.: Aumentar mais um ponto de venda; aumentar a produção."></textarea></div>
+      <h3 style="margin-top:12px">Meta de crescimento — quanto vender a mais por mês</h3>
+      <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Preço atual</th><th class="n">Qtd. extra/mês</th><th class="n">Incremento</th><th></th></tr></thead><tbody id="tabelaMetaProdutos"></tbody></table></div>
+      <div class="grupo-botoes" style="margin-top:8px"><button class="btn cinza pequeno" type="button" onclick="addMetaProduto()">+ Produto</button></div>
+      <div id="pcResumoCrescimento" style="margin-top:12px"></div>
+      <div id="pcEvolucaoMensal" style="margin-top:12px"></div>
+    </div>
+
+    <div class="painel">
       <h2>📈 Projeção com o crédito</h2>
       <div class="bloco-calc">
-        <div><label for="pcCrescimento">Efeito esperado no lucro líquido mensal (%)</label><input type="number" min="0" step="1" inputmode="numeric" id="pcCrescimento" onchange="salvarCampoPlano('crescimento', this.value)"><div class="dica">Estimativa conservadora. Deixe 0 se o crédito for só reserva/fôlego, sem ganho direto esperado.</div></div>
+        <div><label for="pcCrescimento">Efeito esperado no lucro líquido mensal (%) — estimativa manual</label><input type="number" min="0" step="1" inputmode="numeric" id="pcCrescimento" onchange="salvarCampoPlano('crescimento', this.value)"><div class="dica">Use se preferir estimar à mão. Se preencher a "Meta de crescimento" acima, ela já calcula isso automaticamente (some as duas, se as duas estiverem preenchidas).</div></div>
       </div>
       <div id="pcProjecao"></div>
     </div>
@@ -1980,6 +2035,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 </section>
 
 <datalist id="listaInsumosDL"></datalist>
+<datalist id="listaFichasDL"></datalist>
 <datalist id="listaClientesDL"></datalist>
 <datalist id="listaComponentesSugeridos"></datalist>
 <datalist id="listaCategoriasDL"></datalist>
@@ -2246,6 +2302,7 @@ const CONFIG_PADRAO = {
   pixChave:'', pixNome:'', pixCidade:'',
   // identidade / marca (para revenda a outros negócios)
   negocioNome:'', negocioTagline:'Gestão de vendas e produção', negocioEmoji:'🍞', negocioLogo:'', corPrimaria:'#4f46e5', negocioCNPJ:'',
+  negocioCidade:'', responsavelNome:'', responsavelCPF:'',
   // plano comercial: 'base' (grátis/barato) ou destravado com código -> recursos avançados (totem, fila, indicadores)
   recursosAvancados:false,
   // local de venda (feira/condomínio/trailer): qual está selecionado agora
@@ -2253,7 +2310,7 @@ const CONFIG_PADRAO = {
   // Plano de Negócio — compra do trailer (Banco do Povo + parcelamento da fábrica)
   planoTrailerValor:28000, planoTrailerEntrada:21000, planoTrailerParcelas:0, planoTrailerParcela:0, planoTrailerCrescimento:20,
   planoTrailerPrazoBP:30, planoTrailerJurosBP:0.35, planoTrailerResumo:'', planoTrailerMercado:'',
-  planosCredito:[]
+  planosCredito:[], perfilPlano:{}, planoNegocioSeed:false
 };
 const PRODUTOS_INICIAIS = [
   {nome:'🥤 Coca-Cola Lata 350ml', preco:8.00, custo:0, categoria:'Bebidas'},
@@ -3123,6 +3180,9 @@ function carregarConfigNaTela(){
   $('cfgVias').value = String(c.totemVias || 2);
   $('cfgRodape').value = c.rodapeComanda || '';
   $('cfgCNPJ').value = c.negocioCNPJ || '';
+  if($('cfgResponsavelNome') && document.activeElement !== $('cfgResponsavelNome')) $('cfgResponsavelNome').value = c.responsavelNome || '';
+  if($('cfgResponsavelCPF') && document.activeElement !== $('cfgResponsavelCPF')) $('cfgResponsavelCPF').value = c.responsavelCPF || '';
+  if($('cfgNegocioCidade') && document.activeElement !== $('cfgNegocioCidade')) $('cfgNegocioCidade').value = c.negocioCidade || '';
   impDiretaCarregarUI();
 }
 function salvarConfig(){
@@ -3132,6 +3192,9 @@ function salvarConfig(){
   c.totemVias = $('cfgVias').value === '1' ? 1 : 2;
   c.rodapeComanda = $('cfgRodape').value.trim();
   c.negocioCNPJ = $('cfgCNPJ').value.trim();
+  if($('cfgResponsavelNome')) c.responsavelNome = $('cfgResponsavelNome').value.trim();
+  if($('cfgResponsavelCPF')) c.responsavelCPF = $('cfgResponsavelCPF').value.trim();
+  if($('cfgNegocioCidade')) c.negocioCidade = $('cfgNegocioCidade').value.trim();
   recalcularTudo(); salvar('config', 'fichas');
 }
 
@@ -3189,7 +3252,8 @@ function migrarPlanoCreditoUnico(){
     valorTotal: c.planoTrailerValor || 0, valorBP: c.planoTrailerEntrada || 0,
     prazoBP: c.planoTrailerPrazoBP || 30, jurosBP: c.planoTrailerJurosBP || 0.35,
     parcelasOutro: c.planoTrailerParcelas || 0, parcelaOutro: c.planoTrailerParcela || 0,
-    crescimento: c.planoTrailerCrescimento || 20, resumo: c.planoTrailerResumo || '', mercado: c.planoTrailerMercado || ''
+    crescimento: c.planoTrailerCrescimento || 20, resumo: c.planoTrailerResumo || '', mercado: c.planoTrailerMercado || '',
+    estrategiaCrescimento: '', metaProdutos: []
   });
   salvar('config');
 }
@@ -3199,10 +3263,44 @@ function novoPlanoCredito(){
   ], salvar: v => {
     if(!v.finalidade){ toast('Informe a finalidade.', 'alerta'); return false; }
     const p = {id: uid(), finalidade: v.finalidade, status: 'rascunho', criadoEm: dataHoje(),
-      valorTotal: 0, valorBP: 0, prazoBP: 30, jurosBP: 0.35, parcelasOutro: 0, parcelaOutro: 0, crescimento: 0, resumo: '', mercado: ''};
+      valorTotal: 0, valorBP: 0, prazoBP: 30, jurosBP: 0.35, parcelasOutro: 0, parcelaOutro: 0, crescimento: 0, resumo: '', mercado: '',
+      estrategiaCrescimento: '', metaProdutos: []};
     BD.config.planosCredito.push(p); salvarAgora('config');
     PLANO_CREDITO_ABERTO = p.id; renderPlanoNegocio();
   }});
+}
+// Semeia, uma única vez, o perfil do negócio e um plano "Trailer" já preenchidos com as respostas reais
+// que o Danilo deu no curso Qualifica SP – Empreenda (conferidas e corretas) — pra já ter algo pronto pra
+// apresentar ao Banco do Povo, calculado agora com os números reais e atuais do sistema.
+function semearPlanoNegocioPronto(){
+  if(BD.config.planoNegocioSeed) return;
+  BD.config.planoNegocioSeed = true;
+  const pp = BD.config.perfilPlano;
+  if(!BD.config.responsavelNome) BD.config.responsavelNome = 'Danilo César Feliciano Olmedo';
+  if(!BD.config.responsavelCPF) BD.config.responsavelCPF = '076.409.708-30';
+  if(!BD.config.negocioCidade) BD.config.negocioCidade = 'Olímpia';
+  if(!BD.config.negocioCNPJ) BD.config.negocioCNPJ = '60.126.616/0001-35';
+  if(!pp.proposito) pp.proposito = 'Venda de pizzas napolitanas e empanadas peruanas em feiras e condomínios, para adultos de 25 a 55 anos com renda fixa (comerciantes, bancários, servidores públicos, empresários, fazendeiros) que buscam alimentação de qualidade e pagam por um produto diferenciado. Entrega com tenda montada: empanadas já assadas e pizza montada/assada na hora, servida recheada e quentinha.';
+  if(!pp.propostaValor) pp.propostaValor = 'Pizza com massa madre de fermentação natural de 72h e insumos selecionados, e empanadas com receita exclusiva peruana — nenhum concorrente da região oferece isso.';
+  if(!pp.publicoAlvo) pp.publicoAlvo = 'Mora em Olímpia, adulto (25 a 55 anos), de ambos os gêneros — comerciantes, bancários, servidores públicos, empresários e fazendeiros com rotina fixa de trabalho. Valoriza produto saudável e de qualidade, percebe a fermentação natural e a diferença da massa das empanadas. Cliente fiel, que volta porque reconhece esse valor.';
+  if(!pp.setor) pp.setor = 'Alimentação';
+  if(!pp.concorrentes) pp.concorrentes = 'Pastelaria da Mara — concorre na feira e no condomínio. Pontos fortes: mais tempo de venda, produto popular, público fiel. Pontos fracos: produto com muito óleo. Oportunidades: apelo a produto saudável, experiência gastronômica diferenciada, preço mais acessível.\nburguer_do.chef — outro produto artesanal concorrente. Pontos fortes: novidade na feira e condomínios. Pontos fracos: pão industrializado, atendimento com falta de habilidade, preço alto. Oportunidades: produto natural e saudável, atendimento personalizado, preço acessível.';
+  if(!pp.diferencial) pp.diferencial = 'Fusão de duas técnicas artesanais de alto valor gastronômico que raramente se encontram juntas: a ciência da longa fermentação italiana (massa madre, 72h) com a riqueza cultural e o sabor autêntico da panificação sul-americana (empanada peruana). Produto único no mercado, difícil de copiar por concorrentes que buscam volume e rapidez.';
+  if(!pp.contatoEmail) pp.contatoEmail = 'danilocfolmedo@gmail.com';
+  if(!pp.contatoWhats) pp.contatoWhats = '17981998660';
+  if(!pp.contatoInsta) pp.contatoInsta = 'instagram.com/artesanaispaoevida';
+  if(!pp.sonhoMensal) pp.sonhoMensal = 2333.33;
+  if(!BD.config.planosCredito.length){
+    BD.config.planosCredito.push({
+      id: uid(), finalidade: 'Trailer', status: 'rascunho', criadoEm: dataHoje(),
+      valorTotal: 28000, valorBP: 21000, prazoBP: 30, jurosBP: 0.35, parcelasOutro: 0, parcelaOutro: 0, crescimento: 0,
+      resumo: 'Compra de um trailer para a Artesanais Pão e Vida, estimado em R$ 28.000,00. O valor pedido ao Banco do Povo cobre a entrada; o saldo restante será parcelado direto com a fábrica do trailer (condições ainda a confirmar).',
+      mercado: 'Vendas em feira (Praça Santa Rita, Olímpia-SP) e em condomínios, com entrega. Pizza broto 20 cm com fermentação natural (massa madre, 72h) e insumos selecionados; empanadas com receita exclusiva peruana.',
+      estrategiaCrescimento: 'Aumentar mais um ponto de venda e a produção para atendê-lo.',
+      metaProdutos: [{id: uid(), nome: 'Pizza Marguerita', qtdExtra: 25}, {id: uid(), nome: 'Pizza Copa Lombo', qtdExtra: 25}]
+    });
+  }
+  salvarAgora('config');
 }
 function abrirPlanoCredito(id){ PLANO_CREDITO_ABERTO = id; renderPlanoNegocio(); }
 function voltarListaPlanos(){ PLANO_CREDITO_ABERTO = null; renderPlanoNegocio(); }
@@ -3279,36 +3377,77 @@ function pendenciasPlano(p, calc){
 }
 function textoPlanoCredito(p){
   const calc = planoCreditoCalculo(p);
-  const nome = BD.config.negocioNome || ($('marcaTitulo') ? $('marcaTitulo').textContent.trim() : '');
+  const cresc = planoCrescimentoCalculo(p, calc);
+  const c = BD.config; const pp = c.perfilPlano || {};
+  const nome = c.negocioNome || ($('marcaTitulo') ? $('marcaTitulo').textContent.trim() : '');
   const hoje = new Date().toLocaleDateString('pt-BR');
+  const rotStatusPessoal = {'mei-dedicacao-integral': 'MEI de dedicação integral ao negócio', 'mei-outro-emprego': 'MEI + também tenho emprego/CLT', 'autonomo-sem-mei': 'Autônomo, ainda sem MEI', 'outro': 'Outro'};
+  const rotStatusEmpresa = {'mei-ativo': 'MEI ativo', 'abrindo': 'Em processo de abertura', 'pretendo-abrir': 'Pretendo abrir', 'outro': 'Outro'};
   const L = [];
   L.push('PLANO DE NEGÓCIO — ' + nome.toUpperCase());
   L.push('Finalidade do crédito: ' + p.finalidade);
   L.push('Preparado em ' + hoje + ' — Qualifica SP · Empreenda / Banco do Povo Paulista');
   L.push('');
-  L.push('1) RESUMO DO NEGÓCIO E OBJETIVO DO CRÉDITO');
-  L.push(p.resumo || '(preencha o resumo do negócio e o objetivo do crédito na tela do sistema)');
+  L.push('1) DADOS GERAIS');
+  L.push('Empresa: ' + (nome || '(preencha em Custos → Identidade do negócio)'));
+  L.push('CNPJ: ' + (c.negocioCNPJ || '(não informado)'));
+  L.push('Nome do responsável: ' + (c.responsavelNome || '(não informado)'));
+  L.push('CPF: ' + (c.responsavelCPF || '(não informado)'));
+  L.push('Cidade: ' + (c.negocioCidade || '(não informado)'));
+  L.push('Status pessoal: ' + (rotStatusPessoal[pp.statusPessoal] || 'Não definido'));
+  L.push('Status da empresa: ' + (rotStatusEmpresa[pp.statusEmpresa] || 'Não definido'));
   L.push('');
-  L.push('2) MERCADO E OPERAÇÃO');
+  L.push('2) IDENTIDADE DO NEGÓCIO');
+  L.push('Setor de atuação: ' + (pp.setor || 'Alimentação'));
+  L.push('Propósito: ' + (pp.proposito || '(preencha no "Seu perfil de negócio")'));
+  L.push('Proposta de valor: ' + (pp.propostaValor || '(preencha no "Seu perfil de negócio")'));
+  L.push('Público-alvo: ' + (pp.publicoAlvo || '(preencha no "Seu perfil de negócio")'));
+  if(pp.contatoEmail || pp.contatoWhats || pp.contatoInsta) L.push('Contato: ' + [pp.contatoEmail, pp.contatoWhats, pp.contatoInsta].filter(Boolean).join(' · '));
+  L.push('');
+  L.push('3) MERCADO E CONCORRÊNCIA');
+  L.push(pp.concorrentes || '(preencha os concorrentes no "Seu perfil de negócio")');
+  if(pp.diferencial) L.push('Diferencial competitivo: ' + pp.diferencial);
+  L.push('');
+  L.push('4) RESUMO DO OBJETIVO DESTE CRÉDITO');
+  L.push(p.resumo || '(preencha o resumo do objetivo deste crédito na tela do plano)');
+  L.push('');
+  L.push('5) OPERAÇÃO (ONDE E COMO VENDE)');
   L.push(p.mercado || '(preencha onde e como o negócio vende, e o diferencial dos produtos)');
   L.push('');
-  L.push('3) DIAGNÓSTICO FINANCEIRO ATUAL');
+  L.push('6) DIAGNÓSTICO FINANCEIRO ATUAL');
   if(calc.media){
     L.push('Faturamento médio mensal (últimos ' + calc.media.meses + ' mês(es) com vendas): ' + brl(calc.media.fat));
     L.push('Lucro líquido médio mensal: ' + brl(calc.media.liquido) + ' (margem ' + fmt(calc.media.margem, 1) + '%)');
     L.push('Despesas médias mensais: ' + brl(calc.media.despesas));
   } else L.push('Ainda sem vendas suficientes registradas no sistema para calcular a média.');
   L.push('');
-  L.push('4) VALOR NECESSÁRIO');
+  L.push('7) VALOR NECESSÁRIO');
   L.push('Valor total: ' + brl(calc.valorTotal));
   L.push('Pedido ao Banco do Povo: ' + brl(calc.valorBP) + (calc.excedeBancoPovo ? ' ⚠️ acima do limite de R$ 21.000,00 por operação' : ''));
   L.push('  Parcela estimada do empréstimo (Price): ' + brl(calc.parcelaBP) + '/mês em ' + calc.prazoBP + ' parcelas (juros ' + fmt(calc.jurosBP, 2) + '% a.m.)');
   if(calc.saldoOutro > 0) L.push('Saldo financiado por outra fonte: ' + brl(calc.saldoOutro) + (calc.parcelasOutro > 0 ? ' em ' + calc.parcelasOutro + ' parcelas de ' + brl(calc.parcelaOutro) : ' (condições ainda não definidas)'));
   L.push('');
-  L.push('5) PROJEÇÃO COM O CRÉDITO (efeito esperado de ' + fmt(calc.crescimento, 0) + '% no lucro líquido mensal)');
-  L.push(calc.media ? 'Lucro líquido mensal projetado: ' + brl(calc.liquidoProjetado) : 'Sem base de vendas para projetar ainda.');
+  L.push('8) COMO VAI CRESCER COM ESTE CRÉDITO');
+  if(p.estrategiaCrescimento) L.push('Estratégia: ' + p.estrategiaCrescimento);
+  if(cresc.itens.length){
+    L.push('Meta de crescimento (produtos extras por mês):');
+    cresc.itens.forEach(i => L.push('  ' + (i.nome || '(produto)') + ': +' + (i.qtdExtra || 0) + ' un./mês × ' + brl(i.preco) + ' = ' + brl(i.incremento) + '/mês'));
+    L.push('Incremento de faturamento planejado: ' + brl(cresc.incrementoFaturamento) + '/mês');
+    if(cresc.sobraPerc !== null){
+      L.push('Custo de produção médio: ' + fmt(cresc.custoProducaoPerc, 2) + '% (sobra ' + fmt(cresc.sobraPerc, 2) + '% de cada venda)');
+      L.push('Capital de giro necessário (6 meses de custo fixo): ' + brl(cresc.capitalGiroNecessario));
+      L.push('Lucro líquido alvo (custo fixo + sonho mensal de ' + brl(cresc.sonhoMensal) + ' + reserva de emergência): ' + brl(cresc.lucroLiquidoAlvo));
+      if(cresc.metaVendas !== null) L.push('Meta de vendas mensal: ' + brl(cresc.metaVendas) + ' (crescimento necessário de ' + fmt(cresc.crescimentoNecessarioPerc, 1) + '% sobre o faturamento atual)');
+      L.push('Faturamento projetado com este plano: ' + brl(cresc.faturamentoProjetado));
+      L.push('Lucro adicional estimado: ' + brl(cresc.lucroAdicional) + '/mês — lucro líquido projetado: ' + brl(cresc.lucroProjetado));
+      if(cresc.retornoMeses !== null) L.push('Retorno do valor total investido: ' + fmt(cresc.retornoMeses, 1) + ' mês(es)');
+    }
+  } else L.push('(preencha a "Meta de crescimento" na tela do plano para detalhar isto)');
   L.push('');
-  L.push('6) CAPACIDADE DE PAGAMENTO');
+  L.push('9) PROJEÇÃO COM O CRÉDITO (efeito manual estimado de ' + fmt(calc.crescimento, 0) + '% no lucro líquido, somado ao crescimento acima)');
+  L.push(calc.media ? 'Lucro líquido mensal projetado: ' + brl(calc.liquidoProjetado + (cresc.lucroAdicional || 0)) : 'Sem base de vendas para projetar ainda.');
+  L.push('');
+  L.push('10) CAPACIDADE DE PAGAMENTO');
   L.push('Comprometimento mensal total (empréstimo + outra fonte): ' + brl(calc.totalParcelaMensal));
   L.push(calc.comprometimento !== null ? '% do lucro líquido comprometido com as parcelas: ' + fmt(calc.comprometimento, 1) + '%' : 'Ainda sem lucro líquido médio para calcular o percentual comprometido.');
   return L.join('\n');
@@ -3362,6 +3501,8 @@ function renderDetalhePlano(){
     (calc.excedeBancoPovo ? '<div class="aviso alerta-a">⚠️ O valor pedido (' + brl(calc.valorBP) + ') passa do limite de R$ 21.000,00 por operação do Banco do Povo.</div>' : '') +
     (calc.parcelasOutro > 0 ? '<div class="linha-kv"><span>Parcelas da outra fonte</span><b>' + calc.parcelasOutro + ' × ' + brl(calc.parcelaOutro) + '</b></div>' : '');
 
+  const cresc = renderCrescimentoPlano(p, calc);
+
   if(!calc.media){
     $('pcDiagnostico').innerHTML = '<div class="aviso">Ainda não há vendas registradas no sistema para calcular o diagnóstico financeiro.</div>';
     $('pcProjecao').innerHTML = ''; $('pcCapacidade').innerHTML = '';
@@ -3371,8 +3512,10 @@ function renderDetalhePlano(){
       cardHTML('Lucro líquido médio', brl(calc.media.liquido), 'margem ' + fmt(calc.media.margem, 1) + '%', calc.media.liquido < 0 ? 'vermelho' : '') +
       cardHTML('Despesas médias mensais', brl(calc.media.despesas), '');
 
+    const liquidoProjetadoTotal = calc.liquidoProjetado + (cresc.lucroAdicional || 0);
     $('pcProjecao').innerHTML =
-      '<div class="linha-kv"><span>Lucro líquido mensal projetado com o crédito</span><b class="' + (calc.liquidoProjetado < 0 ? 'erro' : 'ok') + '">' + brl(calc.liquidoProjetado) + '</b></div>';
+      '<div class="linha-kv"><span>Lucro líquido mensal projetado com o crédito</span><b class="' + (liquidoProjetadoTotal < 0 ? 'erro' : 'ok') + '">' + brl(liquidoProjetadoTotal) + '</b></div>' +
+      (cresc.lucroAdicional > 0 ? '<p class="pequeno-txt suave">Já inclui o lucro adicional estimado da "Meta de crescimento" (' + brl(cresc.lucroAdicional) + '/mês).</p>' : '');
 
     const cor = calc.comprometimento === null ? '' : (calc.comprometimento <= 20 ? 'verde' : (calc.comprometimento <= 40 ? 'laranja' : 'vermelho'));
     const msg = calc.comprometimento === null ? '' : (calc.comprometimento <= 20 ? 'Tranquilo: as parcelas cabem confortavelmente no lucro projetado.' : (calc.comprometimento <= 40 ? 'Atenção: as parcelas tomam uma parte relevante do lucro — qualquer queda nas vendas aperta o caixa.' : 'Risco alto: as parcelas comprometem a maior parte do lucro projetado. Vale reavaliar o valor pedido, o prazo ou a expectativa de ganho.'));
@@ -3386,10 +3529,152 @@ function renderDetalhePlano(){
 }
 function renderPlanoNegocio(){
   migrarPlanoCreditoUnico();
+  garantirPerfilPlano();
+  semearPlanoNegocioPronto();
+  renderPerfilPlano();
   if(PLANO_CREDITO_ABERTO && !planoAtual()) PLANO_CREDITO_ABERTO = null;
   $('pcListaWrap').classList.toggle('oculto', !!PLANO_CREDITO_ABERTO);
   $('pcDetalheWrap').classList.toggle('oculto', !PLANO_CREDITO_ABERTO);
   if(PLANO_CREDITO_ABERTO) renderDetalhePlano(); else renderListaPlanos();
+}
+
+/* ---------- PLANO DE NEGÓCIO: perfil compartilhado (dados gerais, identidade, mercado, sonho) ---------- */
+function garantirPerfilPlano(){
+  const pp = BD.config.perfilPlano;
+  if(!pp || typeof pp !== 'object' || Array.isArray(pp) || pp === CONFIG_PADRAO.perfilPlano){
+    BD.config.perfilPlano = {statusPessoal:'', statusEmpresa:'', setor:'Alimentação', proposito:'', propostaValor:'', publicoAlvo:'',
+      concorrentes:'', diferencial:'', contatoEmail:'', contatoWhats:'', contatoInsta:'', sonhoMensal:0};
+    salvar('config');
+  }
+}
+function renderPerfilPlano(){
+  const c = BD.config; const pp = c.perfilPlano || {};
+  const diretos = {ppResponsavelNome: c.responsavelNome, ppResponsavelCPF: c.responsavelCPF, ppCidade: c.negocioCidade};
+  Object.entries(diretos).forEach(([id, v]) => { const el = $(id); if(el && document.activeElement !== el) el.value = v || ''; });
+  if($('ppStatusPessoal') && document.activeElement !== $('ppStatusPessoal')) $('ppStatusPessoal').value = pp.statusPessoal || '';
+  if($('ppStatusEmpresa') && document.activeElement !== $('ppStatusEmpresa')) $('ppStatusEmpresa').value = pp.statusEmpresa || '';
+  const textos = {ppSetor:'setor', ppProposito:'proposito', ppPropostaValor:'propostaValor', ppPublicoAlvo:'publicoAlvo',
+    ppConcorrentes:'concorrentes', ppDiferencial:'diferencial', ppContatoEmail:'contatoEmail', ppContatoWhats:'contatoWhats', ppContatoInsta:'contatoInsta'};
+  Object.entries(textos).forEach(([id, campo]) => { const el = $(id); if(el && document.activeElement !== el) el.value = pp[campo] || ''; });
+  if($('ppSonhoMensal') && document.activeElement !== $('ppSonhoMensal')) $('ppSonhoMensal').value = pp.sonhoMensal ? String(pp.sonhoMensal).replace('.', ',') : '';
+}
+function salvarCfgEPerfil(campo, v){
+  BD.config[campo] = String(v || '').trim();
+  salvar('config');
+  if($('cfgCNPJ')) carregarConfigNaTela();
+  renderPlanoNegocio();
+}
+function salvarCampoPerfil(campo, v){
+  garantirPerfilPlano();
+  const pp = BD.config.perfilPlano;
+  const camposTexto = ['statusPessoal', 'statusEmpresa', 'setor', 'proposito', 'propostaValor', 'publicoAlvo', 'concorrentes', 'diferencial', 'contatoEmail', 'contatoWhats', 'contatoInsta'];
+  pp[campo] = camposTexto.includes(campo) ? String(v || '') : Math.max(0, parseNum(v));
+  salvar('config'); renderPlanoNegocio();
+}
+
+/* ---------- PLANO DE NEGÓCIO: meta de crescimento (produtos extras, usando preço real das fichas) ---------- */
+function precoFichaPorNome(nome){
+  const f = BD.fichas.find(x => norm(x.nome) === norm(nome || ''));
+  return f ? (f.precoPraticado || 0) : 0;
+}
+function addMetaProduto(){
+  const p = planoAtual(); if(!p) return;
+  if(!Array.isArray(p.metaProdutos)) p.metaProdutos = [];
+  p.metaProdutos.push({id: uid(), nome: '', qtdExtra: 0});
+  salvarAgora('config'); renderPlanoNegocio();
+}
+function removerMetaProduto(id){
+  const p = planoAtual(); if(!p) return;
+  p.metaProdutos = (p.metaProdutos || []).filter(x => x.id !== id);
+  salvarAgora('config'); renderPlanoNegocio();
+}
+function salvarCampoMetaProduto(id, campo, v){
+  const p = planoAtual(); if(!p) return;
+  const item = (p.metaProdutos || []).find(x => x.id === id); if(!item) return;
+  item[campo] = campo === 'nome' ? String(v || '') : Math.max(0, parseNum(v));
+  salvar('config'); renderPlanoNegocio();
+}
+function planoCrescimentoCalculo(p, calcCredito){
+  const itens = (Array.isArray(p.metaProdutos) ? p.metaProdutos : []).map(it => {
+    const preco = precoFichaPorNome(it.nome);
+    return {...it, preco, incremento: preco * (it.qtdExtra || 0)};
+  });
+  const incrementoFaturamento = soma(itens, i => i.incremento);
+  const media = calcCredito.media;
+  const fixos = custosFixosMensais();
+  const custoProducaoPerc = (media && media.fat > 0) ? (media.custo / media.fat * 100) : null;
+  const sobraPerc = custoProducaoPerc !== null ? (100 - custoProducaoPerc) : null;
+  const capitalGiroNecessario = fixos * 6;
+  const reservaEmergencia = capitalGiroNecessario / 12;
+  const sonhoMensal = Number((BD.config.perfilPlano || {}).sonhoMensal) || 0;
+  const lucroLiquidoAlvo = fixos + sonhoMensal + reservaEmergencia;
+  const metaVendas = (sobraPerc && sobraPerc > 0) ? lucroLiquidoAlvo / (sobraPerc / 100) : null;
+  const faturamentoAtual = media ? media.fat : 0;
+  const faturamentoAdicionalNecessario = metaVendas !== null ? (metaVendas - faturamentoAtual) : null;
+  const crescimentoNecessarioPerc = (metaVendas !== null && faturamentoAtual > 0) ? (faturamentoAdicionalNecessario / faturamentoAtual * 100) : null;
+  const faturamentoProjetado = faturamentoAtual + incrementoFaturamento;
+  const faltaParaMeta = metaVendas !== null ? (metaVendas - faturamentoProjetado) : null;
+  const lucroAtual = media ? media.liquido : 0;
+  const lucroAdicional = (sobraPerc !== null) ? incrementoFaturamento * (sobraPerc / 100) : 0;
+  const lucroProjetado = lucroAtual + lucroAdicional;
+  const retornoMeses = (p.valorTotal > 0 && lucroAdicional > 0) ? p.valorTotal / lucroAdicional : null;
+  const evolucao = []; let acumulado = 0;
+  for(let m = 1; m <= 12; m++){
+    const fracao = m >= 3 ? 1 : m / 3;
+    const fat = faturamentoAtual + incrementoFaturamento * fracao;
+    const lucro = lucroAtual + lucroAdicional * fracao;
+    acumulado += lucro;
+    evolucao.push({mes: m, fat, lucro, acumulado});
+  }
+  return {itens, incrementoFaturamento, custoProducaoPerc, sobraPerc, fixos, capitalGiroNecessario, reservaEmergencia, sonhoMensal,
+    lucroLiquidoAlvo, metaVendas, faturamentoAtual, faturamentoAdicionalNecessario, crescimentoNecessarioPerc,
+    faturamentoProjetado, faltaParaMeta, lucroAtual, lucroAdicional, lucroProjetado, retornoMeses, evolucao};
+}
+function renderCrescimentoPlano(p, calc){
+  if($('pcEstrategia') && document.activeElement !== $('pcEstrategia')) $('pcEstrategia').value = p.estrategiaCrescimento || '';
+  const itens = Array.isArray(p.metaProdutos) ? p.metaProdutos : [];
+  $('tabelaMetaProdutos').innerHTML = itens.length ? itens.map(it => {
+    const preco = precoFichaPorNome(it.nome);
+    return '<tr><td><input type="text" list="listaFichasDL" value="' + esc(it.nome) + '" style="width:100%" onchange="salvarCampoMetaProduto(\'' + it.id + '\',\'nome\',this.value)"></td>' +
+      '<td class="n">' + (preco > 0 ? brl(preco) : '—') + '</td>' +
+      '<td class="n"><input type="number" min="0" step="1" value="' + (it.qtdExtra || 0) + '" style="width:80px" onchange="salvarCampoMetaProduto(\'' + it.id + '\',\'qtdExtra\',this.value)"></td>' +
+      '<td class="n">' + brl(preco * (it.qtdExtra || 0)) + '</td>' +
+      '<td class="acoes"><button class="btn vermelho pequeno" onclick="removerMetaProduto(\'' + it.id + '\')" aria-label="Excluir">✕</button></td></tr>';
+  }).join('') : '<tr><td colspan="5"><div class="vazio">Nenhum produto ainda. Clique em "+ Produto".</div></td></tr>';
+
+  const cresc = planoCrescimentoCalculo(p, calc);
+  if(!itens.length){
+    $('pcResumoCrescimento').innerHTML = '<div class="aviso">Adicione produtos e quanto quer vender a mais por mês pra calcular a meta de crescimento.</div>';
+    $('pcEvolucaoMensal').innerHTML = '';
+    return cresc;
+  }
+  if(cresc.sobraPerc === null){
+    $('pcResumoCrescimento').innerHTML = '<div class="aviso">Ainda sem vendas suficientes no sistema pra calcular o custo de produção médio.</div>';
+    $('pcEvolucaoMensal').innerHTML = '';
+    return cresc;
+  }
+  $('pcResumoCrescimento').innerHTML =
+    '<div class="linha-kv"><span>Incremento de faturamento planejado</span><b>' + brl(cresc.incrementoFaturamento) + '/mês</b></div>' +
+    '<div class="linha-kv"><span>Custo de produção médio</span><b>' + fmt(cresc.custoProducaoPerc, 2) + '%</b></div>' +
+    '<div class="linha-kv"><span>Quanto sobra de cada venda</span><b>' + fmt(cresc.sobraPerc, 2) + '%</b></div>' +
+    '<div class="linha-kv"><span>Custo fixo mensal cadastrado</span><b>' + brl(cresc.fixos) + '</b></div>' +
+    '<div class="linha-kv"><span>Capital de giro necessário (6 meses de custo fixo)</span><b>' + brl(cresc.capitalGiroNecessario) + '</b></div>' +
+    '<div class="linha-kv"><span>Reserva de emergência (÷ 12)</span><b>' + brl(cresc.reservaEmergencia) + '</b></div>' +
+    '<div class="linha-kv"><span>Seu sonho mensal</span><b>' + brl(cresc.sonhoMensal) + '</b></div>' +
+    '<div class="linha-kv"><span><b>Lucro líquido alvo</b></span><b>' + brl(cresc.lucroLiquidoAlvo) + '</b></div>' +
+    (cresc.metaVendas !== null ? '<div class="linha-kv"><span><b>Meta de vendas (mês)</b></span><b>' + brl(cresc.metaVendas) + '</b></div>' : '') +
+    '<div class="linha-kv"><span>Faturamento atual (média recente)</span><b>' + brl(cresc.faturamentoAtual) + '</b></div>' +
+    (cresc.crescimentoNecessarioPerc !== null ? '<div class="linha-kv"><span>Crescimento necessário até a meta</span><b>' + fmt(cresc.crescimentoNecessarioPerc, 1) + '%</b></div>' : '') +
+    '<div class="linha-kv"><span>Faturamento projetado com este plano</span><b>' + brl(cresc.faturamentoProjetado) + '</b></div>' +
+    (cresc.faltaParaMeta !== null ? '<div class="linha-kv"><span>Falta para a meta</span><b>' + brl(Math.max(0, cresc.faltaParaMeta)) + '</b></div>' : '') +
+    '<div class="linha-kv"><span>Lucro adicional estimado</span><b class="ok">' + brl(cresc.lucroAdicional) + '/mês</b></div>' +
+    '<div class="linha-kv"><span><b>Lucro líquido projetado</b></span><b>' + brl(cresc.lucroProjetado) + '</b></div>' +
+    (cresc.retornoMeses !== null ? '<div class="linha-kv"><span>Retorno do valor total do plano (' + brl(p.valorTotal) + ')</span><b>' + fmt(cresc.retornoMeses, 1) + ' mês(es)</b></div>' : '');
+
+  $('pcEvolucaoMensal').innerHTML = '<h3>Evolução mensal estimada (12 meses)</h3><div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Faturamento</th><th class="n">Lucro</th><th class="n">Lucro acumulado</th></tr></thead><tbody>' +
+    cresc.evolucao.map(e => '<tr><td>Mês ' + e.mes + '</td><td class="n">' + brl(e.fat) + '</td><td class="n">' + brl(e.lucro) + '</td><td class="n">' + brl(e.acumulado) + '</td></tr>').join('') +
+    '</tbody></table></div>';
+  return cresc;
 }
 
 /* ---------- INSUMOS ---------- */
@@ -3399,6 +3684,8 @@ function atualizarDatalists(){
   $('listaInsumosDL').innerHTML = nomes.map(n => '<option value="' + esc(n) + '"></option>').join('');
   const dlCli = $('listaClientesDL');
   if(dlCli) dlCli.innerHTML = BD.clientes.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(c => '<option value="' + esc(c.nome) + '"></option>').join('');
+  const dlFic = $('listaFichasDL');
+  if(dlFic) dlFic.innerHTML = BD.fichas.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(f => '<option value="' + esc(f.nome) + '"></option>').join('');
 }
 async function adicionarInsumo(){
   const nome = $('insumoNome').value.trim(); const unid = $('insumoUnid').value;
