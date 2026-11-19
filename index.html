@@ -6872,13 +6872,16 @@ function pagarContaPagar(id){
   formModal({titulo: 'Pagar — ' + c.desc, campos: [
     {id: 'data', rotulo: 'Data do pagamento', tipo: 'data', valor: dataHoje()},
     {id: 'valor', rotulo: 'Valor pago (R$)', tipo: 'numero', valor: c.valor},
+    {id: 'acrescimo', rotulo: 'Dos quais, juros/multa (R$)', tipo: 'numero', valor: 0, dica: 'Preencha só se parte do valor pago foi juro ou multa por atraso. Deixe 0 se pagou certinho, sem acréscimo. Serve pra depois analisar quanto você pagou de multa/juros.'},
     {id: 'formaPagamento', rotulo: 'Forma de pagamento', tipo: 'select', valor: 'pix', opcoes: OPCOES_FORMA_PAGAMENTO},
     {id: 'observacao', rotulo: 'Observação (opcional)', tipo: 'area', placeholder: 'Ex: banco, cartão usado...'}
   ], textoSalvar: '💰 Confirmar pagamento', salvar: v => {
     if(!v.data || !(v.valor > 0)){ toast('Informe data e valor válidos.', 'alerta'); return false; }
     if(!v.formaPagamento){ toast('Selecione a forma de pagamento.', 'alerta'); return false; }
-    c.pago = true; c.pagoEm = v.data; c.formaPagamento = v.formaPagamento; c.obsPagamento = (v.observacao || '').trim();
-    const d = {id: uid(), data: v.data, desc: c.desc + (c.totalParcelas > 1 ? ' (parcela ' + c.parcela + '/' + c.totalParcelas + ')' : ''), valor: v.valor, categoria: c.categoria || 'Compras a prazo', contaPagarId: c.id, formaPagamento: v.formaPagamento, obsPagamento: c.obsPagamento};
+    const acrescimo = v.acrescimo > 0 ? v.acrescimo : 0;
+    if(acrescimo > v.valor){ toast('O acréscimo não pode ser maior que o valor pago.', 'alerta'); return false; }
+    c.pago = true; c.pagoEm = v.data; c.formaPagamento = v.formaPagamento; c.obsPagamento = (v.observacao || '').trim(); c.acrescimo = acrescimo;
+    const d = {id: uid(), data: v.data, desc: c.desc + (c.totalParcelas > 1 ? ' (parcela ' + c.parcela + '/' + c.totalParcelas + ')' : ''), valor: v.valor, categoria: c.categoria || 'Compras a prazo', contaPagarId: c.id, formaPagamento: v.formaPagamento, obsPagamento: c.obsPagamento, acrescimo};
     BD.despesas.unshift(d); c.despesaId = d.id;
     let msgCusto = '';
     if(c.custoFixoId){
@@ -6886,7 +6889,7 @@ function pagarContaPagar(id){
       if(custo){ custo.val = v.valor; msgCusto = ' Custo fixo "' + custo.desc + '" atualizado para ' + brl(v.valor) + '/mês.'; }
     }
     salvar('contasPagar', 'despesas', 'custos'); renderContasPagar();
-    toast('Pago e lançado como despesa.' + msgCusto, 'ok', {ms: msgCusto ? 9000 : 4000});
+    toast('Pago e lançado como despesa.' + (acrescimo > 0 ? ' Acréscimo de ' + brl(acrescimo) + ' registrado.' : '') + msgCusto, 'ok', {ms: msgCusto ? 9000 : 4000});
   }});
 }
 async function excluirContaPagar(id){
@@ -6900,8 +6903,10 @@ function renderContasPagar(){
   document.querySelectorAll('#cpFiltro .tt-chip').forEach(b => b.classList.toggle('on', b.dataset.f === CP_FILTRO));
   const abertas = BD.contasPagar.filter(c => !c.pago);
   const vencidas = abertas.filter(c => c.vencimento < dataHoje());
+  const pagasComAcrescimo = BD.contasPagar.filter(c => c.pago && c.acrescimo > 0);
   $('cpResumo').innerHTML = cardHTML('Em aberto', brl(soma(abertas, c => c.valor)), abertas.length + ' conta(s)') +
-    cardHTML('Vencidas', brl(soma(vencidas, c => c.valor)), vencidas.length + ' conta(s)', vencidas.length ? 'vermelho' : '');
+    cardHTML('Vencidas', brl(soma(vencidas, c => c.valor)), vencidas.length + ' conta(s)', vencidas.length ? 'vermelho' : '') +
+    cardHTML('Multas/juros pagos', brl(soma(pagasComAcrescimo, c => c.acrescimo)), pagasComAcrescimo.length + ' conta(s) com acréscimo', pagasComAcrescimo.length ? 'laranja' : '');
   let lista = BD.contasPagar.slice();
   if(CP_FILTRO === 'abertas') lista = lista.filter(c => !c.pago);
   else if(CP_FILTRO === 'vencidas') lista = lista.filter(c => !c.pago && c.vencimento < dataHoje());
@@ -6911,7 +6916,8 @@ function renderContasPagar(){
     const st = statusContaPagar(c);
     const custoVinc = c.custoFixoId && BD.custos.find(x => x.id === c.custoFixoId);
     const formaPg = c.pago && c.formaPagamento ? ' <span class="tag" title="' + esc(c.obsPagamento || '') + '">' + esc(FORMA_PAGAMENTO_LABEL[c.formaPagamento] || c.formaPagamento) + '</span>' : '';
-    return '<tr><td>' + fmtData(c.vencimento) + '</td><td>' + esc(c.desc) + (custoVinc ? ' <span title="Atualiza o custo fixo \'' + esc(custoVinc.desc) + '\' ao pagar">📌</span>' : '') + '</td><td>' + esc(c.fornecedorNome || '—') + '</td><td>' + (c.totalParcelas > 1 ? c.parcela + '/' + c.totalParcelas : '—') + '</td><td class="n">' + brl(c.valor) + '</td><td><span class="tag ' + st.cls + '">' + st.txt + '</span>' + formaPg + '</td>' +
+    const acrescimoTag = c.pago && c.acrescimo > 0 ? ' <span class="tag laranja" title="Juros/multa pagos">⚠️ ' + brl(c.acrescimo) + '</span>' : '';
+    return '<tr><td>' + fmtData(c.vencimento) + '</td><td>' + esc(c.desc) + (custoVinc ? ' <span title="Atualiza o custo fixo \'' + esc(custoVinc.desc) + '\' ao pagar">📌</span>' : '') + '</td><td>' + esc(c.fornecedorNome || '—') + '</td><td>' + (c.totalParcelas > 1 ? c.parcela + '/' + c.totalParcelas : '—') + '</td><td class="n">' + brl(c.valor) + '</td><td><span class="tag ' + st.cls + '">' + st.txt + '</span>' + formaPg + acrescimoTag + '</td>' +
       '<td class="acoes">' + (c.pago ? '' : '<button class="btn pequeno" onclick="pagarContaPagar(\'' + c.id + '\')">💰 Pagar</button>') + '<button class="btn cinza pequeno" onclick="editarContaPagar(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirContaPagar(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="7"><div class="vazio">Nenhuma conta nessa visualização.</div></td></tr>';
 }
