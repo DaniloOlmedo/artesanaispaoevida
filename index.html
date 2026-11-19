@@ -4767,15 +4767,18 @@ async function excluirComponenteEstoque(id){
 const MOTIVOS_PERDA = ['Queimou / estragou', 'Caiu / descartou', 'Vencido', 'Brinde / degustação', 'Cliente desistiu / não retirou', 'Fechamento do dia — não bateu a contagem', 'Contagem do depósito — não bateu a contagem', 'Sobra de feira — não vendeu', 'Outro'];
 function registrarPerda(id){
   const c = BD.estoqueComponentes.find(x => x.id === id); if(!c) return;
+  const custoUnit = custoEstimadoComponente(c.nome);
   formModal({titulo: 'Registrar perda — ' + c.nome, aviso: 'Desconta do estoque e entra como perda no resultado do mês.', campos: [
     {id: 'qtd', rotulo: 'Quantidade perdida (em ' + unidComp(c) + ')', tipo: 'numero', valor: 1},
     {id: 'motivo', rotulo: 'Motivo', tipo: 'select', valor: MOTIVOS_PERDA[0], opcoes: MOTIVOS_PERDA.map(m => ({v: m, t: m}))},
-    {id: 'valor', rotulo: 'Valor estimado da perda (R$, opcional)', tipo: 'numero', valor: '', dica: 'Quanto custou produzir/comprar o que foi perdido.'}
+    {id: 'valor', rotulo: 'Valor estimado da perda (R$, opcional)', tipo: 'numero', valor: '', dica: custoUnit > 0 ? 'Deixe em branco pra calcular sozinho: ' + brl(custoUnit) + ' × quantidade perdida, pelo custo já cadastrado na ficha/insumo. Preencha só se quiser usar outro valor.' : 'Quanto custou produzir/comprar o que foi perdido. Não achei um custo cadastrado pra esse item, então aqui não calcula sozinho — informe o valor.'}
   ], textoSalvar: 'Registrar', salvar: v => {
     if(!(v.qtd > 0)){ toast('Informe a quantidade.', 'alerta'); return false; }
+    const valorFinal = v.valor > 0 ? v.valor : r2(custoUnit * v.qtd);
     c.qtd = arred6(c.qtd - v.qtd);
-    BD.perdas.unshift({id: uid(), data: dataHoje(), nome: c.nome, qtd: v.qtd, motivo: v.motivo, valor: v.valor > 0 ? v.valor : 0});
-    salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges(); toast('Perda registrada.', 'ok');
+    BD.perdas.unshift({id: uid(), data: dataHoje(), nome: c.nome, qtd: v.qtd, motivo: v.motivo, valor: valorFinal});
+    salvar('estoqueComponentes', 'perdas'); renderEstoque(); atualizarBadges();
+    toast('Perda registrada' + (valorFinal > 0 ? ' (' + brl(valorFinal) + (v.valor > 0 ? '' : ', calculado automaticamente') + ')' : '') + '.', 'ok');
   }});
 }
 // Cortesia/degustação: um produto pronto (pizza, empanada...) dado de graça. Desconta o estoque de verdade
