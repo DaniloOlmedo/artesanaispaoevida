@@ -6860,15 +6860,25 @@ function editarContaPagar(id){
     salvar('contasPagar', 'custos'); renderContasPagar();
   }});
 }
+const OPCOES_FORMA_PAGAMENTO = [
+  {v: 'pix', t: 'Pix'},
+  {v: 'dinheiro', t: 'Dinheiro'},
+  {v: 'debito', t: 'Cartão débito'},
+  {v: 'credito', t: 'Cartão crédito'}
+];
+const FORMA_PAGAMENTO_LABEL = {pix: '🔑 Pix', dinheiro: '💵 Dinheiro', debito: '💳 Débito', credito: '💳 Crédito'};
 function pagarContaPagar(id){
   const c = BD.contasPagar.find(x => x.id === id); if(!c || c.pago) return;
   formModal({titulo: 'Pagar — ' + c.desc, campos: [
     {id: 'data', rotulo: 'Data do pagamento', tipo: 'data', valor: dataHoje()},
-    {id: 'valor', rotulo: 'Valor pago (R$)', tipo: 'numero', valor: c.valor}
+    {id: 'valor', rotulo: 'Valor pago (R$)', tipo: 'numero', valor: c.valor},
+    {id: 'formaPagamento', rotulo: 'Forma de pagamento', tipo: 'select', valor: 'pix', opcoes: OPCOES_FORMA_PAGAMENTO},
+    {id: 'observacao', rotulo: 'Observação (opcional)', tipo: 'area', placeholder: 'Ex: banco, cartão usado...'}
   ], textoSalvar: '💰 Confirmar pagamento', salvar: v => {
     if(!v.data || !(v.valor > 0)){ toast('Informe data e valor válidos.', 'alerta'); return false; }
-    c.pago = true; c.pagoEm = v.data;
-    const d = {id: uid(), data: v.data, desc: c.desc + (c.totalParcelas > 1 ? ' (parcela ' + c.parcela + '/' + c.totalParcelas + ')' : ''), valor: v.valor, categoria: c.categoria || 'Compras a prazo', contaPagarId: c.id};
+    if(!v.formaPagamento){ toast('Selecione a forma de pagamento.', 'alerta'); return false; }
+    c.pago = true; c.pagoEm = v.data; c.formaPagamento = v.formaPagamento; c.obsPagamento = (v.observacao || '').trim();
+    const d = {id: uid(), data: v.data, desc: c.desc + (c.totalParcelas > 1 ? ' (parcela ' + c.parcela + '/' + c.totalParcelas + ')' : ''), valor: v.valor, categoria: c.categoria || 'Compras a prazo', contaPagarId: c.id, formaPagamento: v.formaPagamento, obsPagamento: c.obsPagamento};
     BD.despesas.unshift(d); c.despesaId = d.id;
     let msgCusto = '';
     if(c.custoFixoId){
@@ -6900,7 +6910,8 @@ function renderContasPagar(){
   $('tabelaContasPagar').innerHTML = lista.length ? lista.map(c => {
     const st = statusContaPagar(c);
     const custoVinc = c.custoFixoId && BD.custos.find(x => x.id === c.custoFixoId);
-    return '<tr><td>' + fmtData(c.vencimento) + '</td><td>' + esc(c.desc) + (custoVinc ? ' <span title="Atualiza o custo fixo \'' + esc(custoVinc.desc) + '\' ao pagar">📌</span>' : '') + '</td><td>' + esc(c.fornecedorNome || '—') + '</td><td>' + (c.totalParcelas > 1 ? c.parcela + '/' + c.totalParcelas : '—') + '</td><td class="n">' + brl(c.valor) + '</td><td><span class="tag ' + st.cls + '">' + st.txt + '</span></td>' +
+    const formaPg = c.pago && c.formaPagamento ? ' <span class="tag" title="' + esc(c.obsPagamento || '') + '">' + esc(FORMA_PAGAMENTO_LABEL[c.formaPagamento] || c.formaPagamento) + '</span>' : '';
+    return '<tr><td>' + fmtData(c.vencimento) + '</td><td>' + esc(c.desc) + (custoVinc ? ' <span title="Atualiza o custo fixo \'' + esc(custoVinc.desc) + '\' ao pagar">📌</span>' : '') + '</td><td>' + esc(c.fornecedorNome || '—') + '</td><td>' + (c.totalParcelas > 1 ? c.parcela + '/' + c.totalParcelas : '—') + '</td><td class="n">' + brl(c.valor) + '</td><td><span class="tag ' + st.cls + '">' + st.txt + '</span>' + formaPg + '</td>' +
       '<td class="acoes">' + (c.pago ? '' : '<button class="btn pequeno" onclick="pagarContaPagar(\'' + c.id + '\')">💰 Pagar</button>') + '<button class="btn cinza pequeno" onclick="editarContaPagar(\'' + c.id + '\')" aria-label="Editar">✏️</button><button class="btn vermelho pequeno" onclick="excluirContaPagar(\'' + c.id + '\')" aria-label="Excluir">✕</button></td></tr>';
   }).join('') : '<tr><td colspan="7"><div class="vazio">Nenhuma conta nessa visualização.</div></td></tr>';
 }
