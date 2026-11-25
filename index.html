@@ -264,6 +264,7 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
 .nutri-lupas{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .nutri-lupa{background:#111;color:#fff;font-weight:800;font-size:.76rem;line-height:1.15;padding:7px 9px;border-radius:4px;text-transform:uppercase}
 .nutri-lupa small{display:block;font-weight:600;font-size:.6rem;letter-spacing:.04em}
+@page{ size: 80mm auto; margin: 0; }
 @media print{
   body{background:#fff;color:#000;padding:0}
   body.print-comanda>*:not(#areaImpressao),body.print-relatorio>*:not(#areaRelatorio){display:none!important}
@@ -1205,7 +1206,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
           <div class="linha-form" style="grid-template-columns:2fr 1fr auto">
             <div><input type="text" id="custoAdDesc" placeholder="Descreva: ex.: Gás do forno, Tempo de trabalho" autocomplete="off"></div>
             <div><input type="text" id="custoAdValor" inputmode="decimal" placeholder="R$ (ex.: 3,50)" autocomplete="off"></div>
-            <button class="btn" type="button" onclick="adicionarCustoAdicional()">+ Adicionar</button>
+            <button class="btn" type="button" id="btnCustoAd" onclick="adicionarCustoAdicional()">+ Adicionar</button>
           </div>
           <div class="dica">Total dos custos adicionais: <b id="custoFichaFixoTotal">R$ 0,00</b>. Entra no custo da receita, dividido pelas porções.</div>
           <div class="dica" id="dicaRateio"></div></div>
@@ -3372,19 +3373,38 @@ function usarRateio(v){ const f = fichaObj(); if(!f) return; f.custosAdicionais 
 function renderCustosAdic(f){
   const el = $('listaCustosAdic'); if(!el) return;
   const l = f.custosAdicionais || [];
-  el.innerHTML = l.length ? '<div class="tabela-wrap"><table class="tabela"><tbody>' + l.map(c => '<tr><td>' + esc(c.desc) + '</td><td class="n">' + brl(c.valor) + '</td><td class="acoes"><button class="btn vermelho pequeno" type="button" onclick="removerCustoAdicional(\'' + c.id + '\')" aria-label="Remover ' + esc(c.desc) + '">🗑️</button></td></tr>').join('') + '</tbody></table></div>'
+  el.innerHTML = l.length ? '<div class="tabela-wrap"><table class="tabela"><tbody>' + l.map(c => '<tr><td>' + esc(c.desc) + '</td><td class="n">' + brl(c.valor) + '</td><td class="acoes"><button class="btn cinza pequeno" type="button" onclick="editarCustoAdicional(\'' + c.id + '\')" aria-label="Editar ' + esc(c.desc) + '">✏️</button><button class="btn vermelho pequeno" type="button" onclick="removerCustoAdicional(\'' + c.id + '\')" aria-label="Remover ' + esc(c.desc) + '">🗑️</button></td></tr>').join('') + '</tbody></table></div>'
     : '<div class="dica">Nenhum custo adicional ainda.</div>';
   $('custoFichaFixoTotal').textContent = brl(soma(l, c => c.valor));
 }
 function sincronizarCustosAdic(f){ f.custoFixo = r2(soma(f.custosAdicionais || [], c => c.valor)); renderCustosAdic(f); recalcularTudo(); salvar('fichas', 'insumos'); }
+let _custoAdEditandoId = null;
+function editarCustoAdicional(id){
+  const f = fichaObj(); if(!f) return;
+  const c = (f.custosAdicionais || []).find(x => x.id === id); if(!c) return;
+  _custoAdEditandoId = id;
+  $('custoAdDesc').value = c.desc; $('custoAdValor').value = String(c.valor).replace('.', ',');
+  $('btnCustoAd').textContent = '💾 Salvar alteração';
+  $('custoAdDesc').focus();
+}
+function cancelarEdicaoCustoAdicional(){
+  _custoAdEditandoId = null; $('custoAdDesc').value = ''; $('custoAdValor').value = '';
+  $('btnCustoAd').textContent = '+ Adicionar';
+}
 function adicionarCustoAdicional(){
   const f = fichaObj(); if(!f) return;
   const desc = $('custoAdDesc').value.trim(); const valor = Math.max(0, parseNum($('custoAdValor').value));
   if(!desc){ toast('Descreva o custo (ex.: Gás do forno).', 'alerta'); return; }
   if(!(valor > 0)){ toast('Informe o valor em R$.', 'alerta'); return; }
   f.custosAdicionais = f.custosAdicionais || [];
-  f.custosAdicionais.push({id: uid(), desc, valor: r2(valor)});
-  $('custoAdDesc').value = ''; $('custoAdValor').value = '';
+  if(_custoAdEditandoId){
+    const c = f.custosAdicionais.find(x => x.id === _custoAdEditandoId);
+    if(c){ c.desc = desc; c.valor = r2(valor); }
+    cancelarEdicaoCustoAdicional();
+  }else{
+    f.custosAdicionais.push({id: uid(), desc, valor: r2(valor)});
+    $('custoAdDesc').value = ''; $('custoAdValor').value = '';
+  }
   sincronizarCustosAdic(f);
 }
 function removerCustoAdicional(id){ const f = fichaObj(); if(!f) return; f.custosAdicionais = (f.custosAdicionais || []).filter(c => c.id !== id); sincronizarCustosAdic(f); }
@@ -7250,12 +7270,39 @@ function syncIniciar(){
       try{ _syncDb.enablePersistence({synchronizeTabs: true}).catch(() => {}); }catch(e){}
       window.firebase.auth(app).signInAnonymously().then(() => {
         _syncPronto = true;
-        syncAssinarColecoes(c.codigo);
+        syncAssinarColecoes(c.codigo); syncAssinarIdentidade(c.codigo);
         syncEmpurrarTudo();
         syncStatus('🟢 Sincronização ativa — ' + (c.apelido || 'este aparelho'));
       }).catch(err => syncStatus('⚠️ Erro ao conectar: ' + err.message));
     }catch(e){ syncStatus('⚠️ Erro ao iniciar: ' + e.message); }
   });
+}
+/* ---------- identidade do negócio na nuvem (nome, frase, emoji, cor, logotipo) ---------- */
+let _syncUnsubIdentidade = null;
+const IDENTIDADE_CAMPOS = ['negocioNome', 'negocioTagline', 'negocioEmoji', 'corPrimaria', 'negocioLogo', 'negocioCNPJ'];
+function syncIdentidadeLocal(){ const o = {}; IDENTIDADE_CAMPOS.forEach(k => o[k] = BD.config[k] || ''); return o; }
+function syncEnviarIdentidade(){
+  if(!_syncPronto || !_syncDb) return;
+  const c = syncLerConfig(); if(!c.codigo) return;
+  const id = syncIdentidadeLocal();
+  if(id.negocioLogo && id.negocioLogo.length > 600000){ toast('O logotipo é grande demais para a nuvem. A identidade foi salva só neste aparelho; use uma imagem menor.', 'alerta', {ms: 8000}); id.negocioLogo = ''; }
+  _syncDb.collection('negocios').doc(c.codigo).set({identidade: id, identidadeEm: Date.now()}, {merge: true})
+    .catch(e => { console.warn('identidade não enviada', e); toast('Não consegui enviar a identidade para a nuvem. Vai tentar de novo ao editar.', 'alerta', {ms: 6000}); });
+}
+function syncAssinarIdentidade(codigo){
+  if(_syncUnsubIdentidade){ try{ _syncUnsubIdentidade(); }catch(e){} _syncUnsubIdentidade = null; }
+  _syncUnsubIdentidade = _syncDb.collection('negocios').doc(codigo).onSnapshot(snap => {
+    const d = snap.data(); if(!d || !d.identidade){ if(!snap.metadata.hasPendingWrites && BD.config.negocioNome) syncEnviarIdentidade(); return; }
+    if(snap.metadata.hasPendingWrites) return;
+    const remoto = d.identidade; const local = syncIdentidadeLocal();
+    const diferente = IDENTIDADE_CAMPOS.some(k => (remoto[k] || '') !== (local[k] || ''));
+    if(!diferente) return;
+    // aparelho novo (sem nome ainda): recebe a identidade da nuvem. Se já tem nome, a última alteração feita por qualquer aparelho vence.
+    IDENTIDADE_CAMPOS.forEach(k => { if(remoto[k] !== undefined) BD.config[k] = remoto[k]; });
+    salvarAgora('config'); aplicarMarca(); renderTudo();
+    toast('Identidade do negócio recebida da nuvem.', 'ok', {ms: 4000});
+  }, e => console.warn('identidade: falha ao assinar', e));
+  _syncListeners.push(() => { if(_syncUnsubIdentidade){ try{ _syncUnsubIdentidade(); }catch(e){} _syncUnsubIdentidade = null; } });
 }
 function syncAssinarColecoes(codigo){
   SYNC_TIPOS.concat(['caixaDias']).forEach(tipo => {
@@ -8620,7 +8667,7 @@ function aplicarMarca(){
 function salvarMarca(v){
   BD.config.negocioNome = v.nome.trim(); BD.config.negocioTagline = v.tagline.trim(); BD.config.negocioEmoji = (v.emoji || '🍞').trim().slice(0, 4) || '🍞';
   BD.config.corPrimaria = v.cor || '#4f46e5'; if(v.logo !== undefined) BD.config.negocioLogo = v.logo;
-  salvarAgora('config'); aplicarMarca();
+  salvarAgora('config'); aplicarMarca(); syncEnviarIdentidade();
 }
 
 /* ---------- editor de marca (com upload e prévia) ---------- */
