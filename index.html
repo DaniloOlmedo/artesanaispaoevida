@@ -1729,7 +1729,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <div class="bloco-calc"><div><label for="cfgImpDiretaAvanco">Papel a avançar no fim da comanda (para dar espaço de picotar)</label><input type="number" id="cfgImpDiretaAvanco" min="0" max="40" step="1" value="8" onchange="impDiretaSalvar()"><div class="dica">Cada unidade é cerca de 4 mm. Aumente se o texto ainda ficar dentro da impressora na hora de rasgar.</div></div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn" id="btnImpDiretaConectar" onclick="impDiretaConectar()">🔌 Conectar impressora</button><button type="button" class="btn cinza" id="btnImpDiretaTestar" onclick="impDiretaTestar()">🧪 Testar impressão</button></div>
       <div class="dica" id="impDiretaStatus"></div>
-      <div class="dica">Vale só para este aparelho (não muda nos outros). Usa a porta COM da impressora Bluetooth ou USB. Funciona para a comanda da cozinha (1 via); via do cliente, etiquetas e relatórios continuam saindo pela janela de impressão normal.</div></div></div>
+      <div class="dica">Vale só para este aparelho (não muda nos outros). Usa a porta COM da impressora Bluetooth ou USB. Funciona para a comanda da cozinha (1 via) e para o botão "Via do cliente" (com QR do PIX); etiquetas e relatórios continuam saindo pela janela de impressão normal.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgRodape">Mensagem extra no fim da comanda — opcional</label><input type="text" id="cfgRodape" placeholder="Deixe vazio para não imprimir nada" oninput="salvarConfig()"><div class="dica">Se ficar em branco, nada é impresso após a linha de corte, evitando desperdício de papel.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgCNPJ">CNPJ do seu negócio (MEI) — opcional</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0000-00" oninput="salvarConfig()"><div class="dica">Aparece no recibo de consumo emitido pra cliente (aba Caixa). Deixe vazio se ainda não tiver CNPJ.</div></div></div>
   </div>
@@ -1851,7 +1851,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 
   <div class="painel">
     <h2>🔄 Sincronização automática entre aparelhos</h2>
-    <div class="aviso">Opcional e gratuito. Liga a sincronização automática de <b>vendas, despesas, perdas, compras, contas a pagar, fechamentos de caixa e estoque</b> entre todos os aparelhos com o mesmo "código do negócio" — sem precisar exportar/importar na mão. Fichas, insumos e configurações continuam só deste aparelho, como hoje. Funciona sem internet: o que for feito offline entra sozinho quando o sinal voltar.</div>
+    <div class="aviso">Opcional e gratuito. Liga a sincronização automática de <b>vendas, despesas, perdas, compras, contas a pagar, fechamentos de caixa e estoque</b> entre todos os aparelhos com o mesmo "código do negócio" — sem precisar exportar/importar na mão. Fichas, insumos, taxas e configurações do negócio também podem ficar iguais em todos os aparelhos (veja "Fichas, insumos e configurações" abaixo). Funciona sem internet: o que for feito offline entra sozinho quando o sinal voltar.</div>
     <label class="linha"><input type="checkbox" id="syncAtivo" onchange="alternarSync()"> Ativar sincronização automática</label>
     <div class="bloco-calc">
       <div><label for="syncCodigo">Código do negócio</label><input type="text" id="syncCodigo" placeholder="Ex: paoevida-danilo-2026" oninput="salvarConfigSync()"><div class="dica">Invente um código único, sem espaços, e use o MESMO em todos os aparelhos que devem sincronizar entre si.</div></div>
@@ -1861,6 +1861,10 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <textarea id="syncFirebaseConfig" rows="4" placeholder="Cole aqui o bloco firebaseConfig = {...} do seu projeto Firebase" oninput="salvarConfigSync()"></textarea>
     <div class="grupo-botoes" style="margin-top:8px"><button class="btn azul" type="button" onclick="syncConectar()">🔌 Conectar</button><button class="btn cinza" type="button" onclick="syncReenviarTudo()" title="Força reenviar tudo deste aparelho pra nuvem de novo. Use se desconfiar que algum pedido não está aparecendo nos outros aparelhos.">🔁 Reenviar tudo pra nuvem</button></div>
     <p id="statusSync" class="suave" style="margin-top:6px">Sincronização desativada.</p>
+    <h3 style="margin-top:14px">📚 Fichas, insumos e configurações</h3>
+    <div class="aviso">Para que fichas, insumos, custos fixos, taxas, clientes, produtos e as configurações do negócio fiquem <b>iguais em todos os aparelhos</b>: no aparelho que está com tudo certo, clique em <b>Usar este aparelho como base</b>. Nos outros, clique em <b>Receber cadastros da nuvem</b> (uma cópia do que havia fica guardada). Depois disso, qualquer mudança feita em um aparelho aparece nos outros sozinha. A impressora, o tema e o totem continuam sendo de cada aparelho.</div>
+    <div class="grupo-botoes" style="margin-top:8px"><button class="btn azul" type="button" onclick="syncSemearCadastros()">📤 Usar este aparelho como base</button><button class="btn cinza" type="button" onclick="syncAdotarCadastros()">📥 Receber cadastros da nuvem</button></div>
+    <p id="statusCadastros" class="suave" style="margin-top:6px"></p>
   </div>
   <div class="painel">
     <h2>🗄️ Arquivar dados antigos</h2>
@@ -2268,7 +2272,7 @@ function flush(){
   ESTADO.erroGravacao = falhou;
   if(!falhou){ agendarSnapshotAuto(); autoAgendar(); }
   atualizarFaixa();
-  if(!falhou && lista.some(k => k === 'caixaDias' || SYNC_TIPOS.includes(k))) syncAgendarEnvio();
+  if(!falhou && lista.some(k => syncChaveSincronizavel(k))) syncAgendarEnvio();
 }
 window.addEventListener('pagehide', flush);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') flush(); });
@@ -5129,6 +5133,20 @@ function viaClienteHTML(pid){
 }
 function imprimirViaCliente(pid){
   const h = viaClienteHTML(pid); if(!h) return toast('Pedido não encontrado.', 'erro');
+  if(impDiretaAtiva()){
+    const cv = desenharComandaImagem(pid, 'via');
+    if(cv){
+      impDiretaImprimirCanvas(cv).catch(e => {
+        if(e && e.name === 'NotFoundError') return toast('Nenhuma porta de impressora foi escolhida. A via não foi impressa.', 'alerta', {ms: 6000});
+        toast('Impressão direta falhou: ' + impDiretaMensagemErro(e) + ' Abrindo a impressão normal.', 'alerta', {ms: 8000});
+        imprimirViaClientePadrao(h);
+      });
+      return;
+    }
+  }
+  imprimirViaClientePadrao(h);
+}
+function imprimirViaClientePadrao(h){
   $('areaImpressao').innerHTML = h;
   document.body.classList.add('print-comanda');
   const fim = () => { document.body.classList.remove('print-comanda'); window.removeEventListener('afterprint', fim); };
@@ -5372,8 +5390,34 @@ function comandaLinhasImagem(pid){
   if(BD.config.rodapeComanda){ linha(); add(BD.config.rodapeComanda, {tam: 28, negrito: true, espacoAntes: 6}); }
   return L;
 }
-function desenharComandaImagem(pid){
-  const linhas = comandaLinhasImagem(pid); if(!linhas) return null;
+function viaClienteLinhasImagem(pid){
+  const p = agruparPedidos(linhasDoPedido(pid))[0]; if(!p) return null;
+  const l0 = p.linhas[0];
+  const formaTxt = l0.formaPagamento && l0.formaPagamento !== 'pendente' ? ' (' + (rotForma[l0.formaPagamento] || '').replace(/^\S+\s/, '').toUpperCase() + ')' : '';
+  const status = p.pago ? 'PAGO' + formaTxt : (l0.pagamentoPrevisto === 'pix' ? '*** AGUARDA PIX ' + brl(p.total) + ' ***' : '*** COBRAR ' + brl(p.total) + ' ***');
+  const L = [];
+  const add = (texto, opts) => L.push(Object.assign({texto, tam: 20, negrito: false, centro: true, espacoAntes: 0}, opts || {}));
+  const linha = () => L.push({linha: true, espacoAntes: 6});
+  add(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim(), {tam: 26, negrito: true});
+  if(p.senha) add('Nº ' + p.senha, {tam: 58, negrito: true, espacoAntes: 6});
+  add(p.cliente.toUpperCase(), {tam: 44, negrito: true});
+  if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 32, negrito: true});
+  if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 32, negrito: true});
+  linha();
+  p.linhas.forEach(l => add(l.quantidade + 'x ' + l.produto + (l.corte ? ' (✂ ' + l.corte + ')' : '') + ' — ' + brl(l.valorTotal), {tam: 32, centro: false, negrito: true, espacoAntes: 4}));
+  linha();
+  add(status, {tam: 30, negrito: true, espacoAntes: 4});
+  add('TOTAL ' + brl(p.total), {tam: 40, negrito: true});
+  if(!p.pago && pixOk()){
+    add('PAGAR COM PIX', {tam: 28, negrito: true, espacoAntes: 8});
+    L.push({qr: pixDoPedido(p.total, p.senha), espacoAntes: 4});
+  }
+  linha();
+  add(BD.config.totemMensagem || 'Aguarde ser chamado pela senha.', {tam: 24, negrito: true, espacoAntes: 6});
+  return L;
+}
+function desenharComandaImagem(pid, modo){
+  const linhas = modo === 'via' ? viaClienteLinhasImagem(pid) : comandaLinhasImagem(pid); if(!linhas) return null;
   const largura = 576, pad = 26, maxTextoW = largura - pad * 2;
   const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
   function wrap(texto, tam, negrito, larguraMax){
@@ -5394,6 +5438,11 @@ function desenharComandaImagem(pid){
   linhas.forEach(l => {
     y += (l.espacoAntes || 0);
     if(l.linha){ finais.push({tracejado: true, y: y + 6}); y += 16; return; }
+    if(l.qr){
+      const q = qrcode(0, 'M'); q.addData(l.qr); q.make(); const n = q.getModuleCount();
+      const m = Math.max(3, Math.floor(380 / (n + 4))); const tamQr = m * (n + 4);
+      finais.push({qr: true, q, n, m, tamQr, y: y + 6}); y += tamQr + 12; return;
+    }
     if(l.caixa){
       const yTopo = y;
       y += caixaPad;
@@ -5417,6 +5466,12 @@ function desenharComandaImagem(pid){
   ctx.fillStyle = '#000'; ctx.textBaseline = 'alphabetic';
   finais.forEach(f => {
     if(f.tracejado){ ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(pad, f.y); ctx.lineTo(largura - pad, f.y); ctx.stroke(); ctx.setLineDash([]); return; }
+    if(f.qr){
+      const x0 = Math.round((largura - f.tamQr) / 2);
+      ctx.fillStyle = '#fff'; ctx.fillRect(x0, f.y, f.tamQr, f.tamQr); ctx.fillStyle = '#000';
+      for(let r = 0; r < f.n; r++) for(let c = 0; c < f.n; c++) if(f.q.isDark(r, c)) ctx.fillRect(x0 + (c + 2) * f.m, f.y + (r + 2) * f.m, f.m, f.m);
+      return;
+    }
     if(f.caixa){
       ctx.setLineDash([]); ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5;
       ctx.strokeRect(f.x0, f.yTopo, f.x1 - f.x0, f.yBase - f.yTopo);
@@ -7729,6 +7784,13 @@ function mesclarVendasArquivo(event){
    aparelho, como sempre.
    ===================================================================== */
 const SYNC_TIPOS = ['vendas', 'despesas', 'perdas', 'compras', 'contasPagar', 'conferenciasCartao', 'dasMei', 'estoqueComponentes', 'taras'];
+// Cadastros (fichas, insumos...): só entram na nuvem DEPOIS que este aparelho "adotou" os cadastros da nuvem
+// ou foi escolhido como base (ver syncSemearCadastros / syncAdotarCadastros). Isso evita que um aparelho
+// com dados antigos sobrescreva os cadastros mais novos sem ninguém perceber.
+const SYNC_CADASTROS = ['custos', 'insumos', 'fichas', 'formulasMassa', 'produtos', 'locais', 'fornecedores', 'clientes', 'etiquetaSabores', 'nutriIngredientes', 'nutriReceitas'];
+// Configurações do NEGÓCIO que valem para todos os aparelhos. Ficam de fora tudo que é "do aparelho"
+// (tema, voz, impressão, totem, marcadores de migração...) e a identidade (que já tem sincronização própria).
+const SYNC_CFG_CHAVES = ['arredondar', 'taxaBase', 'volumeMensal', 'semEstoque', 'valoresComanda', 'rodapeComanda', 'totemVias', 'consumoPadrao', 'calibrar', 'capacidade', 'tempoBase', 'tempoPadraoFicha', 'etiquetaValidadeDias', 'etiquetaUltimoResponsavel', 'pixChave', 'pixCidade', 'pixNome', 'negocioCidade', 'responsavelNome', 'responsavelCPF', 'meiLimite', 'meiMeses', 'dasMeiAtividade', 'contasBanc', 'planosCredito'];
 const SYNC_CHAVE_LS = 'syncConfig';
 // Guarda, por registro, qual foi a última versão sincronizada com sucesso — e isso
 // precisa SOBREVIVER a um recarregar de página. Sem persistir isso, todo aparelho que
@@ -7739,7 +7801,7 @@ const SYNC_CHAVE_LS = 'syncConfig';
 // mundo. É esse o motivo de pedidos "pagos" voltarem a aparecer como "pendentes".
 const SYNC_ULTIMO_CHAVE_LS = 'syncUltimoEnviado';
 let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null, _syncSalvarUltimoTimer = null;
-const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}, dasMei: {}, estoqueComponentes: {}, taras: {}};
+const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}, dasMei: {}, estoqueComponentes: {}, taras: {}, cadastros: {}, custos: {}, insumos: {}, fichas: {}, formulasMassa: {}, produtos: {}, locais: {}, fornecedores: {}, clientes: {}, etiquetaSabores: {}, nutriIngredientes: {}, nutriReceitas: {}};
 function syncCarregarUltimoEnviado(){
   try{
     const t = JSON.parse(KV.getItem(SYNC_ULTIMO_CHAVE_LS));
@@ -7765,6 +7827,7 @@ function preencherConfigSync(){
   if($('syncFirebaseConfig')) $('syncFirebaseConfig').value = c.firebaseConfigTexto || '';
   if(c.ativo && c.codigo && c.firebaseConfigTexto) syncIniciar();
   else syncStatus('Sincronização desativada.');
+  syncStatusCad(_syncCadTexto);
 }
 function salvarConfigSync(){
   const c = syncLerConfig();
@@ -7829,6 +7892,7 @@ function syncIniciar(){
         _syncPronto = true;
         syncAssinarColecoes(c.codigo); syncAssinarIdentidade(c.codigo);
         syncEmpurrarTudo();
+        syncVerificarCadastros();
         syncStatus('🟢 Sincronização ativa — ' + (c.apelido || 'este aparelho'));
       }).catch(err => syncStatus('⚠️ Erro ao conectar: ' + err.message));
     }catch(e){ syncStatus('⚠️ Erro ao iniciar: ' + e.message); }
@@ -7861,8 +7925,8 @@ function syncAssinarIdentidade(codigo){
   }, e => console.warn('identidade: falha ao assinar', e));
   _syncListeners.push(() => { if(_syncUnsubIdentidade){ try{ _syncUnsubIdentidade(); }catch(e){} _syncUnsubIdentidade = null; } });
 }
-function syncAssinarColecoes(codigo){
-  SYNC_TIPOS.concat(['caixaDias']).forEach(tipo => {
+function syncAssinarColecoes(codigo, tipos){
+  (tipos || SYNC_TIPOS.concat(['caixaDias'])).forEach(tipo => {
     const ref = _syncDb.collection('negocios').doc(codigo).collection(tipo);
     const unsub = ref.onSnapshot(snap => {
       let mudou = false; const tocados = [];
@@ -7928,7 +7992,7 @@ function syncEmpurrarTudo(){
     pendentesAtual.push({tipo, id, op: 'del'}); n++;
     if(n >= 400) novoLote();
   }
-  SYNC_TIPOS.forEach(tipo => {
+  syncTiposAtivos().forEach(tipo => {
     // Itens que a gente já tinha enviado/recebido antes, mas que sumiram do BD local
     // (excluídos aqui) precisam ser apagados também na nuvem — senão o próximo
     // "pull" (ou outro aparelho sincronizando) traz o item de volta.
@@ -7948,6 +8012,10 @@ function syncEmpurrarTudo(){
     if(_syncUltimoEnviado.caixaDias[dataKey] === txt) return;
     add('caixaDias', dataKey, item, txt);
   });
+  if(syncCadAdotado()){
+    const objs = syncObjetosLocais();
+    Object.keys(objs).forEach(nome => { const txt = syncEstavel(objs[nome]); if(_syncUltimoEnviado.cadastros[nome] !== txt) add('cadastros', nome, JSON.parse(JSON.stringify(objs[nome])), txt); });
+  }
   const comConteudo = lotes.filter(l => l.pendentes.length);
   if(!comConteudo.length) return;
   let falhouAlgum = false;
@@ -7967,10 +8035,125 @@ setInterval(() => { if(_syncPronto) syncEmpurrarTudo(); }, 60000);
 // se desconfia que ficou algo preso por causa da falha antiga (ver comentário em syncEmpurrarTudo).
 function syncReenviarTudo(){
   if(!_syncPronto) return toast('Ative e conecte a sincronização primeiro.', 'alerta');
-  SYNC_TIPOS.concat(['caixaDias']).forEach(tipo => { _syncUltimoEnviado[tipo] = {}; });
+  syncTiposAtivos().concat(['caixaDias']).forEach(tipo => { _syncUltimoEnviado[tipo] = {}; });
+  if(syncCadAdotado()) _syncUltimoEnviado.cadastros = {};
   syncSalvarUltimoEnviado();
   syncEmpurrarTudo();
   toast('Reenviando tudo deste aparelho pra nuvem...', 'ok');
+}
+
+/* ---------- cadastros (fichas, insumos, taxas, configurações) iguais em todos os aparelhos ---------- */
+let _syncCadTexto = '';
+function syncStatusCad(t){ _syncCadTexto = t || ''; const el = $('statusCadastros'); if(el) el.textContent = _syncCadTexto; }
+function syncCadAdotado(){ return !!syncLerConfig().cadAdotado; }
+function syncTiposAtivos(){ return syncCadAdotado() ? SYNC_TIPOS.concat(SYNC_CADASTROS) : SYNC_TIPOS.slice(); }
+function syncChaveSincronizavel(k){ return k === 'caixaDias' || SYNC_TIPOS.includes(k) || (syncCadAdotado() && (SYNC_CADASTROS.includes(k) || k === 'taxas' || k === 'config')); }
+// texto estável (chaves em ordem) para comparar objetos sem depender da ordem em que o Firestore devolve os campos
+function syncEstavel(o){
+  const ord = v => Array.isArray(v) ? v.map(ord) : (v && typeof v === 'object') ? Object.keys(v).sort().reduce((a, k) => { a[k] = ord(v[k]); return a; }, {}) : v;
+  return JSON.stringify(ord(o));
+}
+function syncChavesConfig(){ return Object.keys(BD.config || {}).filter(k => SYNC_CFG_CHAVES.includes(k) || (/^plano/.test(k) && k !== 'planoNegocioSeed')); }
+function syncConfigLocal(){ const o = {}; syncChavesConfig().forEach(k => { o[k] = BD.config[k]; }); return JSON.parse(JSON.stringify(o)); }
+function syncObjetosLocais(){ return {taxas: BD.taxas, config: syncConfigLocal()}; }
+function syncRegistrarUltimoCadastros(){
+  SYNC_CADASTROS.forEach(tipo => { _syncUltimoEnviado[tipo] = {}; (BD[tipo] || []).forEach(it => { if(it && it.id) _syncUltimoEnviado[tipo][String(it.id)] = JSON.stringify(it); }); });
+  const objs = syncObjetosLocais(); _syncUltimoEnviado.cadastros = {};
+  Object.keys(objs).forEach(n => { _syncUltimoEnviado.cadastros[n] = syncEstavel(objs[n]); });
+  syncSalvarUltimoEnviado();
+}
+function syncAssinarCadastros(codigo){
+  syncAssinarColecoes(codigo, SYNC_CADASTROS);
+  const ref = _syncDb.collection('negocios').doc(codigo).collection('cadastros');
+  const unsub = ref.onSnapshot(snap => {
+    let mudou = false;
+    snap.docChanges().forEach(ch => {
+      const id = ch.doc.id; if(ch.type === 'removed' || (id !== 'taxas' && id !== 'config')) return;
+      const dados = ch.doc.data(); const txt = syncEstavel(dados);
+      if(_syncUltimoEnviado.cadastros[id] === txt) return;
+      if(id === 'taxas'){ if(syncEstavel(BD.taxas) !== txt){ BD.taxas = dados; mudou = true; salvar('taxas'); } }
+      else if(syncEstavel(syncConfigLocal()) !== txt){ Object.keys(dados).forEach(k => { BD.config[k] = dados[k]; }); mudou = true; salvar('config'); }
+      _syncUltimoEnviado.cadastros[id] = txt;
+    });
+    if(mudou){
+      normalizarBD();
+      const objs = syncObjetosLocais(); Object.keys(objs).forEach(n => { _syncUltimoEnviado.cadastros[n] = syncEstavel(objs[n]); });
+      syncSalvarUltimoEnviado(); aplicarMarca(); renderTudo();
+    }
+  }, err => syncStatusCad('⚠️ Sincronização dos cadastros interrompida: ' + err.message));
+  _syncListeners.push(() => unsub());
+}
+async function syncVerificarCadastros(){
+  const c = syncLerConfig(); if(!c.codigo || !_syncDb) return;
+  if(c.cadAdotado){ syncAssinarCadastros(c.codigo); syncStatusCad('🟢 Fichas, insumos e configurações sincronizados com a nuvem.'); return; }
+  try{
+    const meta = await _syncDb.collection('negocios').doc(c.codigo).collection('cadastros').doc('_meta').get();
+    if(meta.exists){
+      const m = meta.data() || {};
+      const quando = m.semeadoEm ? new Date(m.semeadoEm).toLocaleString('pt-BR') : 'data desconhecida';
+      syncStatusCad('☁️ A nuvem já tem os cadastros (base: ' + (m.por || 'outro aparelho') + ', ' + quando + '). Em Dados, clique em "Receber cadastros da nuvem" para este aparelho ficar igual.');
+      toast('Há fichas, insumos e configurações na nuvem. Em Dados, clique em "Receber cadastros da nuvem" para este aparelho ficar igual.', 'ok', {ms: 9000});
+    }else syncStatusCad('Os cadastros (fichas, insumos, configurações) ainda não estão na nuvem. No aparelho que está com tudo certo, em Dados, clique em "Usar este aparelho como base".');
+  }catch(e){ syncStatusCad('⚠️ Não consegui verificar os cadastros na nuvem agora (' + e.message + ').'); }
+}
+async function syncSemearCadastros(){
+  if(!_syncPronto || !_syncDb) return toast('Ative e conecte a sincronização primeiro.', 'alerta');
+  const c = syncLerConfig(); if(!c.codigo) return;
+  const ok = await confirmar('Usar ESTE aparelho como base dos cadastros?\n\nAs fichas, insumos, custos fixos, taxas, clientes, produtos e configurações do negócio DESTE aparelho vão para a nuvem e passam a valer em todos os aparelhos conectados. O que já estiver na nuvem será substituído pelo que está aqui.\n\nUma cópia do estado atual fica guardada neste aparelho.', {titulo: 'Enviar cadastros para a nuvem', ok: 'Enviar e usar como base', perigo: true});
+  if(!ok) return;
+  guardarBackupAnterior('antes de enviar os cadastros para a nuvem');
+  syncStatusCad('⏳ Enviando os cadastros para a nuvem...');
+  try{
+    const base = _syncDb.collection('negocios').doc(c.codigo);
+    // 1) apaga na nuvem o que não existe aqui (senão voltaria para cá no próximo recebimento)
+    for(const tipo of SYNC_CADASTROS){
+      const snap = await base.collection(tipo).get();
+      const locais = new Set((BD[tipo] || []).filter(x => x && x.id).map(x => String(x.id)));
+      const sobras = []; snap.forEach(d => { if(!locais.has(d.id)) sobras.push(d.id); });
+      await Promise.all(sobras.map(id => base.collection(tipo).doc(id).delete()));
+    }
+    // 2) envia tudo daqui e SÓ DEPOIS passa a escutar a nuvem
+    const lotes = []; let lote = _syncDb.batch(), n = 0;
+    const add = (tipo, id, dados) => { lote.set(base.collection(tipo).doc(id), dados); if(++n >= 400){ lotes.push(lote); lote = _syncDb.batch(); n = 0; } };
+    SYNC_CADASTROS.forEach(tipo => (BD[tipo] || []).forEach(it => { if(it && it.id) add(tipo, String(it.id), it); }));
+    const objs = syncObjetosLocais(); Object.keys(objs).forEach(nome => add('cadastros', nome, JSON.parse(JSON.stringify(objs[nome]))));
+    add('cadastros', '_meta', {semeadoEm: Date.now(), por: c.apelido || '', versao: 1});
+    lotes.push(lote);
+    await Promise.all(lotes.map(l => l.commit()));
+    syncRegistrarUltimoCadastros();
+    c.cadAdotado = true; syncGravarConfig(c);
+    syncAssinarCadastros(c.codigo);
+    syncStatusCad('🟢 Cadastros enviados. Este aparelho é a base; os outros recebem em "Receber cadastros da nuvem".');
+    toast('Cadastros enviados para a nuvem. Nos outros aparelhos, use "Receber cadastros da nuvem".', 'ok', {ms: 8000});
+  }catch(e){ console.error(e); syncStatusCad('⚠️ Não consegui enviar os cadastros: ' + e.message); toast('Não consegui enviar os cadastros: ' + e.message, 'erro', {ms: 8000}); }
+}
+async function syncAdotarCadastros(){
+  if(!_syncPronto || !_syncDb) return toast('Ative e conecte a sincronização primeiro.', 'alerta');
+  const c = syncLerConfig(); if(!c.codigo) return;
+  const base = _syncDb.collection('negocios').doc(c.codigo);
+  let meta;
+  try{ meta = await base.collection('cadastros').doc('_meta').get(); }catch(e){ return toast('Não consegui falar com a nuvem agora: ' + e.message, 'erro', {ms: 7000}); }
+  if(!meta.exists) return toast('A nuvem ainda não tem cadastros. No aparelho que está com tudo certo, clique em "Usar este aparelho como base".', 'alerta', {ms: 8000});
+  const ok = await confirmar('Receber os cadastros da nuvem?\n\nAs fichas, insumos, custos fixos, taxas, clientes, produtos e configurações do negócio DESTE aparelho serão substituídos pelos da nuvem. As vendas, o caixa e a impressora não mudam.\n\nUma cópia do estado atual fica guardada neste aparelho.', {titulo: 'Receber cadastros da nuvem', ok: 'Receber', perigo: true});
+  if(!ok) return;
+  syncStatusCad('⏳ Recebendo os cadastros...');
+  try{
+    const novos = {};
+    for(const tipo of SYNC_CADASTROS){ const snap = await base.collection(tipo).get(); novos[tipo] = []; snap.forEach(d => novos[tipo].push(d.data())); }
+    const objSnap = await base.collection('cadastros').get(); const objs = {}; objSnap.forEach(d => { if(d.id === 'taxas' || d.id === 'config') objs[d.id] = d.data(); });
+    guardarBackupAnterior('antes de receber os cadastros da nuvem');
+    SYNC_CADASTROS.forEach(tipo => { BD[tipo] = novos[tipo]; });
+    if(objs.taxas) BD.taxas = objs.taxas;
+    if(objs.config) Object.keys(objs.config).forEach(k => { BD.config[k] = objs.config[k]; });
+    normalizarBD();
+    syncRegistrarUltimoCadastros();
+    c.cadAdotado = true; syncGravarConfig(c);
+    salvarAgora(...SYNC_CADASTROS, 'taxas', 'config');
+    aplicarMarca(); renderTudo();
+    syncAssinarCadastros(c.codigo);
+    syncStatusCad('🟢 Cadastros recebidos da nuvem. A partir de agora ficam iguais nos aparelhos.');
+    toast('Cadastros recebidos da nuvem: ' + novos.fichas.length + ' fichas, ' + novos.insumos.length + ' insumos.', 'ok', {ms: 8000});
+  }catch(e){ console.error(e); syncStatusCad('⚠️ Não consegui receber os cadastros: ' + e.message); toast('Não consegui receber os cadastros: ' + e.message, 'erro', {ms: 8000}); }
 }
 
 /* =====================================================================
