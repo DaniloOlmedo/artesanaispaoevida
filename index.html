@@ -5192,6 +5192,14 @@ function impDiretaCarregarUI(){
   if($('cfgImpDiretaAvanco')) $('cfgImpDiretaAvanco').value = impDiretaAvanco();
   ['btnImpDiretaConectar', 'btnImpDiretaTestar'].forEach(id => { if($(id)) $(id).disabled = !sup; });
   impDiretaStatus(sup ? 'Clique em "Conectar impressora" e escolha a porta COM da impressora (ex.: COM3).' : 'Este navegador não permite impressão direta (use o Chrome ou o Edge no computador).', sup ? null : false);
+  if(sup) impDiretaStatusLembrada();
+}
+async function impDiretaStatusLembrada(){
+  try{
+    const ja = await navigator.serial.getPorts();
+    if(ja.length === 1) impDiretaStatus('✅ Impressora já escolhida neste computador. Ela fica lembrada e conecta sozinha na hora de imprimir — não precisa conectar de novo (só se ela estiver desligada ou sem bateria).', true);
+    else if(ja.length > 1) impDiretaStatus('⚠️ Há ' + ja.length + ' portas lembradas neste computador. Clique em "Conectar impressora", escolha a RPP02N e as outras serão esquecidas.', false);
+  }catch(e){}
 }
 function impDiretaSalvar(){
   try{
@@ -5205,8 +5213,10 @@ async function impDiretaConectar(){
   if(!impDiretaSuportada()) return toast('Este navegador não permite impressão direta.', 'alerta');
   try{
     IMPDIR.porta = await navigator.serial.requestPort();
+    // esquece as outras portas já autorizadas (testes antigos), para o sistema nunca pegar a porta errada
+    try{ const todas = await navigator.serial.getPorts(); for(const p of todas){ if(p !== IMPDIR.porta && p.forget) await p.forget(); } }catch(e){}
     impDiretaFaixaAtualizar();
-    impDiretaStatus('✅ Porta escolhida. Clique em "Testar impressão" para conferir.', true);
+    impDiretaStatus('✅ Porta escolhida e lembrada. Clique em "Testar impressão" para conferir.', true);
     toast('Porta da impressora escolhida.', 'ok');
   }catch(e){
     if(e && e.name === 'NotFoundError') impDiretaStatus('Nenhuma porta foi escolhida.', null);
@@ -5250,7 +5260,8 @@ function canvasParaEscPos(cv, opts){
 }
 async function impDiretaEnviar(bytes){
   const porta = await impDiretaPorta();
-  if(!porta.writable) await porta.open({baudRate: 115200, flowControl: 'none', bufferSize: 65536});
+  try{ if(!porta.writable) await porta.open({baudRate: 115200, flowControl: 'none', bufferSize: 65536}); }
+  catch(e){ IMPDIR.porta = null; throw e; }
   const w = porta.writable.getWriter();
   try{
     // a impressora tem buffer pequeno e a porta Bluetooth não tem controle de fluxo: envia em pedaços pequenos com pausa
@@ -5321,7 +5332,7 @@ async function impDiretaFaixaAtualizar(){
 }
 if(typeof window !== 'undefined' && impDiretaSuportada()){
   window.addEventListener('load', () => setTimeout(impDiretaFaixaAtualizar, 1500));
-  try{ navigator.serial.addEventListener('connect', () => impDiretaFaixaAtualizar()); }catch(e){}
+  try{ navigator.serial.addEventListener('connect', () => impDiretaFaixaAtualizar()); navigator.serial.addEventListener('disconnect', () => { IMPDIR.porta = null; impDiretaFaixaAtualizar(); }); }catch(e){}
 }
 function imprimirComandaPedido(pid){
   // Impressão direta (só se ligada neste aparelho) e só para a via da cozinha; senão, segue o caminho de sempre.
