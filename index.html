@@ -284,14 +284,14 @@ hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
   .comanda-impressao .etq-nutri td,.comanda-impressao .etq-nutri th{border-top:1px solid #999;padding:1px 2px;text-align:right}
   .comanda-impressao .etq-nutri td:first-child,.comanda-impressao .etq-nutri th:first-child{text-align:left}
   .comanda-impressao .etq-corte{text-align:center;font-size:9px;margin:8px 0;border-top:2px dashed #000;padding-top:5px}
-  .comanda-impressao .marca{text-align:center;font-size:14px;font-weight:bold;margin-bottom:3px}
-  .comanda-impressao .senha-c{text-align:center;font-size:36px;font-weight:bold;line-height:1.1;margin:3px 0}
-  .comanda-impressao .data-hora{text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px}
-  .comanda-impressao .cliente-comanda{text-align:center;font-size:20px;font-weight:bold;margin:4px 0}
+  .comanda-impressao .marca{text-align:center;font-size:11px;font-weight:bold;margin-bottom:3px}
+  .comanda-impressao .senha-c{text-align:center;font-size:44px;font-weight:bold;line-height:1.1;margin:3px 0}
+  .comanda-impressao .data-hora{text-align:center;font-size:21px;font-weight:bold;margin-bottom:8px}
+  .comanda-impressao .cliente-comanda{text-align:center;font-size:29px;font-weight:bold;margin:4px 0}
   .comanda-impressao .telefone-comanda{text-align:center;font-size:14px;margin-bottom:4px}
-  .comanda-impressao .item{margin:8px 0 2px;font-size:20px;font-weight:bold;line-height:1.25}
-  .comanda-impressao .cons{font-size:20px;font-weight:bold;margin-left:12px;line-height:1.25}
-  .comanda-impressao .corte-item{font-size:20px;font-weight:bold;margin:0 0 4px 12px;line-height:1.25}
+  .comanda-impressao .item{margin:8px 0 2px;font-size:27px;font-weight:bold;line-height:1.25}
+  .comanda-impressao .cons{font-size:23px;font-weight:bold;margin-left:12px;line-height:1.25}
+  .comanda-impressao .corte-item{font-size:29px;font-weight:bold;margin:0 0 4px 12px;line-height:1.25}
   .comanda-impressao .obs-caixa{font-size:20px;font-weight:bold;margin:4px 0 8px 12px;line-height:1.25;border:2px solid #000;padding:4px 6px;display:inline-block}
   .comanda-impressao .total{text-align:center;font-size:17px;font-weight:bold;margin-top:8px;border-top:2px solid #000;padding-top:6px}
   .comanda-impressao .linha{border-bottom:2px dashed #666;margin:6px 0}
@@ -5348,22 +5348,22 @@ function comandaLinhasImagem(pid){
   const L = [];
   const add = (texto, opts) => L.push(Object.assign({texto, tam: 20, negrito: false, centro: true, espacoAntes: 0}, opts || {}));
   const linha = () => L.push({linha: true, espacoAntes: 6});
-  add(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim(), {tam: 38, negrito: true});
+  add(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim(), {tam: 26, negrito: true});
   if(l0.local) add('📍 ' + l0.local.toUpperCase(), {tam: 22, negrito: true});
   if(totem) add('PEDIDO PELO TOTEM', {tam: 22, negrito: true});
-  if(p.senha) add('Nº ' + p.senha, {tam: 46, negrito: true, espacoAntes: 6});
-  add(fmtData(p.data) + ' - ' + p.horario, {tam: 22, negrito: true});
+  if(p.senha) add('Nº ' + p.senha, {tam: 58, negrito: true, espacoAntes: 6});
+  add(fmtData(p.data) + ' - ' + p.horario, {tam: 32, negrito: true});
   if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 22, negrito: true});
   if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 22, negrito: true});
   linha();
-  add(p.cliente.toUpperCase(), {tam: 32, negrito: true});
+  add(p.cliente.toUpperCase(), {tam: 44, negrito: true});
   if(p.telefone) add('Tel: ' + p.telefone, {tam: 22, negrito: true});
   linha();
   p.linhas.forEach(l => {
-    add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 28, centro: false, negrito: true, espacoAntes: 6});
+    add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 38, centro: false, negrito: true, espacoAntes: 6});
     const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
-    if(cons) add('[' + cons + ']', {tam: 22, centro: false, negrito: true});
-    if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 20, centro: false, negrito: true});
+    if(cons) add('[' + cons + ']', {tam: 32, centro: false, negrito: true});
+    if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 38, centro: false, negrito: true});
     if(l.observacao) add(l.observacao.toUpperCase(), {tam: 22, centro: false, negrito: true, espacoAntes: 4, caixa: true});
   });
   linha();
