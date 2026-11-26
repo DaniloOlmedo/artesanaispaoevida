@@ -5096,6 +5096,14 @@ function escolherComandaAberta(pid){
 
 /* ---------- comanda ---------- */
 function horaDeMs(ms){ const d = new Date(ms); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+/* Comanda da cozinha: cada unidade sai numa linha própria ("1x") e meio a meio sai uma metade por linha */
+function comandaUnidades(l){
+  const n = Math.max(1, Math.round(Number(l.quantidade) || 1)); const out = [];
+  const nome = String(l.produto || '');
+  const metades = /^½\s*/.test(nome) && nome.indexOf(' + ½') > 0 ? nome.replace(/^½\s*/, '').split(/\s*\+\s*½\s*/).map(x => '½ ' + x) : null;
+  for(let i = 0; i < n; i++) out.push(metades || [nome]);
+  return out;
+}
 function comandaHTML(pid){
   const p = agruparPedidos(linhasDoPedido(pid))[0]; if(!p) return '';
   const l0 = p.linhas[0]; const totem = l0.origem === 'totem';
@@ -5106,7 +5114,7 @@ function comandaHTML(pid){
   let h = '<div class="marca">' + esc((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim() + '</div>' + (l0.local ? '<div class="telefone-comanda">📍 ' + esc(l0.local.toUpperCase()) + '</div>' : '') + (totem ? '<div class="telefone-comanda">PEDIDO PELO TOTEM</div>' : '') + (p.senha ? '<div class="senha-c">Nº ' + p.senha + '</div>' : '') +
     '<div class="data-hora">' + fmtData(p.data) + ' - ' + esc(p.horario) + '</div>' + prev + retirar + '<div class="linha"></div>' +
     '<div class="cliente-comanda">' + esc(p.cliente.toUpperCase()) + '</div>' + (p.telefone ? '<div class="telefone-comanda">Tel: ' + esc(p.telefone) + '</div>' : '') + '<div class="linha"></div>' +
-    p.linhas.map(l => '<div class="item">' + l.quantidade + 'x ' + esc(l.produto.toUpperCase()) + '</div><div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.corte ? '<div class="corte-item">✂ CORTE: ' + esc(l.corte.toUpperCase()) + '</div>' : '') + (l.observacao ? '<div class="obs-caixa">' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('') +
+    p.linhas.map(l => comandaUnidades(l).map(partes => partes.map((t, i) => '<div class="item">' + (i === 0 && partes.length === 1 ? '1x ' : '') + esc(t.toUpperCase()) + '</div>').join('') + '<div class="cons">[' + (l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '') + ']</div>' + (l.corte ? '<div class="corte-item">✂ CORTE: ' + esc(l.corte.toUpperCase()) + '</div>' : '') + (l.observacao ? '<div class="obs-caixa">' + esc(l.observacao.toUpperCase()) + '</div>' : '')).join('')).join('') +
     '<div class="linha"></div><div class="total">' + status + (BD.config.valoresComanda ? '<br>TOTAL ' + brl(p.total) : '') + '</div>';
   if(BD.config.totemVias === 2){
     h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div>' + viaClienteHTML(pid);
@@ -5378,11 +5386,13 @@ function comandaLinhasImagem(pid){
   if(p.telefone) add('Tel: ' + p.telefone, {tam: 22, negrito: true});
   linha();
   p.linhas.forEach(l => {
-    add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 38, centro: false, negrito: true, espacoAntes: 6});
-    const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
-    if(cons) add('[' + cons + ']', {tam: 32, centro: false, negrito: true});
-    if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 38, centro: false, negrito: true});
-    if(l.observacao) add(l.observacao.toUpperCase(), {tam: 22, centro: false, negrito: true, espacoAntes: 4, caixa: true});
+    comandaUnidades(l).forEach((partes, u) => {
+      partes.forEach((t, i) => add((partes.length === 1 ? '1x ' : '') + t.toUpperCase(), {tam: 38, centro: false, negrito: true, espacoAntes: i === 0 ? 10 : 0}));
+      const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
+      if(cons) add('[' + cons + ']', {tam: 32, centro: false, negrito: true});
+      if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 38, centro: false, negrito: true});
+      if(l.observacao) add(l.observacao.toUpperCase(), {tam: 22, centro: false, negrito: true, espacoAntes: 4, caixa: true});
+    });
   });
   linha();
   add(status, {tam: 28, negrito: true, espacoAntes: 4});
