@@ -5586,6 +5586,7 @@ function receberPedido(pid, formaPadrao, aoConcluir){
   const total = r2(soma(linhas, l => l.valorTotal));
   RP = {total, linhas, formas: [formaPadrao || 'pix'], valores: []};
   const html = '<div class="aviso">' + (linhas[0].cliente ? esc(linhas[0].cliente) + ' • ' : '') + 'pedido de ' + fmtData(linhas[0].data) + '</div>' +
+    '<label for="rp_data">Data em que o dinheiro entrou</label><input id="rp_data" type="date" value="' + dataHoje() + '" max="' + dataHoje() + '"><div class="dica">Padrão: hoje. Se o cliente pagou em outro dia, escolha o dia certo para o valor entrar no caixa daquele dia.</div>' +
     '<label>Forma de pagamento</label><div id="rp_lista"></div><div id="rp_status" style="margin:6px 0"></div>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"><button type="button" class="btn cinza pequeno" onclick="rpAdicionar()">➕ Dividir com mais uma pessoa</button>' +
     '<button type="button" class="btn cinza pequeno" onclick="rpDividirIgual()" title="Divide o total em partes iguais entre as pessoas">⚖️ Dividir igualmente</button></div>' +
@@ -5596,9 +5597,12 @@ function receberPedido(pid, formaPadrao, aoConcluir){
       const vals = rpValores();
       if(vals.some(x => !(x > 0))){ toast('Confira os valores: cada pessoa precisa ter valor maior que zero e a soma tem que fechar o total.', 'alerta'); return false; }
       const pagamentos = RP.formas.map((f, i) => ({forma: f, valor: vals[i]}));
-      aplicarPagamento(linhas, pagamentos, dataHoje());
+      const campoData = ctl.el.querySelector('#rp_data');
+      let dataRec = campoData && /^\d{4}-\d{2}-\d{2}$/.test(campoData.value) ? campoData.value : dataHoje();
+      if(dataRec > dataHoje()) dataRec = dataHoje();
+      aplicarPagamento(linhas, pagamentos, dataRec);
       salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); refreshFila();
-      toast('Pagamento de ' + brl(total) + (pagamentos.length > 1 ? ' registrado, dividido em ' + pagamentos.length + '.' : ' registrado.'), 'ok'); if(aoConcluir) aoConcluir();
+      toast('Pagamento de ' + brl(total) + (pagamentos.length > 1 ? ' registrado, dividido em ' + pagamentos.length + '.' : ' registrado') + (dataRec !== dataHoje() ? ' em ' + fmtData(dataRec) + '.' : '.'), 'ok'); if(aoConcluir) aoConcluir();
     }}
   ], aoAbrir: () => rpMontar()});
 }
