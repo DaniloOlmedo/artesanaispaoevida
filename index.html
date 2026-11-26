@@ -616,6 +616,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <li><b>Saúde do negócio</b> e <b>Metas</b>: avisos automáticos e meta × realizado.</li>
       <li><b>Simulador "e se...?"</b>: teste mudanças (preço, volume) sem mexer em nada de verdade.</li>
       <li><b>Estoque acabando</b> e <b>Top 5</b>: o que repor e o que mais vende/dá lucro.</li>
+      <li>Botões no topo: <b>Ano</b>, <b>Mês</b>, <b>Limite MEI</b>, <b>DAS-MEI</b> e <b>Cartão</b>.</li>
     </ul>
   </div></details>
   <div id="dashPendencias"></div>
@@ -658,6 +659,78 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   <div class="graficos">
     <div class="painel"><h2>🏆 Top 5 mais vendidos (mês)</h2><div id="topVendidos"></div></div>
     <div class="painel"><h2>💰 Top 5 mais lucrativos (mês)</h2><div id="topLucrativos"></div></div>
+  </div>
+
+
+  <div class="painel">
+    <div class="cab-painel"><h2>🗓️ Resumo do ano</h2>
+      <div><select id="anoResumo" style="width:auto" onchange="renderResumoAno()" aria-label="Ano do resumo"></select></div></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Vendido</th><th class="n">Compras de insumos</th><th class="n">Taxas e impostos</th><th class="n">Despesas</th><th class="n">Lucro líquido</th></tr></thead><tbody id="tabelaResumoAno"></tbody></table></div>
+    <div class="aviso" id="avisoResumoAno"></div>
+  </div>
+
+  <div class="painel">
+    <div class="cab-painel"><h2>📅 Resumo mensal — resultado real</h2>
+      <div><input type="month" id="mesResumo" style="width:auto" onchange="renderResumoMensal()" aria-label="Mês do resumo"></div></div>
+    <div class="resultado" id="resumoMensal"></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Faturamento</th><th class="n">Lucro (após custos e taxas)</th></tr></thead><tbody id="tabelaResumoMensal"></tbody></table></div>
+    <div class="grupo-botoes">
+      <button class="btn" type="button" onclick="imprimirRelatorioMensal()">🖨️ Imprimir relatório mensal completo</button>
+      <button class="btn cinza" type="button" onclick="exportarCSV('vendas')">⬇️ Vendas do mês (CSV)</button>
+      <button class="btn cinza" type="button" onclick="imprimirRelatorioMEI()">🖨️ Relatório de receitas brutas (MEI)</button>
+    </div>
+  </div>
+
+  <div class="painel">
+    <h2>📊 Controle do limite MEI</h2>
+    <div class="aviso">Compara o faturamento bruto do ano com o teto do MEI. Confira sempre o valor vigente no site da Receita/Portal do Empreendedor.</div>
+    <div class="bloco-calc">
+      <div><label for="meiLimite">Teto anual MEI (R$)</label><input type="number" step="1" id="meiLimite" inputmode="numeric" oninput="salvarConfigMei()"></div>
+      <div><label for="meiMeses">Meses de atividade no ano</label><input type="number" min="1" max="12" step="1" id="meiMeses" inputmode="numeric" oninput="salvarConfigMei()"><div class="dica">Se abriu o MEI este ano, o teto é proporcional aos meses ativos. Se não, deixe 12.</div></div>
+    </div>
+    <div class="grade" id="meiCards" style="margin-top:12px"></div>
+    <div id="meiBarra"></div>
+    <p id="meiAlerta" style="font-weight:700;margin-top:8px"></p>
+    <p id="meiProjecaoTexto" style="margin-top:6px"></p>
+    <h3>De onde vem o faturamento (mês a mês)</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Faturamento</th><th class="n">Vendas normais</th><th class="n">Históricos lançados</th><th class="n">Acumulado</th><th></th></tr></thead><tbody id="meiMesAMes"></tbody></table></div>
+    <div class="dica">"Históricos" são os lançamentos retroativos. Clique em <b>Ver</b> para abrir a lista daquele mês e conferir/corrigir cada um.</div>
+  </div>
+
+  <div class="painel">
+    <h2>🧾 Controle do DAS-MEI</h2>
+    <div class="aviso">Isso aqui é só um controle de pagamento, pra não perder o prazo — a emissão e o pagamento real do boleto são sempre feitos no <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" target="_blank" rel="noopener">Portal do Empreendedor (gov.br)</a>, que exige login com CPF/senha gov.br ou certificado digital. Não é possível gerar o boleto oficial por aqui.</div>
+    <div class="bloco-calc">
+      <div><label for="dasMeiAtividade">Atividade do MEI</label>
+        <select id="dasMeiAtividade" onchange="salvarAtividadeDasMei()">
+          <option value="comercio">Comércio/Indústria (ICMS)</option>
+          <option value="servico">Serviços (ISS)</option>
+          <option value="ambos">Comércio e Serviços</option>
+        </select>
+      </div>
+      <div class="fixo" style="align-self:flex-end"><button class="btn cinza" type="button" onclick="window.open('https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao','_blank')">🔗 Emitir/pagar no Portal do Empreendedor</button></div>
+    </div>
+    <div class="dica">Valores de referência 2026 (INSS 5% do salário mínimo + ICMS/ISS fixo): Comércio/Indústria R$ 82,05 · Serviços R$ 86,05 · Comércio e Serviços R$ 87,05. Confira sempre o valor exato no Portal antes de pagar — ele pode mudar com o salário mínimo.</div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Competência</th><th>Vencimento</th><th class="n">Valor</th><th>Status</th><th></th></tr></thead><tbody id="dasMeiCorpo"></tbody></table></div>
+  </div>
+
+  <div class="painel">
+    <div class="cab-painel"><h2>💳 Conferência do cartão</h2></div>
+    <div class="aviso">Confere se a taxa que a maquininha realmente descontou bate com a taxa configurada em "Custos". O campo "Vendido" vem pré-preenchido com o que o sistema tem registrado nesse período, mas <b>pode ser substituído</b> pelo total que a própria Getnet/Infinipay informam (mais confiável se alguma venda foi marcada com a forma de pagamento errada).</div>
+    <div class="bloco-calc">
+      <div><label for="ccForma">Maquininha / forma</label><select id="ccForma" onchange="renderConferenciaCartao(true)"><option value="debito">💳 Débito — Get Net</option><option value="credito">💳 Crédito — Infinit Pay</option></select></div>
+      <div><label for="ccDe">De</label><input type="date" id="ccDe" onchange="renderConferenciaCartao(true)"></div>
+      <div><label for="ccAte">Até</label><input type="date" id="ccAte" onchange="renderConferenciaCartao(true)"></div>
+      <div><label for="ccVendido">Vendido no período (R$)</label><input type="number" step="0.01" id="ccVendido" inputmode="decimal" oninput="renderConferenciaCartao()"><div class="dica">Pré-preenchido pelo sistema — ajuste se a Getnet/Infinipay informar outro total.</div></div>
+      <div><label for="ccRecebido">Valor que caiu na conta (R$)</label><input type="number" step="0.01" id="ccRecebido" inputmode="decimal" oninput="renderConferenciaCartao()"></div>
+    </div>
+    <div class="resultado" id="ccResultado"></div>
+    <div class="flex-linha" style="margin-top:8px">
+      <div style="flex:3"><label for="ccObs">Observação</label><input type="text" id="ccObs" placeholder="Ex: extrato de 01 a 07/10"></div>
+      <div class="fixo"><button class="btn" type="button" onclick="salvarConferenciaCartao()">💾 Salvar conferência</button></div>
+    </div>
+    <h3>Histórico de conferências</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Período</th><th>Maquininha</th><th class="n">Vendido</th><th class="n">Taxa esperada</th><th class="n">Líquido esperado</th><th class="n">Caiu na conta</th><th class="n">Diferença</th><th>Obs.</th><th></th></tr></thead><tbody id="tabelaConferenciasCartao"></tbody></table></div>
   </div>
 </section>
 
@@ -1015,11 +1088,9 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     </ol>
     <p>Mais abaixo, nesta mesma aba:</p>
     <ul>
-      <li><b>💳 Conferência do cartão</b>: confere se a taxa que a maquininha descontou bate com a cadastrada.</li>
-      <li><b>📅 Resumo mensal</b>: resultado real do mês, com relatórios pra imprimir/exportar.</li>
       <li><b>🧾 Recibo de consumo</b>: emite comprovante pro cliente pedir reembolso.</li>
-      <li><b>📊 Limite MEI</b> e <b>🧾 DAS-MEI</b>: acompanha o teto anual e o vencimento da guia (a emissão em si é sempre no Portal do Empreendedor).</li>
     </ul>
+    <p>Conferência do cartão, resumos do mês/ano, Limite MEI e DAS-MEI ficam na aba <b>📊 Painel</b>.</p>
   </div></details>
   <div class="painel">
     <div class="cab-painel">
@@ -1057,37 +1128,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
   </div>
 
   <div class="painel">
-    <div class="cab-painel"><h2>💳 Conferência do cartão</h2></div>
-    <div class="aviso">Confere se a taxa que a maquininha realmente descontou bate com a taxa configurada em "Custos". O campo "Vendido" vem pré-preenchido com o que o sistema tem registrado nesse período, mas <b>pode ser substituído</b> pelo total que a própria Getnet/Infinipay informam (mais confiável se alguma venda foi marcada com a forma de pagamento errada).</div>
-    <div class="bloco-calc">
-      <div><label for="ccForma">Maquininha / forma</label><select id="ccForma" onchange="renderConferenciaCartao(true)"><option value="debito">💳 Débito — Get Net</option><option value="credito">💳 Crédito — Infinit Pay</option></select></div>
-      <div><label for="ccDe">De</label><input type="date" id="ccDe" onchange="renderConferenciaCartao(true)"></div>
-      <div><label for="ccAte">Até</label><input type="date" id="ccAte" onchange="renderConferenciaCartao(true)"></div>
-      <div><label for="ccVendido">Vendido no período (R$)</label><input type="number" step="0.01" id="ccVendido" inputmode="decimal" oninput="renderConferenciaCartao()"><div class="dica">Pré-preenchido pelo sistema — ajuste se a Getnet/Infinipay informar outro total.</div></div>
-      <div><label for="ccRecebido">Valor que caiu na conta (R$)</label><input type="number" step="0.01" id="ccRecebido" inputmode="decimal" oninput="renderConferenciaCartao()"></div>
-    </div>
-    <div class="resultado" id="ccResultado"></div>
-    <div class="flex-linha" style="margin-top:8px">
-      <div style="flex:3"><label for="ccObs">Observação</label><input type="text" id="ccObs" placeholder="Ex: extrato de 01 a 07/10"></div>
-      <div class="fixo"><button class="btn" type="button" onclick="salvarConferenciaCartao()">💾 Salvar conferência</button></div>
-    </div>
-    <h3>Histórico de conferências</h3>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Período</th><th>Maquininha</th><th class="n">Vendido</th><th class="n">Taxa esperada</th><th class="n">Líquido esperado</th><th class="n">Caiu na conta</th><th class="n">Diferença</th><th>Obs.</th><th></th></tr></thead><tbody id="tabelaConferenciasCartao"></tbody></table></div>
-  </div>
-
-  <div class="painel">
-    <div class="cab-painel"><h2>📅 Resumo mensal — resultado real</h2>
-      <div><input type="month" id="mesResumo" style="width:auto" onchange="renderResumoMensal()" aria-label="Mês do resumo"></div></div>
-    <div class="resultado" id="resumoMensal"></div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Produto</th><th class="n">Qtd</th><th class="n">Faturamento</th><th class="n">Lucro (após custos e taxas)</th></tr></thead><tbody id="tabelaResumoMensal"></tbody></table></div>
-    <div class="grupo-botoes">
-      <button class="btn" type="button" onclick="imprimirRelatorioMensal()">🖨️ Imprimir relatório mensal completo</button>
-      <button class="btn cinza" type="button" onclick="exportarCSV('vendas')">⬇️ Vendas do mês (CSV)</button>
-      <button class="btn cinza" type="button" onclick="imprimirRelatorioMEI()">🖨️ Relatório de receitas brutas (MEI)</button>
-    </div>
-  </div>
-
-  <div class="painel">
     <h2>🧾 Recibo de consumo para cliente</h2>
     <div class="aviso">Gera um recibo simples com os consumos já pagos por um cliente num período — útil quando pedem comprovante pra reembolso ou prestação de contas (condomínio, empresa etc.). Se preencher o CNPJ em "Preferências" acima, ele aparece no recibo.</div>
     <div class="bloco-calc">
@@ -1098,38 +1138,6 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <button class="btn" type="button" onclick="imprimirReciboConsumo()">🖨️ Emitir recibo</button>
   </div>
 
-  <div class="painel">
-    <h2>📊 Controle do limite MEI</h2>
-    <div class="aviso">Compara o faturamento bruto do ano com o teto do MEI. Confira sempre o valor vigente no site da Receita/Portal do Empreendedor.</div>
-    <div class="bloco-calc">
-      <div><label for="meiLimite">Teto anual MEI (R$)</label><input type="number" step="1" id="meiLimite" inputmode="numeric" oninput="salvarConfigMei()"></div>
-      <div><label for="meiMeses">Meses de atividade no ano</label><input type="number" min="1" max="12" step="1" id="meiMeses" inputmode="numeric" oninput="salvarConfigMei()"><div class="dica">Se abriu o MEI este ano, o teto é proporcional aos meses ativos. Se não, deixe 12.</div></div>
-    </div>
-    <div class="grade" id="meiCards" style="margin-top:12px"></div>
-    <div id="meiBarra"></div>
-    <p id="meiAlerta" style="font-weight:700;margin-top:8px"></p>
-    <p id="meiProjecaoTexto" style="margin-top:6px"></p>
-    <h3>De onde vem o faturamento (mês a mês)</h3>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Mês</th><th class="n">Faturamento</th><th class="n">Vendas normais</th><th class="n">Históricos lançados</th><th class="n">Acumulado</th><th></th></tr></thead><tbody id="meiMesAMes"></tbody></table></div>
-    <div class="dica">"Históricos" são os lançamentos retroativos. Clique em <b>Ver</b> para abrir a lista daquele mês e conferir/corrigir cada um.</div>
-  </div>
-
-  <div class="painel">
-    <h2>🧾 Controle do DAS-MEI</h2>
-    <div class="aviso">Isso aqui é só um controle de pagamento, pra não perder o prazo — a emissão e o pagamento real do boleto são sempre feitos no <a href="https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao" target="_blank" rel="noopener">Portal do Empreendedor (gov.br)</a>, que exige login com CPF/senha gov.br ou certificado digital. Não é possível gerar o boleto oficial por aqui.</div>
-    <div class="bloco-calc">
-      <div><label for="dasMeiAtividade">Atividade do MEI</label>
-        <select id="dasMeiAtividade" onchange="salvarAtividadeDasMei()">
-          <option value="comercio">Comércio/Indústria (ICMS)</option>
-          <option value="servico">Serviços (ISS)</option>
-          <option value="ambos">Comércio e Serviços</option>
-        </select>
-      </div>
-      <div class="fixo" style="align-self:flex-end"><button class="btn cinza" type="button" onclick="window.open('https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao','_blank')">🔗 Emitir/pagar no Portal do Empreendedor</button></div>
-    </div>
-    <div class="dica">Valores de referência 2026 (INSS 5% do salário mínimo + ICMS/ISS fixo): Comércio/Indústria R$ 82,05 · Serviços R$ 86,05 · Comércio e Serviços R$ 87,05. Confira sempre o valor exato no Portal antes de pagar — ele pode mudar com o salário mínimo.</div>
-    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Competência</th><th>Vencimento</th><th class="n">Valor</th><th>Status</th><th></th></tr></thead><tbody id="dasMeiCorpo"></tbody></table></div>
-  </div>
 </section>
 
 <!-- ============ FICHAS ============ -->
@@ -1155,6 +1163,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <button class="btn laranja" type="button" onclick="organizarFichasEmpanada()">🥟 Organizar fichas de empanada (massa + estoque por sabor)</button>
       <button class="btn laranja" type="button" onclick="conferirComponentesSuspeitos()">⚠️ Conferir quantidades suspeitas nas fichas</button>
     </div>
+    <div id="eqBoxFichas"></div>
     <div id="semFicha" class="vazio" style="margin-top:12px">Digite o nome e clique para criar, ou escolha uma ficha na lista abaixo.</div>
     <div id="conteudoFicha" class="oculto">
       <hr>
@@ -1352,6 +1361,7 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
       <button class="btn cinza" type="button" onclick="novaReceitaMassa()">🔄 Nova receita</button>
     </div>
   </div>
+  <div class="painel" style="padding-top:10px;padding-bottom:10px"><div id="eqBoxMassa"></div></div>
   <div class="painel">
     <h2>↩️ Cálculo inverso — pesos reais para % de padeiro</h2>
     <div class="aviso">Informe os pesos usados. A farinha será 100% e os demais serão calculados proporcionalmente. Depois você pode salvar como receita.</div>
@@ -1431,6 +1441,14 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <h2>🗑️ Sobras e perdas registradas</h2>
     <div class="dica" style="margin-bottom:8px">Use o botão "Perda" na linha do componente. A perda desconta do estoque e entra no resultado do mês.</div>
     <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Componente</th><th class="n">Qtd</th><th>Motivo</th><th class="n">Valor R$</th><th></th></tr></thead><tbody id="tabelaPerdas"></tbody></table></div>
+  </div>
+  <div class="painel">
+    <h2>⚖️ Taras — peso dos recipientes</h2>
+    <div class="aviso">Cadastre o <b>peso do recipiente vazio (tara)</b>. Na saída, pese o recipiente <b>cheio</b>; na volta, pese de novo. O sistema tira a tara, calcula quanto foi consumido e <b>desconta do estoque do dia</b> do produto vinculado.</div>
+    <div style="margin-bottom:8px"><button class="btn" type="button" onclick="novaTara()">➕ Nova tara</button></div>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Recipiente</th><th class="n">Tara</th><th>Produto no estoque</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="tabelaTaras"></tbody></table></div>
+    <h3 style="margin-top:14px">Últimos consumos</h3>
+    <div class="tabela-wrap"><table class="tabela"><thead><tr><th>Data</th><th>Recipiente</th><th class="n">Saiu (líq.)</th><th class="n">Voltou (líq.)</th><th class="n">Consumido</th><th>Descontado</th></tr></thead><tbody id="tabelaTarasHist"></tbody></table></div>
   </div>
 </section>
 
@@ -1705,6 +1723,13 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <label class="linha"><input type="checkbox" id="cfgBackupFechar" onchange="salvarConfig()"> Baixar backup automaticamente ao fechar o dia</label>
     <label class="linha"><input type="checkbox" id="cfgValoresComanda" onchange="salvarConfig()"> Mostrar valores (total) na comanda impressa</label>
     <div class="bloco-calc"><div><label for="cfgVias">Vias impressas em cada comanda</label><select id="cfgVias" onchange="salvarConfig()"><option value="1">1 (só cozinha)</option><option value="2">2 (cozinha + via do cliente, para levar/pendurar)</option></select><div class="dica">Escolha "1 (só cozinha)" para imprimir só a via do estabelecimento e economizar papel.</div></div></div>
+    <div class="bloco-calc"><div><label>🖨️ Impressão direta neste computador (Chrome ou Edge)</label>
+      <label class="linha"><input type="checkbox" id="cfgImpDireta" onchange="impDiretaSalvar()"> Imprimir a comanda direto na impressora (sem janela de impressão e sem papel em branco)</label>
+      <label class="linha"><input type="checkbox" id="cfgImpDiretaCorte" onchange="impDiretaSalvar()"> Minha impressora tem corte automático (guilhotina)</label>
+      <div class="bloco-calc"><div><label for="cfgImpDiretaAvanco">Papel a avançar no fim da comanda (para dar espaço de picotar)</label><input type="number" id="cfgImpDiretaAvanco" min="0" max="40" step="1" value="8" onchange="impDiretaSalvar()"><div class="dica">Cada unidade é cerca de 4 mm. Aumente se o texto ainda ficar dentro da impressora na hora de rasgar.</div></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn" id="btnImpDiretaConectar" onclick="impDiretaConectar()">🔌 Conectar impressora</button><button type="button" class="btn cinza" id="btnImpDiretaTestar" onclick="impDiretaTestar()">🧪 Testar impressão</button></div>
+      <div class="dica" id="impDiretaStatus"></div>
+      <div class="dica">Vale só para este aparelho (não muda nos outros). Usa a porta COM da impressora Bluetooth ou USB. Funciona para a comanda da cozinha (1 via); via do cliente, etiquetas e relatórios continuam saindo pela janela de impressão normal.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgRodape">Mensagem extra no fim da comanda — opcional</label><input type="text" id="cfgRodape" placeholder="Deixe vazio para não imprimir nada" oninput="salvarConfig()"><div class="dica">Se ficar em branco, nada é impresso após a linha de corte, evitando desperdício de papel.</div></div></div>
     <div class="bloco-calc"><div><label for="cfgCNPJ">CNPJ do seu negócio (MEI) — opcional</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0000-00" oninput="salvarConfig()"><div class="dica">Aparece no recibo de consumo emitido pra cliente (aba Caixa). Deixe vazio se ainda não tiver CNPJ.</div></div></div>
   </div>
@@ -1814,6 +1839,17 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
     <div id="dadosResumo" class="grade" style="margin-top:12px"></div>
   </div>
   <div class="painel">
+    <h2>💻 Salvamento automático no computador</h2>
+    <div class="aviso">Escolha uma pasta (por exemplo, no OneDrive) e o sistema grava sozinho uma cópia completa dos dados, poucos segundos depois de cada alteração: o arquivo <b>PAOEVIDA_atual.json</b> e um arquivo por dia (guarda os 14 mais recentes). Funciona no Chrome ou no Edge do computador.</div>
+    <div class="grupo-botoes">
+      <button class="btn" type="button" onclick="autoEscolherPasta()">📁 Escolher pasta</button>
+      <button class="btn azul" type="button" onclick="autoGravarAgora(true)">💾 Salvar agora / Reativar</button>
+      <button class="btn cinza" type="button" onclick="autoDesligar()">Desligar</button>
+    </div>
+    <p id="autoArquivoStatus" class="suave" style="margin-top:6px"></p>
+  </div>
+
+  <div class="painel">
     <h2>🔄 Sincronização automática entre aparelhos</h2>
     <div class="aviso">Opcional e gratuito. Liga a sincronização automática de <b>vendas, despesas, perdas, compras, contas a pagar, fechamentos de caixa e estoque</b> entre todos os aparelhos com o mesmo "código do negócio" — sem precisar exportar/importar na mão. Fichas, insumos e configurações continuam só deste aparelho, como hoje. Funciona sem internet: o que for feito offline entra sozinho quando o sinal voltar.</div>
     <label class="linha"><input type="checkbox" id="syncAtivo" onchange="alternarSync()"> Ativar sincronização automática</label>
@@ -1878,6 +1914,86 @@ input,select,textarea{border-radius:10px;border-color:var(--campo-borda)}
 <div id="areaRelatorio"></div>
 
 <script>
+/* =====================================================================
+   ARMAZENAMENTO (KV): IndexedDB com cópia em memória.
+   Mesma interface do localStorage (getItem/setItem/removeItem/length/key),
+   mas sem o limite de ~5 MB. Se o IndexedDB não estiver disponível, cai
+   automaticamente para o localStorage.
+   ===================================================================== */
+const KV = (() => {
+  const mem = new Map(); let db = null, modoIDB = false;
+  const canal = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pao-e-vida-kv') : null;
+  const NOSSAS = k => Object.values(CHAVES).includes(k) || CHAVES_ANTIGAS.includes(k) || /^(backupAutomatico|backupAnterior|backupPreMigracao|ultimoDownloadBackup|schemaVersao|corrompido_|syncConfig|syncUltimoEnviado)/.test(k);
+  function abrir(){
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('pao-e-vida', 1);
+      r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('handles'); };
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); r.onblocked = () => rej(new Error('bloqueado'));
+    });
+  }
+  function lerTudo(d){
+    return new Promise((res, rej) => {
+      const out = {}; const c = d.transaction('kv').objectStore('kv').openCursor();
+      c.onsuccess = () => { const cur = c.result; if(cur){ out[cur.key] = cur.value; cur.continue(); } else res(out); };
+      c.onerror = () => rej(c.error);
+    });
+  }
+  function gravarVarios(d, obj){
+    return new Promise((res, rej) => {
+      const tx = d.transaction('kv', 'readwrite'); const st = tx.objectStore('kv');
+      Object.keys(obj).forEach(k => st.put(obj[k], k));
+      tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+    });
+  }
+  function put(k, v){
+    if(!db) return;
+    try{ const tx = db.transaction('kv', 'readwrite'); if(v === null) tx.objectStore('kv').delete(k); else tx.objectStore('kv').put(v, k); tx.onerror = tx.onabort = () => console.error('Falha ao gravar no IndexedDB', k, tx.error); }
+    catch(e){ console.error('Falha ao gravar no IndexedDB', k, e); }
+  }
+  async function iniciar(){
+    if(typeof indexedDB === 'undefined'){ modoIDB = false; return false; }
+    try{
+      const d = await Promise.race([abrir(), new Promise((_, rej) => setTimeout(() => rej(new Error('tempo esgotado')), 5000))]);
+      const dados = await lerTudo(d);
+      if(dados.__migrado__ !== '1'){
+        // primeira vez neste navegador: copia o que já existe no localStorage (o original NÃO é apagado)
+        const copia = {};
+        try{ for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(NOSSAS(k)) copia[k] = localStorage.getItem(k); } }catch(e){}
+        copia.__migrado__ = '1';
+        await gravarVarios(d, copia);
+        Object.assign(dados, copia);
+      }
+      Object.keys(dados).forEach(k => { if(k !== '__migrado__') mem.set(k, dados[k]); });
+      db = d; modoIDB = true;
+      if(canal) canal.onmessage = e => {
+        const m = e.data || {}; if(typeof m.k !== 'string') return;
+        if(m.v === null) mem.delete(m.k); else mem.set(m.k, m.v);
+        const ev = new Event('storage'); ev.key = m.k; ev.newValue = m.v; window.dispatchEvent(ev);
+      };
+      return true;
+    }catch(e){ console.error('IndexedDB indisponível, usando localStorage', e); modoIDB = false; db = null; return false; }
+  }
+  return {
+    iniciar,
+    get modo(){ return modoIDB ? 'indexeddb' : 'localstorage'; },
+    getItem(k){ if(!modoIDB) return localStorage.getItem(k); return mem.has(k) ? mem.get(k) : null; },
+    setItem(k, v){
+      if(!modoIDB) return localStorage.setItem(k, v);
+      v = String(v); mem.set(k, v); put(k, v); if(canal) try{ canal.postMessage({k, v}); }catch(e){}
+    },
+    removeItem(k){
+      if(!modoIDB) return localStorage.removeItem(k);
+      mem.delete(k); put(k, null); if(canal) try{ canal.postMessage({k, v: null}); }catch(e){}
+    },
+    get length(){ return modoIDB ? mem.size : localStorage.length; },
+    key(i){ return modoIDB ? (Array.from(mem.keys())[i] ?? null) : localStorage.key(i); },
+    // alças de pasta (salvamento automático no computador)
+    async guardarAlca(nome, alca){ if(!db) return false; return new Promise(res => { try{ const tx = db.transaction('handles', 'readwrite'); tx.objectStore('handles').put(alca, nome); tx.oncomplete = () => res(true); tx.onerror = () => res(false); }catch(e){ res(false); } }); },
+    async lerAlca(nome){ if(!db) return null; return new Promise(res => { const r = db.transaction('handles').objectStore('handles').get(nome); r.onsuccess = () => res(r.result || null); r.onerror = () => res(null); }); },
+    async apagarAlca(nome){ if(!db) return; return new Promise(res => { const tx = db.transaction('handles', 'readwrite'); tx.objectStore('handles').delete(nome); tx.oncomplete = () => res(); tx.onerror = () => res(); }); }
+  };
+})();
+
 var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(o*r,n*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
 
 'use strict';
@@ -2099,14 +2215,14 @@ let NUTRI_EDIT_ING = null;
 
 function lerLS(chave, padrao){
   let t = null;
-  try{ t = localStorage.getItem(chave); }catch(e){ return padrao; }
+  try{ t = KV.getItem(chave); }catch(e){ return padrao; }
   if(t === null) return padrao;
   try{
     const v = JSON.parse(t);
     return (v === null || v === undefined) ? padrao : v;
   }catch(e){
     // Dado corrompido: guarda cópia bruta para não perder nada
-    try{ localStorage.setItem('corrompido_' + chave + '_' + Date.now(), t); }catch(_){}
+    try{ KV.setItem('corrompido_' + chave + '_' + Date.now(), t); }catch(_){}
     ESTADO.leituraCorrompida.push(chave);
     return padrao;
   }
@@ -2122,7 +2238,7 @@ function carregarBD(){
   });
   // produtos simples (bebidas etc.): só semeia na primeira vez (chave inexistente)
   let temProdutos = false;
-  try{ temProdutos = localStorage.getItem(CHAVES.produtos) !== null; }catch(e){}
+  try{ temProdutos = KV.getItem(CHAVES.produtos) !== null; }catch(e){}
   if(!temProdutos) BD.produtos = PRODUTOS_INICIAIS.map(p => ({...p, id: uid()}));
   BD.receitaMassa = [];
 }
@@ -2142,20 +2258,88 @@ function flush(){
   let falhou = false;
   lista.forEach(k => {
     const texto = JSON.stringify(BD[k]);
-    try{ localStorage.setItem(CHAVES[k], texto); }
+    try{ KV.setItem(CHAVES[k], texto); }
     catch(e){
       // Sem espaço? remove a cópia automática (recriável) e tenta de novo
-      try{ localStorage.removeItem('backupAutomatico'); localStorage.setItem(CHAVES[k], texto); }
+      try{ KV.removeItem('backupAutomatico'); KV.setItem(CHAVES[k], texto); }
       catch(e2){ falhou = true; console.error('Falha ao gravar', k, e2); }
     }
   });
   ESTADO.erroGravacao = falhou;
-  if(!falhou) agendarSnapshotAuto();
+  if(!falhou){ agendarSnapshotAuto(); autoAgendar(); }
   atualizarFaixa();
   if(!falhou && lista.some(k => k === 'caixaDias' || SYNC_TIPOS.includes(k))) syncAgendarEnvio();
 }
 window.addEventListener('pagehide', flush);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') flush(); });
+
+
+/* ---------- salvamento automático em arquivo (Chrome/Edge no computador) ---------- */
+const AUTO = {alca: null, timer: null, ultimo: 0, status: ''};
+function autoSuportado(){ return typeof window.showDirectoryPicker === 'function'; }
+async function autoPermissao(interativo){
+  if(!AUTO.alca) return false;
+  try{
+    const opc = {mode: 'readwrite'};
+    if(await AUTO.alca.queryPermission(opc) === 'granted') return true;
+    if(interativo && await AUTO.alca.requestPermission(opc) === 'granted') return true;
+  }catch(e){}
+  return false;
+}
+function autoAtualizarTela(){
+  const el = $('autoArquivoStatus'); if(!el) return;
+  if(!autoSuportado()){ el.textContent = 'Este navegador não permite salvar em pasta (use o Chrome ou o Edge no computador).'; return; }
+  el.textContent = AUTO.alca ? ('📁 Pasta: ' + AUTO.alca.name + ' — ' + (AUTO.status || 'ativo')) : 'Desligado.';
+}
+async function autoEscolherPasta(){
+  if(!autoSuportado()) return toast('Este navegador não permite salvar em pasta. Use o Chrome ou o Edge no computador.', 'alerta', {ms: 6000});
+  try{
+    const alca = await window.showDirectoryPicker({id: 'pao-e-vida-backup', mode: 'readwrite'});
+    AUTO.alca = alca; await KV.guardarAlca('pastaBackup', alca);
+    await autoGravarAgora(true); autoAtualizarTela();
+    toast('Salvamento automático ligado na pasta "' + alca.name + '".', 'ok');
+  }catch(e){ if(!(e && e.name === 'AbortError')) toast('Não consegui acessar a pasta: ' + (e && e.message || e), 'erro'); }
+}
+async function autoDesligar(){
+  AUTO.alca = null; AUTO.status = ''; await KV.apagarAlca('pastaBackup'); autoAtualizarTela(); toast('Salvamento automático desligado.', 'ok');
+}
+async function autoEscrever(nome, texto){
+  const arq = await AUTO.alca.getFileHandle(nome, {create: true});
+  const w = await arq.createWritable(); await w.write(texto); await w.close();
+}
+async function autoGravarAgora(interativo){
+  if(!AUTO.alca) return;
+  if(!await autoPermissao(!!interativo)){ AUTO.status = '⚠️ precisa de permissão — clique em "Reativar"'; autoAtualizarTela(); return; }
+  try{
+    const texto = JSON.stringify(coletarDadosBackup());
+    await autoEscrever('PAOEVIDA_atual.json', texto);
+    const hoje = dataHoje(); await autoEscrever('PAOEVIDA_dados_' + hoje + '.json', texto);
+    // mantém só os 14 arquivos diários mais recentes (apenas os que o próprio sistema criou)
+    const diarios = []; for await (const [nome] of AUTO.alca.entries()) if(/^PAOEVIDA_dados_\d{4}-\d{2}-\d{2}\.json$/.test(nome)) diarios.push(nome);
+    diarios.sort().slice(0, Math.max(0, diarios.length - 14)).forEach(n => AUTO.alca.removeEntry(n).catch(() => {}));
+    AUTO.ultimo = Date.now(); AUTO.status = '✅ salvo às ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+  }catch(e){ AUTO.status = '⚠️ erro ao salvar: ' + (e && e.message || e); }
+  autoAtualizarTela();
+}
+function autoAgendar(){
+  if(!AUTO.alca) return;
+  clearTimeout(AUTO.timer); AUTO.timer = setTimeout(() => autoGravarAgora(false), 20000);
+}
+async function autoRetomar(){
+  try{
+    AUTO.alca = await KV.lerAlca('pastaBackup');
+    if(!AUTO.alca) return;
+    if(await autoPermissao(false)){ AUTO.status = 'ativo'; autoAgendar(); }
+    else{
+      AUTO.status = '⚠️ precisa de permissão — clique em "Reativar"';
+      // pede a permissão no primeiro toque (o Chrome só permite com um clique do usuário)
+      const unica = () => { document.removeEventListener('pointerdown', unica, true); autoPermissao(true).then(ok => { if(ok){ AUTO.status = 'ativo'; autoGravarAgora(false); } autoAtualizarTela(); }); };
+      document.addEventListener('pointerdown', unica, true);
+    }
+    autoAtualizarTela();
+  }catch(e){}
+}
+window.addEventListener('pagehide', () => { if(AUTO.alca && AUTO.timer) autoGravarAgora(false); });
 
 /* ---------- backup ---------- */
 function coletarDadosBackup(){
@@ -2167,13 +2351,13 @@ function agendarSnapshotAuto(){
   const agora = Date.now();
   if(agora - ESTADO.ultimoSnapshot < 15 * 60 * 1000) return;
   ESTADO.ultimoSnapshot = agora;
-  try{ localStorage.setItem('backupAutomatico', JSON.stringify(coletarDadosBackup())); }catch(e){ /* não é crítico */ }
+  try{ KV.setItem('backupAutomatico', JSON.stringify(coletarDadosBackup())); }catch(e){ /* não é crítico */ }
 }
 function guardarBackupAnterior(motivo){
   const b = coletarDadosBackup(); b.motivo = motivo || '';
-  try{ localStorage.setItem('backupAnterior', JSON.stringify(b)); return true; }
+  try{ KV.setItem('backupAnterior', JSON.stringify(b)); return true; }
   catch(e){
-    try{ localStorage.removeItem('backupAutomatico'); localStorage.setItem('backupAnterior', JSON.stringify(b)); return true; }
+    try{ KV.removeItem('backupAutomatico'); KV.setItem('backupAnterior', JSON.stringify(b)); return true; }
     catch(e2){ return false; }
   }
 }
@@ -2188,7 +2372,7 @@ function nomeArquivoBackup(){ return 'backup-' + slug(nomeNegocio()) + '-' + dat
 function exportarBackup(silencioso){
   const b = coletarDadosBackup();
   baixarArquivo(JSON.stringify(b, null, 2), nomeArquivoBackup(), 'application/json;charset=utf-8');
-  try{ localStorage.setItem('ultimoDownloadBackup', dataHoje()); }catch(e){}
+  try{ KV.setItem('ultimoDownloadBackup', dataHoje()); }catch(e){}
   atualizarStatusBackup('Backup exportado em ' + new Date().toLocaleString('pt-BR') + '.');
   atualizarFaixa();
   if(!silencioso) toast('Backup exportado.', 'ok');
@@ -2199,7 +2383,7 @@ async function compartilharBackup(){
   if(navigator.canShare && navigator.canShare({files: [arq]})){
     try{
       await navigator.share({files: [arq], title: 'Backup ' + nomeNegocio()});
-      try{ localStorage.setItem('ultimoDownloadBackup', dataHoje()); }catch(e){}
+      try{ KV.setItem('ultimoDownloadBackup', dataHoje()); }catch(e){}
       atualizarFaixa();
       return;
     }catch(e){ if(e && e.name === 'AbortError') return; }
@@ -2280,16 +2464,22 @@ function listarPontos(){
   ];
   const out = [];
   defs.forEach(d => {
-    const t = localStorage.getItem(d.chave); if(!t) return;
+    const t = KV.getItem(d.chave); if(!t) return;
     try{
       const b = JSON.parse(t);
-      out.push({...d, criadoEm: b.criadoEm, motivo: b.motivo || '', resumo: resumoDados(b.dados || {})});
+      out.push({...d, criadoEm: b.criadoEm, motivo: b.motivo || '', resumo: resumoDados(b.dados || {}), kb: (d.chave.length + t.length) * 2 / 1024});
     }catch(e){}
   });
   return out;
 }
+async function apagarPonto(chave){
+  if(!['backupAnterior', 'backupPreMigracao', 'backupAutomatico'].includes(chave)) return;
+  if(!await confirmar('Apagar este ponto de restauração? Você não poderá mais voltar a esse estado por aqui. Seus dados atuais não são mexidos. Só apague se já baixou um backup recente.', {titulo: 'Apagar ponto de restauração', ok: 'Apagar', perigo: true})) return;
+  try{ KV.removeItem(chave); }catch(e){}
+  renderDados(); toast('Ponto apagado. Espaço liberado.', 'ok');
+}
 async function restaurarPonto(chave){
-  const t = localStorage.getItem(chave);
+  const t = KV.getItem(chave);
   if(!t) return toast('Ponto de restauração não encontrado.', 'erro');
   try{
     const b = JSON.parse(t); validarBackup(b);
@@ -2315,15 +2505,15 @@ async function limparTodosDados(){
 function snapshotPreMigracao(){
   // Guarda os dados ORIGINAIS (como estavam) antes da 1ª execução desta versão.
   try{
-    if(localStorage.getItem('schemaVersao') === String(APP_VERSAO)) return;
-    if(localStorage.getItem('backupPreMigracao')) return;
+    if(KV.getItem('schemaVersao') === String(APP_VERSAO)) return;
+    if(KV.getItem('backupPreMigracao')) return;
     const dados = {}; let algum = false;
     CHAVES_ANTIGAS.forEach(k => {
-      const t = localStorage.getItem(CHAVES[k]);
+      const t = KV.getItem(CHAVES[k]);
       if(t !== null){ algum = true; try{ dados[k] = JSON.parse(t); }catch(e){} }
     });
     if(!algum) return;
-    localStorage.setItem('backupPreMigracao', JSON.stringify({versao: 1, app: 'pao-e-vida', criadoEm: new Date().toISOString(), motivo: 'cópia automática antes da atualização do sistema', dados}));
+    KV.setItem('backupPreMigracao', JSON.stringify({versao: 1, app: 'pao-e-vida', criadoEm: new Date().toISOString(), motivo: 'cópia automática antes da atualização do sistema', dados}));
   }catch(e){ console.warn('snapshot pré-migração falhou', e); }
 }
 function acharInsumoPorNome(nome){
@@ -2396,7 +2586,7 @@ function acharInsumo(ref){ // ref: {insumoId, nome}
   return acharInsumoPorNome(ref.nome);
 }
 function normalizarBD(){
-  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei'];
+  const arrs = ['custos','insumos','fichas','formulasMassa','vendas','compras','estoque','estoqueComponentes','despesas','produtos','perdas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei','taras'];
   arrs.forEach(k => { if(!Array.isArray(BD[k])) BD[k] = []; });
   if(!BD.taxas || typeof BD.taxas !== 'object' || Array.isArray(BD.taxas)) BD.taxas = {};
   if(!BD.caixaDias || typeof BD.caixaDias !== 'object' || Array.isArray(BD.caixaDias)) BD.caixaDias = {};
@@ -2404,7 +2594,7 @@ function normalizarBD(){
   const _tinhaRecursosAvancados = !!(BD.config && typeof BD.config === 'object' && Object.prototype.hasOwnProperty.call(BD.config, 'recursosAvancados'));
   BD.config = Object.assign({}, CONFIG_PADRAO, (BD.config && typeof BD.config === 'object' && !Array.isArray(BD.config)) ? BD.config : {});
 
-  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei'].forEach(k => {
+  ['custos','insumos','fichas','formulasMassa','compras','estoqueComponentes','despesas','produtos','perdas','vendas','locais','fornecedores','etiquetaSabores','etiquetaLotes','nutriIngredientes','nutriReceitas','contasPagar','conferenciasCartao','conciliacao','dasMei','taras'].forEach(k => {
     BD[k].forEach(x => { if(x && typeof x === 'object' && !x.id) x.id = uid(); });
   });
   BD.custos.forEach(c => { c.val = parseNum(c.val); });
@@ -2517,7 +2707,7 @@ function atualizarFaixa(){
   if(ESTADO.leituraCorrompida.length)
     itens.push('<div class="faixa erro-f">⚠️ Alguns dados estavam ilegíveis (' + esc(ESTADO.leituraCorrompida.join(', ')) + ') e uma cópia bruta foi preservada. Importe seu último backup se algo estiver faltando.</div>');
   const temDados = BD.vendas.length > 0 || BD.fichas.length > 0 || BD.insumos.length > 0;
-  let ultimo = ''; try{ ultimo = localStorage.getItem('ultimoDownloadBackup') || ''; }catch(e){}
+  let ultimo = ''; try{ ultimo = KV.getItem('ultimoDownloadBackup') || ''; }catch(e){}
   if(temDados && !ESTADO.avisoBackupFechado && ultimo !== dataHoje() && BD.vendas.some(v => v.data === dataHoje()))
     itens.push('<div class="faixa alerta-f">💾 Você tem vendas hoje e o backup de hoje ainda não foi baixado. <button type="button" onclick="exportarBackup()">Baixar agora</button> <button type="button" onclick="ESTADO.avisoBackupFechado=true;atualizarFaixa()">Dispensar</button></div>');
   box.innerHTML = itens.join('');
@@ -2851,6 +3041,7 @@ function carregarConfigNaTela(){
   $('cfgVias').value = String(c.totemVias || 2);
   $('cfgRodape').value = c.rodapeComanda || '';
   $('cfgCNPJ').value = c.negocioCNPJ || '';
+  impDiretaCarregarUI();
 }
 function salvarConfig(){
   const c = BD.config;
@@ -3242,6 +3433,96 @@ function salvarCategoriaFicha(){
 function renderCorpoFicha(f){
   renderIngredientes(f); renderComponentesFicha(f); renderEmbalagens(f);
   renderResultadoFicha(f); renderResultadoPraticado(f);
+}
+/* ---------- quadro de equivalência de medidas (colher/xícara → g) — usado em Fichas e em Massa ---------- */
+const EQUIV_PADRAO = [
+  // [nome, colher de sopa, colher de chá, xícara de chá] em gramas
+  ['Farinha de trigo', 8, 3, 120], ['Amido de milho', 8, 3, 130], ['Fubá', 8, 3, 120], ['Polvilho doce', 8, 3, 120],
+  ['Aveia em flocos', 6, 2, 80], ['Açúcar refinado', 12, 4, 180], ['Açúcar cristal', 15, 5, 200], ['Açúcar mascavo', 10, 3, 150],
+  ['Açúcar de confeiteiro', 10, 3, 140], ['Sal refinado', 18, 6, 290], ['Fermento biológico seco', 9, 3, 0],
+  ['Fermento químico em pó', 12, 4, 0], ['Bicarbonato de sódio', 15, 5, 0], ['Chocolate em pó / cacau', 6, 2, 90],
+  ['Manteiga / margarina', 15, 5, 200], ['Óleo / azeite', 14, 5, 216], ['Creme de leite', 20, 6, 240],
+  ['Requeijão cremoso', 30, 10, 240], ['Leite / água (líquidos)', 15, 5, 240], ['Leite em pó', 8, 3, 120],
+  ['Mel', 21, 7, 340], ['Queijo parmesão ralado', 6, 2, 90], ['Coco ralado', 6, 2, 90], ['Molho de tomate', 20, 7, 250],
+  ['Orégano seco', 3, 1, 0], ['Pimenta-do-reino', 6, 2, 0]
+].map(r => ({n: r[0], sopa: r[1], cha: r[2], xic: r[3]}));
+const EQ_PREFIXOS = ['eqf', 'eqm'];
+function eqLista(){
+  const c = BD.config;
+  if(!Array.isArray(c.equivMedidas) || !c.equivMedidas.length) return EQUIV_PADRAO.map(x => ({...x}));
+  return c.equivMedidas;
+}
+function eqSalvarLista(l){ BD.config.equivMedidas = l; salvar('config'); }
+function eqFmt(v){ return v > 0 ? String(Math.round(v * 100) / 100).replace('.', ',') : '—'; }
+function eqHtml(p){
+  const destino = p === 'eqm' ? 'no cálculo inverso' : 'na ficha';
+  return '<details id="' + p + 'Painel" class="equiv-painel"><summary style="cursor:pointer;font-weight:700">📏 Quadro de equivalência de medidas (colher, xícara → gramas)</summary>' +
+    '<div class="aviso" style="margin-top:8px">Use para transformar receitas em colher/xícara em peso. Valores médios com a medida <b>rasa</b> (xícara de chá = 240 ml). Para água, leite e líquidos, 1 ml ≈ 1 g. 1 ovo ≈ 50 g (clara ≈ 30 g, gema ≈ 20 g). Seu produto pode variar: <b>pese uma vez e ajuste</b> o valor na tabela.</div>' +
+    '<div class="linha-form" style="grid-template-columns:2fr 1fr 1.4fr 1fr auto;align-items:end">' +
+    '<div><label for="' + p + 'Ing">Ingrediente</label><select id="' + p + 'Ing" onchange="eqCalcular(\'' + p + '\')"></select></div>' +
+    '<div><label for="' + p + 'Qtd">Quantidade</label><input type="number" id="' + p + 'Qtd" step="0.25" min="0" value="1" inputmode="decimal" oninput="eqCalcular(\'' + p + '\')"></div>' +
+    '<div><label for="' + p + 'Med">Medida</label><select id="' + p + 'Med" onchange="eqCalcular(\'' + p + '\')"><option value="sopa">colher de sopa</option><option value="cha">colher de chá</option><option value="xic">xícara (chá)</option></select></div>' +
+    '<div><label>Resultado</label><div id="' + p + 'Res" style="font-weight:700;font-size:1.15em;padding:8px 0">-</div></div>' +
+    '<button class="btn pequeno" type="button" onclick="eqUsar(\'' + p + '\')" title="Preenche o peso (g) ' + destino + '">➡️ Usar ' + destino + '</button></div>' +
+    '<div class="tabela-wrap"><table class="tabela"><thead><tr><th>Ingrediente</th><th class="n">1 colher de sopa</th><th class="n">1 colher de chá</th><th class="n">1 xícara (chá)</th><th>Ação</th></tr></thead><tbody id="' + p + 'Tabela"></tbody></table></div>' +
+    '<div class="flex-linha" style="margin-top:8px"><button class="btn cinza pequeno" type="button" onclick="eqAdicionar()">+ Adicionar ingrediente</button>' +
+    '<button class="btn cinza pequeno" type="button" onclick="eqRestaurar()">↺ Restaurar valores padrão</button></div>' +
+    '<div class="dica">Valores em gramas. Os ajustes ficam salvos neste aparelho, junto com as configurações do sistema.</div></details>';
+}
+function renderEquivalencias(){
+  const l = eqLista();
+  EQ_PREFIXOS.forEach(p => {
+    const box = $(p === 'eqm' ? 'eqBoxMassa' : 'eqBoxFichas'); if(!box) return;
+    const aberto = $(p + 'Painel') ? $(p + 'Painel').open : false;
+    const foco = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : '';
+    const guardado = {ing: $(p + 'Ing') ? $(p + 'Ing').value : '', qtd: $(p + 'Qtd') ? $(p + 'Qtd').value : '', med: $(p + 'Med') ? $(p + 'Med').value : ''};
+    if(!$(p + 'Painel')) box.innerHTML = eqHtml(p);
+    $(p + 'Painel').open = aberto || $(p + 'Painel').open;
+    $(p + 'Ing').innerHTML = l.map((x, i) => '<option value="' + i + '">' + esc(x.n) + '</option>').join('');
+    if(guardado.ing !== '' && l[guardado.ing]) $(p + 'Ing').value = guardado.ing;
+    if(guardado.qtd !== '') $(p + 'Qtd').value = guardado.qtd;
+    if(guardado.med) $(p + 'Med').value = guardado.med;
+    $(p + 'Tabela').innerHTML = l.map((x, i) => '<tr><td>' + esc(x.n) + '</td>' +
+      ['sopa', 'cha', 'xic'].map(k => '<td class="n"><input type="number" step="0.1" min="0" value="' + (x[k] || '') + '" placeholder="—" style="width:84px;text-align:right" aria-label="' + esc(x.n) + ' ' + k + '" onchange="eqEditar(' + i + ',\'' + k + '\',this.value)"></td>').join('') +
+      '<td><button class="btn vermelho pequeno" type="button" onclick="eqRemover(' + i + ')" aria-label="Remover ' + esc(x.n) + '">🗑️</button></td></tr>').join('');
+    eqCalcular(p);
+  });
+}
+function eqCalcular(p){
+  const x = eqLista()[$(p + 'Ing').value]; const out = $(p + 'Res'); if(!x){ out.textContent = '-'; return; }
+  const g = x[$(p + 'Med').value]; const q = parseNum($(p + 'Qtd').value);
+  out.textContent = g > 0 ? eqFmt(q * g) + ' g' : 'sem valor para essa medida';
+}
+function eqEditar(i, k, v){ const l = eqLista().map(x => ({...x})); l[i][k] = Math.max(0, parseNum(v)); eqSalvarLista(l); renderEquivalencias(); }
+function eqRemover(i){
+  const l = eqLista().map(x => ({...x})); l.splice(i, 1);
+  if(l.length) eqSalvarLista(l); else { delete BD.config.equivMedidas; salvar('config'); }
+  renderEquivalencias();
+}
+function eqAdicionar(){
+  formModal({titulo: 'Adicionar ingrediente', campos: [{id: 'nome', rotulo: 'Nome do ingrediente', valor: ''}], salvar: v => {
+    const nome = (v.nome || '').trim(); if(!nome) return false;
+    const l = eqLista().map(x => ({...x})); l.push({n: nome, sopa: 0, cha: 0, xic: 0}); eqSalvarLista(l); renderEquivalencias();
+    toast('Adicionado. Preencha os gramas na tabela.', 'ok');
+  }});
+}
+async function eqRestaurar(){
+  if(!await confirmar('Voltar a tabela de equivalências para os valores padrão? Seus ajustes e itens adicionados serão perdidos.', {titulo: 'Restaurar equivalências', ok: 'Restaurar', perigo: true})) return;
+  delete BD.config.equivMedidas; salvar('config'); renderEquivalencias();
+}
+function eqUsar(p){
+  const x = eqLista()[$(p + 'Ing').value]; if(!x) return;
+  const g = x[$(p + 'Med').value] * parseNum($(p + 'Qtd').value);
+  if(!(g > 0)) return toast('Sem valor em gramas para essa medida.', 'alerta');
+  const r = Math.round(g * 100) / 100;
+  if(p === 'eqm'){
+    $('inversaPeso').value = r; if(!$('inversaNome').value.trim()) $('inversaNome').value = x.n;
+    toast(eqFmt(g) + ' g preenchido no cálculo inverso. Confira o nome do ingrediente (igual ao cadastro em Insumos) e clique em + Adicionar.', 'ok', {ms: 6000});
+    return;
+  }
+  if(!fichaAtual || $('conteudoFicha').classList.contains('oculto')) return toast('Abra uma ficha para usar o valor. O resultado é ' + eqFmt(g) + ' g.', 'alerta');
+  $('fichaIngQtd').value = r; $('fichaIngUn').value = 'g';
+  toast(eqFmt(g) + ' g preenchido na ficha. Escolha o ingrediente e clique em +.', 'ok');
 }
 function sugerirUnidadeFicha(){
   const ins = acharInsumoPorNome($('fichaIngNome').value);
@@ -4826,7 +5107,7 @@ function comandaHTML(pid){
   if(BD.config.totemVias === 2){
     h += '<div class="corte">✂ - - - - - VIA DO CLIENTE - - - - -</div>' + viaClienteHTML(pid);
   }
-  if(BD.config.rodapeComanda) h += '<div class="via-msg">' + esc(BD.config.rodapeComanda) + '</div>';
+  if(BD.config.rodapeComanda) h += '<div class="via-msg" style="font-size:18px;font-weight:bold;margin-top:10px">' + esc(BD.config.rodapeComanda) + '</div>';
   return h;
 }
 function viaClienteHTML(pid){
@@ -4864,7 +5145,174 @@ function viaClienteUltima(){
   if(!pid) return toast('Ainda não há pedidos para imprimir a via do cliente.', 'alerta');
   imprimirViaCliente(pid);
 }
+/* ---------- impressão direta (Web Serial → ESC/POS) ----------
+   Só funciona em computador com Chrome/Edge (Web Serial). Envia a imagem da comanda direto pela porta COM
+   da impressora térmica (Bluetooth ou USB), sem janela de impressão e sem gastar papel em branco.
+   Fica ligada só neste aparelho (localStorage) — não vai para a sincronização entre aparelhos. */
+const IMPDIR = {porta: null, ocupado: false};
+function impDiretaSuportada(){ return !!(navigator.serial && navigator.serial.requestPort); }
+function impDiretaAtiva(){ try{ return impDiretaSuportada() && localStorage.getItem('pvImpDireta') === '1'; }catch(e){ return false; } }
+function impDiretaAvanco(){ try{ const n = parseInt(localStorage.getItem('pvImpDiretaAvanco'), 10); if(n >= 0 && n <= 40) return n; }catch(e){} return 8; }
+function impDiretaCorteAtivo(){ try{ return localStorage.getItem('pvImpDiretaCorte') === '1'; }catch(e){ return false; } }
+function impDiretaStatus(txt, ok){
+  const el = $('impDiretaStatus'); if(!el) return;
+  el.textContent = txt; el.style.color = ok === true ? '#1f7a3a' : (ok === false ? '#b3261e' : '');
+}
+function impDiretaCarregarUI(){
+  const box = $('cfgImpDireta'); if(!box) return;
+  const sup = impDiretaSuportada();
+  box.checked = impDiretaAtiva(); box.disabled = !sup;
+  if($('cfgImpDiretaCorte')) $('cfgImpDiretaCorte').checked = impDiretaCorteAtivo();
+  if($('cfgImpDiretaAvanco')) $('cfgImpDiretaAvanco').value = impDiretaAvanco();
+  ['btnImpDiretaConectar', 'btnImpDiretaTestar'].forEach(id => { if($(id)) $(id).disabled = !sup; });
+  impDiretaStatus(sup ? 'Clique em "Conectar impressora" e escolha a porta COM da impressora (ex.: COM3).' : 'Este navegador não permite impressão direta (use o Chrome ou o Edge no computador).', sup ? null : false);
+}
+function impDiretaSalvar(){
+  try{
+    localStorage.setItem('pvImpDireta', $('cfgImpDireta').checked ? '1' : '0');
+    if($('cfgImpDiretaAvanco')){ let n = parseInt($('cfgImpDiretaAvanco').value, 10); if(!(n >= 0)) n = 8; localStorage.setItem('pvImpDiretaAvanco', String(Math.min(40, n))); }
+    localStorage.setItem('pvImpDiretaCorte', $('cfgImpDiretaCorte') && $('cfgImpDiretaCorte').checked ? '1' : '0');
+  }catch(e){ toast('Não foi possível guardar esta opção neste navegador.', 'erro'); }
+  impDiretaFaixaAtualizar();
+}
+async function impDiretaConectar(){
+  if(!impDiretaSuportada()) return toast('Este navegador não permite impressão direta.', 'alerta');
+  try{
+    IMPDIR.porta = await navigator.serial.requestPort();
+    impDiretaFaixaAtualizar();
+    impDiretaStatus('✅ Porta escolhida. Clique em "Testar impressão" para conferir.', true);
+    toast('Porta da impressora escolhida.', 'ok');
+  }catch(e){
+    if(e && e.name === 'NotFoundError') impDiretaStatus('Nenhuma porta foi escolhida.', null);
+    else { impDiretaStatus('Não foi possível escolher a porta: ' + (e && e.message ? e.message : e), false); }
+  }
+}
+async function impDiretaPorta(){
+  if(IMPDIR.porta) return IMPDIR.porta;
+  const ja = await navigator.serial.getPorts();
+  if(ja.length >= 1){ IMPDIR.porta = ja[ja.length - 1]; return IMPDIR.porta; }
+  // várias portas autorizadas, ou nenhuma: pede ao usuário (só funciona logo depois de um clique)
+  IMPDIR.porta = await navigator.serial.requestPort();
+  return IMPDIR.porta;
+}
+/* Converte um canvas (preto sobre branco) em comandos ESC/POS: iniciar + imagem em faixas (GS v 0) + avanço de papel (+ corte opcional). */
+function canvasParaEscPos(cv, opts){
+  opts = opts || {};
+  const W = Math.ceil(cv.width / 8) * 8, H = cv.height;
+  const px = cv.getContext('2d').getImageData(0, 0, cv.width, H).data;
+  const bytesLinha = W / 8, FAIXA = 32;
+  const partes = [Uint8Array.of(0x1B, 0x40)];
+  for(let y0 = 0; y0 < H; y0 += FAIXA){
+    const h = Math.min(FAIXA, H - y0);
+    const dados = new Uint8Array(bytesLinha * h);
+    for(let y = 0; y < h; y++){
+      for(let x = 0; x < cv.width; x++){
+        const i = ((y0 + y) * cv.width + x) * 4;
+        if(px[i + 3] < 128) continue;
+        const lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+        if(lum < 200) dados[y * bytesLinha + (x >> 3)] |= 0x80 >> (x & 7);
+      }
+    }
+    partes.push(Uint8Array.of(0x1D, 0x76, 0x30, 0x00, bytesLinha & 255, bytesLinha >> 8, h & 255, h >> 8), dados);
+  }
+  partes.push(Uint8Array.of(0x1B, 0x64, opts.feed == null ? 5 : opts.feed));
+  if(opts.corte) partes.push(Uint8Array.of(0x1D, 0x56, 0x42, 0x00));
+  let total = 0; partes.forEach(p => { total += p.length; });
+  const out = new Uint8Array(total); let o = 0;
+  partes.forEach(p => { out.set(p, o); o += p.length; });
+  return out;
+}
+async function impDiretaEnviar(bytes){
+  const porta = await impDiretaPorta();
+  if(!porta.writable) await porta.open({baudRate: 115200, flowControl: 'none', bufferSize: 65536});
+  const w = porta.writable.getWriter();
+  try{
+    // a impressora tem buffer pequeno e a porta Bluetooth não tem controle de fluxo: envia em pedaços pequenos com pausa
+    let TAM = 256, PAUSA = 20;
+    try{ const p = parseInt(localStorage.getItem('pvImpDiretaPausa'), 10); if(p >= 0 && p <= 500) PAUSA = p; }catch(e){}
+    try{ const t = parseInt(localStorage.getItem('pvImpDiretaTam'), 10); if(t >= 32 && t <= 4096) TAM = t; }catch(e){}
+    for(let i = 0; i < bytes.length; i += TAM){
+      await w.write(bytes.subarray(i, i + TAM));
+      if(PAUSA) await new Promise(r => setTimeout(r, PAUSA));
+    }
+  } finally { try{ w.releaseLock(); }catch(e){} }
+  // deixa a impressora terminar de receber antes de soltar a porta (assim o driver do Windows também pode usá-la depois)
+  await new Promise(r => setTimeout(r, 1200));
+  try{ await porta.close(); }catch(e){}
+}
+async function impDiretaImprimirCanvas(cv){
+  if(IMPDIR.ocupado) throw new Error('A impressora ainda está recebendo a impressão anterior.');
+  IMPDIR.ocupado = true;
+  try{ await impDiretaEnviar(canvasParaEscPos(cv, {corte: impDiretaCorteAtivo(), feed: impDiretaAvanco()})); }
+  finally{ IMPDIR.ocupado = false; }
+}
+function impDiretaCanvasTeste(){
+  const cv = document.createElement('canvas'); cv.width = 576; cv.height = 260;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 576, 260); ctx.fillStyle = '#000'; ctx.strokeStyle = '#000';
+  ctx.lineWidth = 3; ctx.strokeRect(2, 2, 572, 256);
+  ctx.textAlign = 'center'; ctx.font = 'bold 34px "Courier New", monospace';
+  ctx.fillText('TESTE DE IMPRESSÃO', 288, 70);
+  ctx.font = '22px "Courier New", monospace';
+  ctx.fillText(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio()).trim(), 288, 112);
+  ctx.fillText('Impressão direta pela porta COM', 288, 150);
+  ctx.fillText('Se a moldura está inteira, está certo.', 288, 188);
+  ctx.font = '18px "Courier New", monospace';
+  ctx.fillText(new Date().toLocaleString('pt-BR'), 288, 228);
+  return cv;
+}
+function impDiretaMensagemErro(e){
+  const n = e && e.name, m = e && e.message ? e.message : String(e);
+  if(n === 'NetworkError' || /failed to open/i.test(m)) return 'Não consegui abrir a porta. Confira se a impressora está ligada (luz BT acesa) e se nenhum outro programa está usando a COM.';
+  return m;
+}
+async function impDiretaTestar(){
+  if(!impDiretaSuportada()) return toast('Este navegador não permite impressão direta.', 'alerta');
+  impDiretaStatus('Enviando teste…', null);
+  try{
+    await impDiretaImprimirCanvas(impDiretaCanvasTeste());
+    impDiretaStatus('✅ Teste enviado. Se saiu a moldura inteira, é só marcar "Imprimir direto".', true);
+  }catch(e){
+    if(e && e.name === 'NotFoundError') return impDiretaStatus('Nenhuma porta foi escolhida.', null);
+    impDiretaStatus('⚠️ ' + impDiretaMensagemErro(e), false);
+  }
+}
+
+/* Faixa de aviso: o Chrome pode "esquecer" a porta COM quando a página é fechada/recarregada. Enquanto a impressão direta
+   estiver ligada e nenhuma porta estiver autorizada, mostra um botão fixo para reconectar com um clique. */
+async function impDiretaFaixaAtualizar(){
+  let f = document.getElementById('impDiretaFaixa');
+  const precisa = impDiretaAtiva() && !IMPDIR.porta && await (async () => { try{ return (await navigator.serial.getPorts()).length === 0; }catch(e){ return false; } })();
+  if(!precisa){ if(f) f.style.display = 'none'; return; }
+  if(!f){
+    f = document.createElement('button'); f.id = 'impDiretaFaixa'; f.type = 'button';
+    f.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;background:#b3261e;color:#fff;border:0;border-radius:24px;padding:10px 18px;font:600 15px system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer';
+    f.textContent = '🖨️ Impressora desconectada — toque para conectar';
+    f.onclick = async () => { await impDiretaConectar(); impDiretaFaixaAtualizar(); };
+    document.body.appendChild(f);
+  }
+  f.style.display = '';
+}
+if(typeof window !== 'undefined' && impDiretaSuportada()){
+  window.addEventListener('load', () => setTimeout(impDiretaFaixaAtualizar, 1500));
+  try{ navigator.serial.addEventListener('connect', () => impDiretaFaixaAtualizar()); }catch(e){}
+}
 function imprimirComandaPedido(pid){
+  // Impressão direta (só se ligada neste aparelho) e só para a via da cozinha; senão, segue o caminho de sempre.
+  if(impDiretaAtiva() && BD.config.totemVias !== 2){
+    const cv = desenharComandaImagem(pid);
+    if(cv){
+      impDiretaImprimirCanvas(cv).catch(e => {
+        if(e && e.name === 'NotFoundError') return toast('Nenhuma porta de impressora foi escolhida. A comanda não foi impressa.', 'alerta', {ms: 6000});
+        toast('Impressão direta falhou: ' + impDiretaMensagemErro(e) + ' Abrindo a impressão normal.', 'alerta', {ms: 8000});
+        imprimirComandaPedidoPadrao(pid);
+      });
+      return;
+    }
+  }
+  imprimirComandaPedidoPadrao(pid);
+}
+function imprimirComandaPedidoPadrao(pid){
   const h = comandaHTML(pid); if(!h) return toast('Pedido não encontrado.', 'erro');
   $('areaImpressao').innerHTML = h;
   document.body.classList.add('print-comanda');
@@ -4901,27 +5349,27 @@ function comandaLinhasImagem(pid){
   const add = (texto, opts) => L.push(Object.assign({texto, tam: 20, negrito: false, centro: true, espacoAntes: 0}, opts || {}));
   const linha = () => L.push({linha: true, espacoAntes: 6});
   add(((BD.config.negocioEmoji || '') + ' ' + nomeNegocio().toUpperCase()).trim(), {tam: 38, negrito: true});
-  if(l0.local) add('📍 ' + l0.local.toUpperCase(), {tam: 22});
-  if(totem) add('PEDIDO PELO TOTEM', {tam: 22});
+  if(l0.local) add('📍 ' + l0.local.toUpperCase(), {tam: 22, negrito: true});
+  if(totem) add('PEDIDO PELO TOTEM', {tam: 22, negrito: true});
   if(p.senha) add('Nº ' + p.senha, {tam: 46, negrito: true, espacoAntes: 6});
-  add(fmtData(p.data) + ' - ' + p.horario, {tam: 22});
-  if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 22});
-  if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 22});
+  add(fmtData(p.data) + ' - ' + p.horario, {tam: 22, negrito: true});
+  if(l0.estimativaMin && l0.criadoEm) add('PREVISÃO: ' + horaDeMs(l0.criadoEm + l0.estimativaMin * 60000), {tam: 22, negrito: true});
+  if(l0.retirarEm) add('RETIRAR ÀS ' + horaDeMs(l0.retirarEm), {tam: 22, negrito: true});
   linha();
   add(p.cliente.toUpperCase(), {tam: 32, negrito: true});
-  if(p.telefone) add('Tel: ' + p.telefone, {tam: 22});
+  if(p.telefone) add('Tel: ' + p.telefone, {tam: 22, negrito: true});
   linha();
   p.linhas.forEach(l => {
     add(l.quantidade + 'x ' + l.produto.toUpperCase(), {tam: 28, centro: false, negrito: true, espacoAntes: 6});
     const cons = l.tipoConsumo === 'local' ? 'CONSUMO NO LOCAL' : l.tipoConsumo === 'viagem' ? 'PARA VIAGEM' : '';
-    if(cons) add('[' + cons + ']', {tam: 20, centro: false});
+    if(cons) add('[' + cons + ']', {tam: 22, centro: false, negrito: true});
     if(l.corte) add('✂ CORTE: ' + l.corte.toUpperCase(), {tam: 20, centro: false, negrito: true});
     if(l.observacao) add(l.observacao.toUpperCase(), {tam: 22, centro: false, negrito: true, espacoAntes: 4, caixa: true});
   });
   linha();
   add(status, {tam: 28, negrito: true, espacoAntes: 4});
   if(BD.config.valoresComanda) add('TOTAL ' + brl(p.total), {tam: 32, negrito: true});
-  if(BD.config.rodapeComanda) add(BD.config.rodapeComanda, {tam: 19, espacoAntes: 6});
+  if(BD.config.rodapeComanda){ linha(); add(BD.config.rodapeComanda, {tam: 28, negrito: true, espacoAntes: 6}); }
   return L;
 }
 function desenharComandaImagem(pid){
@@ -5060,35 +5508,99 @@ function renderVendas(reset){
   $('resumoVendasPeriodo').innerHTML = '<h4>Resumo do filtro</h4><div class="linha-kv"><span>Pedidos / itens</span><b>' + pedidos.length + ' / ' + soma(linhas, l => l.quantidade) + '</b></div><div class="linha-kv"><span>Faturamento</span><b>' + brl(fat) + '</b></div><div class="linha-kv"><span>A receber (pendente)</span><b class="' + (pend > 0 ? 'alerta' : '') + '">' + brl(pend) + '</b></div><div class="linha-kv"><span>Lucro estimado (após custos e taxas)</span><b>' + brl(soma(linhas, lucroVenda)) + '</b></div>';
   $('senhaAtual').textContent = proximaSenha();
 }
-function atualizarRecebimentoDinheiro(total){
-  const formaEl = $('rp_forma'); if(!formaEl) return;
-  const dinheiro = formaEl.value === 'dinheiro';
-  const bloco = $('rp_blocoDinheiro'); if(bloco) bloco.classList.toggle('oculto', !dinheiro);
-  const trocoDiv = $('rp_troco'); if(!trocoDiv) return;
-  trocoDiv.className = ''; trocoDiv.innerHTML = '';
-  if(!dinheiro) return;
-  const rec = parseNum($('rp_recebido').value);
-  if(rec > 0){
-    if(rec + 1e-9 >= total){ trocoDiv.className = 'aviso ok-a'; trocoDiv.innerHTML = '💵 <b>Troco: ' + brl(r2(rec - total)) + '</b> (recebido ' + brl(rec) + ' − ' + brl(total) + ')'; }
-    else { trocoDiv.className = 'aviso erro-a'; trocoDiv.innerHTML = '⚠️ Faltam <b>' + brl(r2(total - rec)) + '</b> em dinheiro.'; }
+/* ---------- receber pagamento (pode dividir entre várias pessoas / formas) ---------- */
+let RP = null; // {total, linhas, formas: [forma...], valores: [texto...] (todas menos a última)}
+function rpValores(){
+  const n = RP.formas.length; const v = [];
+  let usado = 0;
+  for(let i = 0; i < n - 1; i++){ const x = r2(parseNum(RP.valores[i])); v.push(x); usado = r2(usado + x); }
+  v.push(r2(RP.total - usado));
+  return v;
+}
+function rpOpcoes(sel){ return FORMAS.map(f => '<option value="' + f + '"' + (f === sel ? ' selected' : '') + '>' + rotForma[f] + '</option>').join(''); }
+function rpMontar(){
+  const n = RP.formas.length; const vals = rpValores();
+  let h = '';
+  for(let i = 0; i < n; i++){
+    const ultima = i === n - 1;
+    h += '<div class="linha" style="display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap">' +
+      (n > 1 ? '<b style="min-width:70px">Pessoa ' + (i + 1) + '</b>' : '') +
+      '<select id="rp_forma' + i + '" onchange="rpMudouForma(' + i + ')" aria-label="Forma de pagamento ' + (i + 1) + '">' + rpOpcoes(RP.formas[i]) + '</select>' +
+      (n > 1 ? (ultima ? '<span id="rp_val' + i + '" style="min-width:90px"><b>' + brl(vals[i]) + '</b> <small class="suave">(resto)</small></span>'
+        : '<input id="rp_val' + i + '" type="text" inputmode="decimal" placeholder="valor R$" autocomplete="off" style="width:110px" value="' + esc(RP.valores[i]) + '" oninput="rpMudouValor(' + i + ',this.value)" aria-label="Valor da pessoa ' + (i + 1) + '">') +
+        '<button type="button" class="btn cinza pequeno" onclick="rpRemover(' + i + ')" title="Tirar esta pessoa">✕</button>' : '') +
+      '</div>';
   }
+  $('rp_lista').innerHTML = h;
+  rpAtualizar();
+}
+function rpAtualizar(){
+  const n = RP.formas.length; const vals = rpValores();
+  const ult = $('rp_val' + (n - 1)); if(n > 1 && ult) ult.innerHTML = '<b>' + brl(vals[n - 1]) + '</b> <small class="suave">(resto)</small>';
+  const st = $('rp_status'); let ok = true;
+  if(n > 1){
+    const invalido = vals.some(x => !(x > 0));
+    ok = !invalido;
+    st.className = ok ? 'aviso ok-a' : 'aviso erro-a';
+    st.innerHTML = ok ? '✅ Soma fecha em <b>' + brl(RP.total) + '</b>' : '⚠️ Cada pessoa precisa ter valor maior que zero e a soma não pode passar de <b>' + brl(RP.total) + '</b>.';
+  }else{ st.className = ''; st.innerHTML = ''; }
+  const dinheiro = r2(vals.reduce((t, x, i) => t + ($('rp_forma' + i) && $('rp_forma' + i).value === 'dinheiro' ? x : 0), 0));
+  const bloco = $('rp_blocoDinheiro'); const trocoDiv = $('rp_troco');
+  const temDin = RP.formas.some((_, i) => $('rp_forma' + i) && $('rp_forma' + i).value === 'dinheiro');
+  bloco.classList.toggle('oculto', !temDin);
+  trocoDiv.className = ''; trocoDiv.innerHTML = '';
+  if(temDin){
+    const rec = parseNum($('rp_recebido').value);
+    if(rec > 0){
+      if(rec + 1e-9 >= dinheiro){ trocoDiv.className = 'aviso ok-a'; trocoDiv.innerHTML = '💵 <b>Troco: ' + brl(r2(rec - dinheiro)) + '</b> (recebido ' + brl(rec) + ' − ' + brl(dinheiro) + ' em dinheiro)'; }
+      else { trocoDiv.className = 'aviso erro-a'; trocoDiv.innerHTML = '⚠️ Faltam <b>' + brl(r2(dinheiro - rec)) + '</b> em dinheiro.'; }
+    }
+  }
+}
+function rpMudouForma(i){ RP.formas[i] = $('rp_forma' + i).value; rpAtualizar(); }
+function rpMudouValor(i, v){ RP.valores[i] = v; rpAtualizar(); }
+function rpAdicionar(){
+  if(RP.formas.length >= 10) return;
+  const vals = rpValores(); const n = RP.formas.length;
+  // a antiga "última" vira manual: começa com a metade do que sobrava pra ela (divisão ao meio), a nova fica com o resto
+  const resto = vals[n - 1];
+  const metade = r2(resto / 2);
+  RP.valores[n - 1] = metade > 0 ? metade.toFixed(2).replace('.', ',') : '';
+  RP.formas.push(RP.formas[n - 1] === 'pix' ? 'dinheiro' : 'pix');
+  rpMontar();
+}
+function rpDividirIgual(){
+  const n = RP.formas.length; if(n < 2) return;
+  const parte = Math.floor(RP.total / n * 100) / 100;
+  for(let i = 0; i < n - 1; i++) RP.valores[i] = parte.toFixed(2).replace('.', ',');
+  rpMontar();
+}
+function rpRemover(i){
+  if(RP.formas.length <= 1) return;
+  RP.formas.splice(i, 1); RP.valores.splice(i, 1);
+  if(RP.formas.length > 1) RP.valores.length = RP.formas.length - 1; else RP.valores = [];
+  rpMontar();
 }
 function receberPedido(pid, formaPadrao, aoConcluir){
   const linhas = linhasDoPedido(pid); if(!linhas.length) return;
   const total = r2(soma(linhas, l => l.valorTotal));
-  const forma0 = formaPadrao || 'pix';
+  RP = {total, linhas, formas: [formaPadrao || 'pix'], valores: []};
   const html = '<div class="aviso">' + (linhas[0].cliente ? esc(linhas[0].cliente) + ' • ' : '') + 'pedido de ' + fmtData(linhas[0].data) + '</div>' +
-    '<label for="rp_forma">Forma de pagamento</label><select id="rp_forma" onchange="atualizarRecebimentoDinheiro(' + total + ')">' +
-    FORMAS.map(f => '<option value="' + f + '"' + (f === forma0 ? ' selected' : '') + '>' + rotForma[f] + '</option>').join('') + '</select>' +
-    '<div id="rp_blocoDinheiro" class="oculto"><label for="rp_recebido">Valor recebido (R$)</label><input id="rp_recebido" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" oninput="atualizarRecebimentoDinheiro(' + total + ')"><div id="rp_troco"></div></div>';
+    '<label>Forma de pagamento</label><div id="rp_lista"></div><div id="rp_status" style="margin:6px 0"></div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"><button type="button" class="btn cinza pequeno" onclick="rpAdicionar()">➕ Dividir com mais uma pessoa</button>' +
+    '<button type="button" class="btn cinza pequeno" onclick="rpDividirIgual()" title="Divide o total em partes iguais entre as pessoas">⚖️ Dividir igualmente</button></div>' +
+    '<div id="rp_blocoDinheiro" class="oculto"><label for="rp_recebido">Valor recebido em dinheiro (R$)</label><input id="rp_recebido" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" oninput="rpAtualizar()"><div id="rp_troco"></div></div>';
   abrirModal({titulo: 'Receber pagamento — ' + brl(total), html, botoes: [
     {rotulo: 'Cancelar', classe: 'cinza'},
     {rotulo: 'Confirmar recebimento', fn: ctl => {
-      const forma = ctl.el.querySelector('#rp_forma').value;
-      aplicarPagamento(linhas, [{forma, valor: total}], dataHoje());
-      salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); refreshFila(); toast('Pagamento de ' + brl(total) + ' registrado.', 'ok'); if(aoConcluir) aoConcluir();
+      const vals = rpValores();
+      if(vals.some(x => !(x > 0))){ toast('Confira os valores: cada pessoa precisa ter valor maior que zero e a soma tem que fechar o total.', 'alerta'); return false; }
+      const pagamentos = RP.formas.map((f, i) => ({forma: f, valor: vals[i]}));
+      aplicarPagamento(linhas, pagamentos, dataHoje());
+      salvarAgora('vendas'); renderVendas(); renderCaixa(); atualizarBadges(); refreshFila();
+      toast('Pagamento de ' + brl(total) + (pagamentos.length > 1 ? ' registrado, dividido em ' + pagamentos.length + '.' : ' registrado.'), 'ok'); if(aoConcluir) aoConcluir();
     }}
-  ], aoAbrir: () => atualizarRecebimentoDinheiro(total)});
+  ], aoAbrir: () => rpMontar()});
 }
 function editarPedido(pid){
   const linhas = linhasDoPedido(pid); if(!linhas.length) return;
@@ -5362,21 +5874,59 @@ function resultadoMes(mes){
   // soma o resumo arquivado desse mês (se algum dado desse mês já foi arquivado), pra o total
   // continuar certo mesmo sem o histórico completo de linhas de venda (ver arquivarDadosAntigos)
   const arq = (BD.config.resumoArquivadoMes || {})[mes];
+  const comprasMes = r2(soma(BD.compras.filter(c => (c.data || '').startsWith(mes)), c => c.valor) + (arq ? (arq.compras || 0) : 0));
   if(arq){
     const fat = r2(r.fat + arq.fat), custo = r2(r.custo + arq.custo), taxas = r2(r.taxas + arq.taxas);
     const despTot = r2(desp + arq.despesas), perdasTot = r2(perdas + arq.perdas);
     return {...r, fat, custo, taxas, lucro: fat - custo - taxas, itens: r.itens + arq.itens, pedidos: r.pedidos + arq.pedidos,
-      linhas, despesas: despTot, perdas: perdasTot, liquido: fat - custo - taxas - despTot - perdasTot,
+      linhas, compras: comprasMes, despesas: despTot, perdas: perdasTot, liquido: fat - custo - taxas - despTot - perdasTot,
       temArquivado: true};
   }
-  return {...r, linhas, despesas: desp, perdas, liquido: r.fat - r.custo - r.taxas - desp - perdas};
+  return {...r, linhas, compras: comprasMes, despesas: desp, perdas, liquido: r.fat - r.custo - r.taxas - desp - perdas};
 }
 function deltaHTML(atual, anterior){
   if(!(anterior > 0)) return '';
   const p = (atual - anterior) / anterior * 100;
   return '<span class="delta ' + (p >= 0 ? 'up' : 'down') + '">' + (p >= 0 ? '▲ +' : '▼ ') + fmt(p, 0) + '% vs mês anterior</span>';
 }
+// Correção única: totais de compras dos meses já arquivados (o arquivamento antigo não guardava esse total)
+const COMPRAS_ARQUIVADAS_MES = {"2026-10": 1413.05, "2026-08": 3374.69, "2026-09": 3703.6, "2026-07": 3955.01, "2026-06": 3290.96, "2026-03": 2804.53, "2026-04": 2586.95, "2026-05": 2977.62, "2026-01": 650.73, "2026-02": 204.31};
+function corrigirComprasArquivadas(){
+  if(BD.config.comprasArqMigradas) return;
+  const r = BD.config.resumoArquivadoMes || {};
+  Object.keys(COMPRAS_ARQUIVADAS_MES).forEach(ym => { if(r[ym] && !r[ym].compras) r[ym].compras = COMPRAS_ARQUIVADAS_MES[ym]; });
+  BD.config.comprasArqMigradas = true; salvar('config');
+}
+// Correção única: vendas de jan e jun/2026 estavam zeradas no resumo arquivado (valores vieram do backup histórico)
+const VENDAS_ARQUIVADAS_MES = {"2026-01": {fat: 3005, custo: 1580.21, itens: 110, pedidos: 18}, "2026-06": {fat: 3145, custo: 1297.75, itens: 134, pedidos: 54}};
+function corrigirVendasArquivadas(){
+  if(BD.config.vendasArqMigradas) return;
+  const r = BD.config.resumoArquivadoMes || {};
+  Object.keys(VENDAS_ARQUIVADAS_MES).forEach(ym => { if(r[ym] && !r[ym].fat) Object.assign(r[ym], VENDAS_ARQUIVADAS_MES[ym]); });
+  BD.config.vendasArqMigradas = true; salvar('config');
+}
+function renderResumoAno(){
+  const sel = $('anoResumo'); if(!sel) return;
+  corrigirComprasArquivadas();
+  corrigirVendasArquivadas();
+  const anos = new Set([mesAtual().slice(0, 4)]);
+  [BD.vendas, BD.compras, BD.despesas].forEach(l => l.forEach(x => { if(x && x.data) anos.add(x.data.slice(0, 4)); }));
+  Object.keys(BD.config.resumoArquivadoMes || {}).forEach(m => anos.add(m.slice(0, 4)));
+  const lista = [...anos].sort().reverse(); const atual = sel.value && lista.includes(sel.value) ? sel.value : lista[0];
+  sel.innerHTML = lista.map(a => '<option' + (a === atual ? ' selected' : '') + '>' + a + '</option>').join('');
+  const tot = {fat: 0, compras: 0, taxas: 0, desp: 0, liq: 0}; let linhas = '';
+  for(let i = 1; i <= 12; i++){
+    const mes = atual + '-' + String(i).padStart(2, '0'); const m = resultadoMes(mes);
+    if(!(m.fat || m.compras || m.taxas || m.despesas || m.perdas)) continue;
+    tot.fat += m.fat; tot.compras += m.compras; tot.taxas += m.taxas; tot.desp += m.despesas + m.perdas; tot.liq += m.liquido;
+    linhas += '<tr><td>' + fmtMes(mes) + (m.temArquivado ? ' 📦' : '') + '</td><td class="n">' + brl(m.fat) + '</td><td class="n">' + brl(m.compras) + '</td><td class="n">' + brl(m.taxas) + '</td><td class="n">' + brl(m.despesas + m.perdas) + '</td><td class="n ' + (m.liquido < 0 ? 'erro' : 'ok') + '">' + brl(m.liquido) + '</td></tr>';
+  }
+  linhas += '<tr><td><b>TOTAL ' + atual + '</b></td><td class="n"><b>' + brl(tot.fat) + '</b></td><td class="n"><b>' + brl(tot.compras) + '</b></td><td class="n"><b>' + brl(tot.taxas) + '</b></td><td class="n"><b>' + brl(tot.desp) + '</b></td><td class="n ' + (tot.liq < 0 ? 'erro' : 'ok') + '"><b>' + brl(tot.liq) + '</b></td></tr>';
+  $('tabelaResumoAno').innerHTML = linhas;
+  $('avisoResumoAno').innerHTML = '📦 = mês com dados arquivados (já somados). "Compras de insumos" é só informativa: o que foi pago à vista já entra em Despesas, então o lucro não conta duas vezes. Meses arquivados antes desta versão não têm o total de compras guardado.';
+}
 function renderResumoMensal(){
+  renderResumoAno();
   const mes = $('mesResumo').value || mesAtual();
   const m = resultadoMes(mes), ant = resultadoMes(mesAnterior(mes));
   const linha = (t, v, cls, b) => '<div class="linha-kv"><span>' + t + '</span><' + (b ? 'b' : 'span') + ' class="' + (cls || '') + '">' + v + '</' + (b ? 'b' : 'span') + '></div>';
@@ -7038,23 +7588,24 @@ function renderProdutosSimples(){
 /* ---------- tela DADOS ---------- */
 function usoArmazenamentoKB(){
   let total = 0;
-  try{ for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); total += (k.length + (localStorage.getItem(k) || '').length) * 2; } }catch(e){}
+  try{ for(let i = 0; i < KV.length; i++){ const k = KV.key(i); total += (k.length + (KV.getItem(k) || '').length) * 2; } }catch(e){}
   return total / 1024;
 }
 function renderDados(){
+  autoAtualizarTela();
   atualizarPreviaArquivamento();
   const r = resumoDados(BD);
   const kb = usoArmazenamentoKB();
-  let ult = ''; try{ ult = localStorage.getItem('ultimoDownloadBackup') || ''; }catch(e){}
+  let ult = ''; try{ ult = KV.getItem('ultimoDownloadBackup') || ''; }catch(e){}
   atualizarStatusBackup(ult ? 'Último backup baixado: ' + fmtData(ult) + '.' : 'Nenhum backup baixado ainda neste aparelho. Baixe um agora!');
   $('dadosResumo').innerHTML = cardHTML('Insumos', r.insumos) + cardHTML('Fichas técnicas', r.fichas) + cardHTML('Receitas de massa', r.formulasMassa) + cardHTML('Vendas (itens)', r.vendas) + cardHTML('Despesas', r.despesas) + cardHTML('Compras', r.compras) +
-    cardHTML('Armazenamento usado', fmt(kb, 0) + ' KB', 'limite típico do navegador: ~5.000 KB', kb > 3500 ? 'vermelho' : '') + '<div class="card"><h3>Proteção contra limpeza</h3><div class="valor" id="persistStatus" style="font-size:1rem">verificando...</div></div>';
+    cardHTML('Armazenamento usado', fmt(kb, 0) + ' KB', KV.modo === 'indexeddb' ? 'sem limite prático (IndexedDB)' : 'limite típico do navegador: ~5.000 KB', KV.modo !== 'indexeddb' && kb > 3500 ? 'vermelho' : '') + '<div class="card"><h3>Proteção contra limpeza</h3><div class="valor" id="persistStatus" style="font-size:1rem">verificando...</div></div>';
   if(navigator.storage && navigator.storage.persisted) navigator.storage.persisted().then(p => { const el = $('persistStatus'); if(el) el.textContent = p ? '✅ Ativa' : '⚠️ Não garantida'; });
   else { const el = $('persistStatus'); if(el) el.textContent = 'não suportado'; }
   const pontos = listarPontos();
   $('listaRestauracao').innerHTML = pontos.length ? pontos.map(p =>
-    '<div class="card" style="margin-bottom:8px"><h3>' + esc(p.rotulo) + '</h3><div class="sub">' + (p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : 'data desconhecida') + (p.motivo ? ' — ' + esc(p.motivo) : '') + '</div><div class="sub">' + p.resumo.insumos + ' insumos • ' + p.resumo.fichas + ' fichas • ' + p.resumo.formulasMassa + ' massas • ' + p.resumo.vendas + ' vendas • ' + p.resumo.despesas + ' despesas</div><button class="btn laranja pequeno" style="margin-top:6px" onclick="restaurarPonto(\'' + p.chave + '\')">↩️ Restaurar este ponto</button></div>'
-  ).join('') : '<div class="vazio">Ainda não há pontos de restauração.</div>';
+    '<div class="card" style="margin-bottom:8px"><h3>' + esc(p.rotulo) + '</h3><div class="sub">' + (p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : 'data desconhecida') + (p.motivo ? ' — ' + esc(p.motivo) : '') + '</div><div class="sub">' + p.resumo.insumos + ' insumos • ' + p.resumo.fichas + ' fichas • ' + p.resumo.formulasMassa + ' massas • ' + p.resumo.vendas + ' vendas • ' + p.resumo.despesas + ' despesas</div><button class="btn laranja pequeno" style="margin-top:6px" onclick="restaurarPonto(\'' + p.chave + '\')">↩️ Restaurar este ponto</button> <button class="btn vermelho pequeno" style="margin-top:6px" onclick="apagarPonto(\'' + p.chave + '\')">🗑️ Apagar (libera ' + fmt(p.kb, 0) + ' KB)</button></div>'
+  ).join('') + '<div class="dica">Cada ponto é uma cópia completa dos dados e ocupa espaço no navegador. Depois de baixar o backup e o arquivo de arquivamento, pode apagar os pontos para liberar espaço.</div>' : '<div class="vazio">Ainda não há pontos de restauração.</div>';
   renderDiagnostico();
 }
 
@@ -7120,7 +7671,7 @@ async function arquivarDadosAntigos(){
   if(!BD.config.resumoArquivadoMes) BD.config.resumoArquivadoMes = {};
   const despesasArquivadas = BD.despesas.filter(antes), perdasArquivadas = BD.perdas.filter(antes);
   const porMesArq = {};
-  const mesArq = ym => porMesArq[ym] || (porMesArq[ym] = {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, itens: 0, pedidosSet: new Set()});
+  const mesArq = ym => porMesArq[ym] || (porMesArq[ym] = {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, compras: 0, itens: 0, pedidosSet: new Set()});
   vendasArquivadas.forEach(v => {
     if(!v || !v.data) return;
     const m = mesArq(v.data.slice(0, 7));
@@ -7129,11 +7680,13 @@ async function arquivarDadosAntigos(){
   });
   despesasArquivadas.forEach(d => { if(d && d.data) mesArq(d.data.slice(0, 7)).despesas += (d.valor || 0); });
   perdasArquivadas.forEach(p => { if(p && p.data) mesArq(p.data.slice(0, 7)).perdas += (p.valor || 0); });
+  BD.compras.filter(antes).forEach(c => { if(c && c.data) mesArq(c.data.slice(0, 7)).compras += (Number(c.valor) || 0); });
   Object.keys(porMesArq).forEach(ym => {
-    const novo = porMesArq[ym], atual = BD.config.resumoArquivadoMes[ym] || {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, itens: 0, pedidos: 0};
+    const novo = porMesArq[ym], atual = BD.config.resumoArquivadoMes[ym] || {fat: 0, custo: 0, taxas: 0, despesas: 0, perdas: 0, compras: 0, itens: 0, pedidos: 0};
     BD.config.resumoArquivadoMes[ym] = {
       fat: r2(atual.fat + novo.fat), custo: r2(atual.custo + novo.custo), taxas: r2(atual.taxas + novo.taxas),
       despesas: r2(atual.despesas + novo.despesas), perdas: r2(atual.perdas + novo.perdas),
+      compras: r2((atual.compras || 0) + novo.compras),
       itens: atual.itens + novo.itens, pedidos: atual.pedidos + novo.pedidosSet.size
     };
   });
@@ -7185,19 +7738,19 @@ let _syncDb = null, _syncListeners = [], _syncPronto = false, _syncTimer = null,
 const _syncUltimoEnviado = {vendas: {}, despesas: {}, perdas: {}, compras: {}, contasPagar: {}, conferenciasCartao: {}, caixaDias: {}, dasMei: {}, estoqueComponentes: {}, taras: {}};
 function syncCarregarUltimoEnviado(){
   try{
-    const t = JSON.parse(localStorage.getItem(SYNC_ULTIMO_CHAVE_LS));
+    const t = JSON.parse(KV.getItem(SYNC_ULTIMO_CHAVE_LS));
     if(t && typeof t === 'object') Object.keys(_syncUltimoEnviado).forEach(tipo => { if(t[tipo]) _syncUltimoEnviado[tipo] = t[tipo]; });
   }catch(e){}
 }
 function syncSalvarUltimoEnviado(){
   // debounced: isso pode ser chamado em rajadas (um snapshot inteiro, um push inteiro)
   clearTimeout(_syncSalvarUltimoTimer);
-  _syncSalvarUltimoTimer = setTimeout(() => { try{ localStorage.setItem(SYNC_ULTIMO_CHAVE_LS, JSON.stringify(_syncUltimoEnviado)); }catch(e){} }, 300);
+  _syncSalvarUltimoTimer = setTimeout(() => { try{ KV.setItem(SYNC_ULTIMO_CHAVE_LS, JSON.stringify(_syncUltimoEnviado)); }catch(e){} }, 300);
 }
 syncCarregarUltimoEnviado();
 
-function syncLerConfig(){ try{ return JSON.parse(localStorage.getItem(SYNC_CHAVE_LS)) || {}; }catch(e){ return {}; } }
-function syncGravarConfig(c){ try{ localStorage.setItem(SYNC_CHAVE_LS, JSON.stringify(c)); }catch(e){} }
+function syncLerConfig(){ try{ return JSON.parse(KV.getItem(SYNC_CHAVE_LS)) || {}; }catch(e){ return {}; } }
+function syncGravarConfig(c){ try{ KV.setItem(SYNC_CHAVE_LS, JSON.stringify(c)); }catch(e){} }
 function syncStatus(t){ const el = $('statusSync'); if(el) el.textContent = t; }
 
 function preencherConfigSync(){
@@ -7687,7 +8240,7 @@ function diagnosticar(){
   if(dup.length) add('aviso', '<b>Insumos com nome repetido:</b> ' + dup.map(a => esc(a[0]) + ' (×' + a.length + ')').join(', ') + '. Isso pode misturar preços.', [{r: 'Abrir insumos', js: "irPara('insumos')"}]);
   const semPesoUn = BD.insumos.filter(i => i.unid === 'Un' && !i.pesoUnitario && BD.formulasMassa.some(m => m.itens.some(x => x.insumoId === i.id)));
   if(semPesoUn.length) add('aviso', '<b>Insumo em "Un" usado em massa sem peso por unidade:</b> ' + semPesoUn.map(i => esc(i.nome)).join(', ') + '. Informe o peso de 1 un (ex.: ovo ≈ 50 g).', [{r: 'Abrir insumos', js: "irPara('insumos')"}]);
-  let ult = ''; try{ ult = localStorage.getItem('ultimoDownloadBackup') || ''; }catch(e){}
+  let ult = ''; try{ ult = KV.getItem('ultimoDownloadBackup') || ''; }catch(e){}
   const diasSem = ult ? Math.floor((new Date(dataHoje()) - new Date(ult)) / 86400000) : 999;
   if(diasSem >= 3 && (BD.vendas.length || BD.fichas.length)) add('aviso', ult ? '<b>Seu último backup baixado foi há ' + diasSem + ' dias.</b>' : '<b>Você ainda não baixou nenhum backup neste aparelho.</b>', [{r: 'Baixar backup', js: 'exportarBackup()'}]);
   if(usoArmazenamentoKB() > 3500) add('aviso', '<b>Armazenamento do navegador quase cheio.</b> Exporte um backup e considere arquivar vendas antigas.', [{r: 'Baixar backup', js: 'exportarBackup()'}]);
@@ -8343,9 +8896,10 @@ async function lancarVendaRetroativa(){
 
 /* ---------- comanda retroativa: vários itens do mesmo pedido, um pagamento só (pra bater com o voucher do cartão) ---------- */
 let COMANDA_RETRO = [];
+let RETRO_ULT_LOCAL = '';
 function abrirComandaRetroativa(){
   COMANDA_RETRO = [];
-  const opcoesLocais = '<option value="">-- Não informado --</option>' + BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(l => '<option value="' + l.id + '">' + esc(l.nome) + '</option>').join('');
+  const opcoesLocais = '<option value="">-- Não informado --</option>' + BD.locais.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(l => '<option value="' + l.id + '"' + (l.id === RETRO_ULT_LOCAL ? ' selected' : '') + '>' + esc(l.nome) + '</option>').join('');
   const html = '<div class="bloco-calc">' +
     '<div><label for="crc_cliente">Cliente</label><input type="text" id="crc_cliente" list="listaClientesDL" placeholder="Ex: Michele"></div>' +
     '<div><label for="crc_data">Data da venda</label><input type="date" id="crc_data" value="' + ($('retroData').value || dataHoje()) + '"></div>' +
@@ -8438,7 +8992,7 @@ async function finalizarComandaRetroativa(ctl){
   if(!COMANDA_RETRO.length) return void toast('Adicione ao menos um item à comanda.', 'alerta') || false;
   if(data > dataHoje() && !await confirmar('A data ' + fmtData(data) + ' é no futuro. Lançar mesmo assim?', {ok: 'Lançar mesmo assim'})) return false;
   if($('retroData')) $('retroData').value = data;
-  const localId = ctl.el.querySelector('#crc_local').value; const localObj = localId ? BD.locais.find(l => l.id === localId) : null;
+  const localId = ctl.el.querySelector('#crc_local').value; RETRO_ULT_LOCAL = localId; const localObj = localId ? BD.locais.find(l => l.id === localId) : null;
   const consumo = ctl.el.querySelector('#crc_consumo').value; const forma = ctl.el.querySelector('#crc_forma').value;
   const pid = 'r' + uid();
   const linhas = COMANDA_RETRO.map(it => {
@@ -8888,8 +9442,8 @@ function verDetalheLocal(i){
    SUB-ABAS (telas longas divididas em blocos, no estilo do Início)
    ===================================================================== */
 const SUBABAS = {
-  dashboard: [['📊','Visão geral',['Resumo','Funil']], ['💳','Finanças',['Situação']], ['🚦','Saúde e metas',['Saúde','Metas']], ['🧪','Simulador',['Simulador']], ['📈','Movimento',['Movimento','Estoque acabando','Top 5']]],
-  caixa: [['💵','Fechamento',['Fechamento de caixa']], ['💳','Cartão',['Conferência']], ['📅','Mês',['Resumo mensal']], ['📊','Limite MEI',['limite MEI']], ['🧾','DAS-MEI',['DAS-MEI']], ['🧾','Recibo',['Recibo']]],
+  dashboard: [['📊','Visão geral',['Resumo de','Resumo do mês','Funil']], ['💳','Finanças',['Situação']], ['🚦','Saúde e metas',['Saúde','Metas']], ['🧪','Simulador',['Simulador']], ['📈','Movimento',['Movimento','Estoque acabando','Top 5']], ['🗓️','Ano',['Resumo do ano']], ['📅','Mês',['Resumo mensal']], ['📊','Limite MEI',['limite MEI']], ['🧾','DAS-MEI',['DAS-MEI']], ['💳','Cartão',['Conferência']]],
+  caixa: [['💵','Fechamento',['Fechamento de caixa']], ['🧾','Recibo',['Recibo']]],
   compras: [['💳','Contas a pagar',['Contas a pagar']], ['🚚','Fornecedores',['Fornecedores']], ['🧾','Compras e cupons',['Compras e cupons','Cupons cadastrados']]],
   custos: [['📉','Despesas reais',['Despesas reais']], ['💰','Custos fixos',['Custos fixos']], ['💳','Taxas',['Taxas de pagamento']], ['⚙️','Preferências',['Preferências']], ['🏷️','Identidade',['Identidade']], ['🖥️','Totem',['Totem']]],
   estoque: [['📦','Cadastro',['Estoque —']], ['🥟','Empanadas',['Empanadas —']], ['⚖️','Taras',['Taras —']], ['🔢','Contagem',['Contagem','Fechamento do dia']], ['🗑️','Perdas',['Sobras']]],
@@ -9354,17 +9908,17 @@ function renderPagina(id){
   try{
     switch(id){
       case 'inicio': renderInicio(); break;
-      case 'dashboard': renderDashboard(); break;
+      case 'dashboard': renderDashboard(); if(!$('mesResumo').value) $('mesResumo').value = mesAtual(); renderResumoMensal(); renderMei(); renderDasMei(); renderConferenciaCartao(); renderConferenciasCartaoLista(); break;
       case 'vendas': renderVendasPagina(); break;
       case 'locais': renderLocais(); break;
       case 'clientes': renderClientes(); break;
       case 'fila': renderFila(); break;
       case 'atendimento': renderAtendimento(); break;
       case 'caixa': renderCaixa(); break;
-      case 'fichas': renderFichas(); renderProdutosSimples(); break;
+      case 'fichas': renderFichas(); renderProdutosSimples(); renderEquivalencias(); break;
       case 'precificacao': renderPrecificacao(); break;
       case 'insumos': renderInsumos(); break;
-      case 'massa': renderMassa(); break;
+      case 'massa': renderMassa(); renderEquivalencias(); break;
       case 'estoque': renderEstoque(); break;
       case 'etiquetas': renderEtiquetas(); break;
       case 'nutricional': renderNutricional(); break;
@@ -9381,16 +9935,16 @@ function renderPagina(id){
 }
 function renderTudo(){ atualizarDatalists(); atualizarDatalistComponentes(); renderPagina(_pagina); atualizarFaixa(); aplicarTema(); }
 
-function iniciar(){
+function iniciarApp(){
   snapshotPreMigracao();
   carregarBD();
-  const versaoAnterior = (() => { try{ return localStorage.getItem('schemaVersao'); }catch(e){ return null; } })();
+  const versaoAnterior = (() => { try{ return KV.getItem('schemaVersao'); }catch(e){ return null; } })();
   normalizarBD();
   recalcularTudo();
   if(versaoAnterior !== String(APP_VERSAO)){
     // Primeira execução desta versão: grava os dados já normalizados (o original ficou guardado em "backupPreMigracao")
     salvarTudo();
-    try{ localStorage.setItem('schemaVersao', String(APP_VERSAO)); }catch(e){}
+    try{ KV.setItem('schemaVersao', String(APP_VERSAO)); }catch(e){}
   }
   aplicarTema(); aplicarMarca(); aplicarVisibilidadePlano();
   consumoAtual = BD.config.consumoPadrao || 'viagem';
@@ -9430,6 +9984,7 @@ window.addEventListener('storage', e => {
   }, 200);
 });
 window.addEventListener('error', e => { console.error(e.error || e.message); });
+async function iniciar(){ await KV.iniciar(); iniciarApp(); autoRetomar(); }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
 
 </script>
